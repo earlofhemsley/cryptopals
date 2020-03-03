@@ -1,6 +1,5 @@
 package cryptopals.challenges;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -40,21 +39,18 @@ public class SectionOneTests {
 
     @Test
     public void fourTest() throws DecoderException, IOException {
-        List<String> contents = getFileContentsAsStringList("src/test/resources/4.txt");
+        String filePath = "src/test/resources/4.txt";
+        File f = new File(filePath);
+        List<String> contents = new ArrayList<>();
+        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+            String line;
+            while((line = r.readLine()) != null) {
+                contents.add(line);
+            }
+        }
+
         String value = Four.seekAndDestroy(contents);
         assertEquals("Now that the party is jumping", value);
     }
 
-    private List<String> getFileContentsAsStringList(String filePath) throws IOException {
-        List<String> retVal = new ArrayList<>();
-        File f = new File(filePath);
-
-        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
-            String line;
-            while((line = r.readLine()) != null) {
-                retVal.add(line.strip());
-            }
-        }
-        return retVal;
-    }
 }
