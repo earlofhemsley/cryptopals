@@ -13,7 +13,7 @@ public class Three {
         double lowScore = Double.MAX_VALUE;
 
         for(int key = 0; key < 256; key++ ) {
-            char[] decrypted = Utils.singleKeyXORDecrypt(decodedInput, key);
+            char[] decrypted = Utils.singleKeyXOR(decodedInput, key);
             double candidateScore = Utils.chiSquaredScore(decrypted);
             if (candidateScore < lowScore) {
                 reigningChampion = String.valueOf(decrypted);

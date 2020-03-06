@@ -16,7 +16,7 @@ public class Four {
         for (String candidate : candidates) {
             byte[] decodedCandidate = Hex.decodeHex(candidate);
             for (int key = 0; key <= 256; key++) {
-                char[] decrypted = Utils.singleKeyXORDecrypt(decodedCandidate, key);
+                char[] decrypted = Utils.singleKeyXOR(decodedCandidate, key);
                 double chiScore = Utils.chiSquaredScore(decrypted);
                 if (chiScore < lowestScore) {
                     reigningChampion = String.valueOf(decrypted);

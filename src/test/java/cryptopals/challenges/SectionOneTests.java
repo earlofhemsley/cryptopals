@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SectionOneTests {
 
@@ -40,6 +41,41 @@ public class SectionOneTests {
     @Test
     public void fourTest() throws DecoderException, IOException {
         String filePath = "src/test/resources/4.txt";
+        List<String> contents = readFileContents(filePath);
+        String value = Four.seekAndDestroy(contents);
+        assertEquals("Now that the party is jumping", value);
+    }
+
+    @Test
+    public void fiveTest() throws IOException, DecoderException {
+        String toEncrypt = "Burning 'em, if you ain't quick and nimble\n" +
+                "I go crazy when I hear a cymbal";
+        var result = Five.repeatingKeyEncrypt(toEncrypt);
+        var expected = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
+        assertEquals(expected, result);
+
+        var bloodContents = readFileContents("src/test/resources/blood");
+        var singleStringBloodContents = String.join("\n", bloodContents);
+
+        encryptAndOutputAndDecryptAndOutput(singleStringBloodContents, false);
+        encryptAndOutputAndDecryptAndOutput(String.join("\n", readFileContents("src/test/resources/enid.jok")), false);
+        encryptAndOutputAndDecryptAndOutput(String.join("\n", readFileContents("src/test/resources/einstein")), false);
+        encryptAndOutputAndDecryptAndOutput(String.join("\n", readFileContents("src/test/resources/spock.txt")), true);
+    }
+
+    private void encryptAndOutputAndDecryptAndOutput(String original, boolean print) throws DecoderException {
+        var encrypted = Five.repeatingKeyEncrypt(original);
+        var decrypted = Five.repeatingKeyDecrypt(encrypted);
+
+        assertEquals(original, decrypted);
+
+        if(print) {
+            System.out.println(decrypted);
+        }
+    }
+
+
+    private List<String> readFileContents(String filePath) throws IOException {
         File f = new File(filePath);
         List<String> contents = new ArrayList<>();
         try (BufferedReader r = new BufferedReader(new FileReader(f))) {
@@ -48,9 +84,7 @@ public class SectionOneTests {
                 contents.add(line);
             }
         }
-
-        String value = Four.seekAndDestroy(contents);
-        assertEquals("Now that the party is jumping", value);
+        return contents;
     }
 
 }

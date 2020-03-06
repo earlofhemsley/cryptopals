@@ -39,12 +39,20 @@ public class Utils {
         ENGLISH_HISTOGRAM.put('Z',0.07D);
     }
 
-    public static char[] singleKeyXORDecrypt(byte[] input, int key) {
+    public static char[] singleKeyXOR(byte[] input, int key) {
         char[] decrypted = new char[input.length];
         for(int i = 0; i < decrypted.length; i++) {
             decrypted[i] = (char) (Byte.toUnsignedInt(input[i]) ^ key);
         }
         return decrypted;
+    }
+
+    public static byte[] multiByteXOR(byte[] input, byte[] key) {
+        byte[] xord = new byte[input.length];
+        for(int i = 0; i < xord.length; i++) {
+            xord[i] = (byte) (input[i] ^ key[i % key.length]);
+        }
+        return xord;
     }
 
     public static double chiSquaredScore(char[] input) {
