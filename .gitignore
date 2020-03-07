@@ -6,3 +6,4 @@ build
 
 #Ignore idea folder
 .idea/
+.java-version
