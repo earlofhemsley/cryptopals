@@ -6,8 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 
 public class Three {
 
-    public static String decrypt(String hexEncodedInput) throws DecoderException {
-        byte[] decodedInput = Hex.decodeHex(hexEncodedInput);
+    public static String decrypt(byte[] decodedInput) throws DecoderException {
 
         String reigningChampion = null;
         double lowScore = Double.MAX_VALUE;

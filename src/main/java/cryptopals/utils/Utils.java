@@ -1,6 +1,14 @@
 package cryptopals.utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Utils {
@@ -37,7 +45,39 @@ public class Utils {
         ENGLISH_HISTOGRAM.put('Q',0.11D);
         ENGLISH_HISTOGRAM.put('J',0.10D);
         ENGLISH_HISTOGRAM.put('Z',0.07D);
+        ENGLISH_HISTOGRAM.put((char) 0, 0.0000001D);
     }
+
+    public static int calculateHammingDistance(byte[] bytes1, byte[] bytes2) {
+        if (bytes1.length != bytes2.length) {
+            throw new IllegalArgumentException("arguments must be same length");
+        }
+
+        int count = 0;
+        for (int i = 0; i < bytes1.length; i++) {
+            byte one = bytes1[i];
+            byte two = bytes2[i];
+            byte xor = (byte) (one ^ two);
+            for (int j = 0; j < 8; j++) {
+                if( ((xor >> j) & 1) == 1 ) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public static byte[] sliceByteArray(byte[] original, int start, int length) {
+        byte[] slice = new byte[length];
+        for (int i = 0; i < length; i++) {
+            if (start + i < original.length) {
+                slice[i] = original[start + i];
+            }
+        }
+
+        return slice;
+    }
+
 
     public static char[] singleKeyXOR(byte[] input, int key) {
         char[] decrypted = new char[input.length];
@@ -59,12 +99,13 @@ public class Utils {
         Map<Character, Integer> countMap = new HashMap<>();
         for (int cha = 'A'; cha <= 'Z'; cha++) { countMap.put((char) cha, 0); }
         countMap.put(' ', 0);
+        countMap.put((char) 0, 0);
 
         //group letters by bucket
         for (char c : input) {
             char cUp = Character.toUpperCase(c);
             if (cUp != ' ' && (cUp < 'A' || cUp > 'Z')) {
-                continue;
+                cUp = (char) 0;
             }
             countMap.put(cUp, countMap.get(cUp) + 1);
         }
@@ -85,4 +126,30 @@ public class Utils {
         }
         return totalScore;
     }
+
+
+    public static String readFileAsWhole(String filePath) throws IOException {
+        File f = new File(filePath);
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+            int theChar;
+            while((theChar = r.read()) != -1) {
+                sb.append((char)theChar);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static List<String> readFileAsListOfLines(String filePath) throws IOException {
+        File f = new File(filePath);
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+            String line;
+            while((line = r.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        return lines;
+    }
+
 }
