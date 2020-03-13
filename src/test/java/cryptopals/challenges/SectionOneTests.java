@@ -10,9 +10,15 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 public class SectionOneTests {
 
@@ -77,7 +83,6 @@ public class SectionOneTests {
         }
     }
 
-
     @Test
     public void sixTest() throws IOException {
         String first = "this is a test";
@@ -91,6 +96,16 @@ public class SectionOneTests {
 
         String decrypted = Six.breakTheCipher(joinedContents);
         System.out.println(decrypted);
+        assertTrue(decrypted.contains("I'm back and I'm ringin' the bell"));
+    }
+
+    @Test
+    public void sevenTest() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException {
+        String cipherKey = "YELLOW SUBMARINE";
+        assertEquals(16, cipherKey.length());
+
+        var fileContents = String.join("", Utils.readFileAsListOfLines("src/test/resources/7.txt"));
+        String decrypted = Seven.decryptAESInECBMode(fileContents, cipherKey);
         assertTrue(decrypted.contains("I'm back and I'm ringin' the bell"));
     }
 
