@@ -1,12 +1,14 @@
 package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -107,6 +109,13 @@ public class SectionOneTests {
         var fileContents = String.join("", Utils.readFileAsListOfLines("src/test/resources/7.txt"));
         String decrypted = Seven.decryptAESInECBMode(fileContents, cipherKey);
         assertTrue(decrypted.contains("I'm back and I'm ringin' the bell"));
+    }
+
+    @Test
+    public void eightTest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, DecoderException, BadPaddingException, IllegalBlockSizeException {
+        var fileContents = Utils.readFileAsListOfLines("src/test/resources/8.txt");
+        int row = Eight.detectECBInCipherText(fileContents);
+        assertNotEquals(-1, row);
     }
 
 }
