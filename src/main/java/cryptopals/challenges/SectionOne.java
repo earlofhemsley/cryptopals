@@ -1,0 +1,309 @@
+package cryptopals.challenges;
+
+import cryptopals.utils.Utils;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+
+public class SectionOne {
+    /**
+     * convert hex to base 64
+     *
+     * this is the solution for challenge 1
+     * @param hexInput
+     * @return
+     * @throws DecoderException
+     */
+    static String convertHexToBase64(String hexInput) throws DecoderException {
+        byte[] hextBytes = Hex.decodeHex(hexInput);
+        return Base64.getEncoder().encodeToString(hextBytes);
+    }
+
+
+    /**
+     * single-character encryption. this is the solution to challenge 2
+     * @param hexString1
+     * @param hexString2
+     * @return
+     * @throws DecoderException
+     */
+    public static String fixedXOR(String hexString1, String hexString2) throws DecoderException {
+        byte[] input1 = Hex.decodeHex(hexString1);
+        byte[] input2 = Hex.decodeHex(hexString2);
+
+        int looplimit = Math.min(input1.length, input2.length);
+
+        byte[] result = new byte[looplimit];
+
+        for (int i = 0; i < looplimit; i++) {
+            int left = Byte.toUnsignedInt(input1[i]);
+            int right = Byte.toUnsignedInt(input2[i]);
+            int xordResult = left ^ right;
+            result[i] = (byte) (xordResult & 0xFF);
+        }
+
+        return String.valueOf(Hex.encodeHex(result));
+    }
+
+    /**
+     * Decrypt a message encrypted with single key encryption, scoring the message using X^2 goodness of fit test
+     *
+     * this is the solution to challenge 3
+     * @param decodedInput
+     * @return
+     * @throws DecoderException
+     */
+    public static String decrypt(byte[] decodedInput) throws DecoderException {
+
+        String reigningChampion = null;
+        double lowScore = Double.MAX_VALUE;
+
+        for(int key = 0; key < 256; key++ ) {
+            char[] decrypted = Utils.singleKeyXOR(decodedInput, key);
+            double candidateScore = Utils.chiSquaredScore(decrypted);
+            if (candidateScore < lowScore) {
+                reigningChampion = String.valueOf(decrypted);
+                lowScore = candidateScore;
+            }
+        }
+        return reigningChampion;
+    }
+
+    /**
+     * consider a series of messages encrypted with single char encryption. find the message that actually decrypts
+     *
+     * this is the solution to challenge four
+     * @param candidates
+     * @return
+     * @throws DecoderException
+     */
+    public static String seekAndDestroy(List<String> candidates) throws DecoderException {
+
+        String reigningChampion = null;
+        double lowestScore = Double.MAX_VALUE;
+
+        //find the best possible decryption
+        for (String candidate : candidates) {
+            byte[] decodedCandidate = Hex.decodeHex(candidate);
+            for (int key = 0; key <= 256; key++) {
+                char[] decrypted = Utils.singleKeyXOR(decodedCandidate, key);
+                double chiScore = Utils.chiSquaredScore(decrypted);
+                if (chiScore < lowestScore) {
+                    reigningChampion = String.valueOf(decrypted);
+                    lowestScore = chiScore;
+                }
+            }
+        }
+
+        //return the string with the lowest score
+        return reigningChampion.trim();
+    }
+
+
+    private static byte[] key = "ICE".getBytes();
+
+    /**
+     * encrypt a message with a repeating key. this is part of the solution to challenge five
+     * @param toEncrypt
+     * @return
+     */
+    public static String repeatingKeyEncrypt(String toEncrypt) {
+        byte[] result = Utils.multiByteXOR(toEncrypt.getBytes(), key);
+        return String.valueOf(Hex.encodeHex(result));
+    }
+
+    /**
+     * decrypt a message with a repeating key. this is part of the solution to challenge five
+     * @param toDecrypt
+     * @return
+     * @throws DecoderException
+     */
+    public static String repeatingKeyDecrypt(String toDecrypt) throws DecoderException {
+        byte[] hexDecoded = Hex.decodeHex(toDecrypt);
+        byte[] decrypted = Utils.multiByteXOR(hexDecoded, key);
+        StringBuilder result = new StringBuilder();
+        for (byte b : decrypted) {
+            result.append((char)b);
+        }
+        return result.toString();
+    }
+
+
+    /**
+     * given a message and no key, figure out what the key is, and decrypt the message
+     *
+     * this is the solution to challenge six
+     * @param input
+     * @return
+     */
+    public static String breakTheCipher(String input) {
+        byte[] contentBytes = Base64.getDecoder().decode(input);
+
+        String debugString = Base64.getEncoder().encodeToString(contentBytes);
+        assert debugString.equals(input);
+
+        HashMap<Integer, Double> hammingPairs = new HashMap<>();
+
+        //find the hamming distance between blocks of the input
+        for (int candidateKeySize = 2; candidateKeySize <= 40; candidateKeySize++) {
+            byte[] firstNBytes = Utils.sliceByteArray(contentBytes, 0, candidateKeySize);
+            byte[] secondNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize, candidateKeySize);
+            byte[] thirdNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize * 2, candidateKeySize);
+            byte[] fourthNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize * 3, candidateKeySize);
+            double hammingDist1 = (double) Utils.calculateHammingDistance(firstNBytes, secondNBytes) / candidateKeySize;
+            double hammingDist2 = (double) Utils.calculateHammingDistance(secondNBytes, thirdNBytes) / candidateKeySize;
+            double hammingDist3 = (double) Utils.calculateHammingDistance(thirdNBytes, fourthNBytes) / candidateKeySize;
+            double averageHammingDistance = (hammingDist1 + hammingDist2 + hammingDist3) / 3;
+            hammingPairs.put(candidateKeySize, averageHammingDistance);
+        }
+
+        //get the best three hamming distances
+        Integer[] bestSizes = hammingPairs.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue())
+                .limit(3)
+                .map(Map.Entry::getKey)
+                .toArray(Integer[]::new);
+
+        String best = null;
+        double lowFullScore = Double.MAX_VALUE;
+        for (int keysize : bestSizes) {
+            //break the cipher text into blocks of length k
+            //matrix
+            int matrixHeight = (contentBytes.length % keysize == 0) ? contentBytes.length/keysize : contentBytes.length/keysize + 1;
+            byte[][] matrix = new byte[matrixHeight][keysize];
+            for (int i = 0; i<matrixHeight; i++){
+                matrix[i] = Utils.sliceByteArray(contentBytes,i*keysize, keysize);
+            }
+
+            //transpose the blocks. group 1 is the first byte of each block, group 2 is the second, etc
+            byte[][] transposed = new byte[keysize][matrixHeight];
+            for (int y = 0; y < matrixHeight; y++) {
+                for (int x = 0; x < keysize; x++) {
+                    transposed[x][y] = matrix[y][x];
+                }
+            }
+
+            //decrypt each block as if it was single char xor
+            byte[] keybytes = new byte[keysize];
+            for (int block = 0; block < keysize; block++) {
+                HashMap<Integer, Double> resultMap = new HashMap<>();
+                int bestKeyInt = -1;
+                double lowSingleScore = Double.MAX_VALUE;
+                for (int c = 0; c < 256; c++) {
+                    char[] decrypted = Utils.singleKeyXOR(transposed[block], c);
+                    double chiScore = Utils.chiSquaredScore(decrypted);
+                    if (chiScore < lowSingleScore) {
+                        lowSingleScore = chiScore;
+                        bestKeyInt = c;
+                    }
+                }
+                assert bestKeyInt != -1;
+                keybytes[block] = (byte) bestKeyInt;
+            }
+
+            //decrypt the body
+            String decryptedBody = new String(Utils.multiByteXOR(contentBytes, keybytes));
+
+            //chi square score the body
+            double fullChi = Utils.chiSquaredScore(decryptedBody.toCharArray());
+
+            //check if better
+            if(fullChi < lowFullScore) {
+                best = decryptedBody;
+            }
+        }
+
+        assert best != null;
+
+        //return it
+        return best;
+
+    }
+
+    /**
+     * Decrypt a message in AES-ECB mode
+     *
+     * this is the solution to challenge 7
+     * @param base64EncodedCipherText
+     * @param cipherKeyText
+     * @return
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
+    public static String decryptAESInECBMode(String base64EncodedCipherText, String cipherKeyText) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        byte[] cipherTextBytes = Base64.getDecoder().decode(base64EncodedCipherText);
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+        Key cipherKey = new SecretKeySpec(cipherKeyText.getBytes(), "AES");
+        cipher.init(Cipher.DECRYPT_MODE, cipherKey);
+        byte[] decryptedBytes = cipher.doFinal(cipherTextBytes);
+        return new String(decryptedBytes);
+    }
+
+
+
+    private static final byte[] cipherKeyBytes = "1234567890123456".getBytes();
+
+    /**
+     * given a series of messages, detect which of the messages was decrypted in ECB mode.
+     *
+     * this is the solution to challenge eight
+     * @param cipherTexts
+     * @return
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws DecoderException
+     * @throws BadPaddingException
+     * @throws IllegalBlockSizeException
+     */
+    public static int detectECBInCipherText(List<String> cipherTexts) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException, BadPaddingException, IllegalBlockSizeException {
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+        Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
+
+        var possibleRows = new HashSet<Integer>();
+        for (int row = 0; row < cipherTexts.size(); row++) {
+            //hex decode
+            byte[] decodedCipherText = Hex.decodeHex(cipherTexts.get(row));
+
+            //decrypt
+            cipher.init(Cipher.DECRYPT_MODE, cipherKey);
+            byte[] decryptedCipherBytes = cipher.doFinal(decodedCipherText);
+
+            int loopIterations = decryptedCipherBytes.length/16;
+
+            //break the decoded text into 16-byte blocks
+            byte[][] decryptedBlocks = new byte[loopIterations][16];
+            for (int i = 0; i < loopIterations; i++) {
+                decryptedBlocks[i] = Arrays.copyOfRange(decryptedCipherBytes, i*16, (i*16)+16);
+                //go back through what was already decrypted and check for equality
+                for(int j = 0; j < i; j++) {
+                    if (Arrays.equals(decryptedBlocks[j], decryptedBlocks[i])) {
+                        //if we found two bytes that decrypted out the same in this row,
+                        // then this is a row that was encrypted with ECB
+                        possibleRows.add(row);
+                    }
+                }
+            }
+        }
+        return possibleRows.size() > 0 ? possibleRows.iterator().next() : -1;
+    }
+}
