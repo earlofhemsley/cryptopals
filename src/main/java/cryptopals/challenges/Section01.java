@@ -20,7 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-public class SectionOne {
+public class Section01 {
     /**
      * convert hex to base 64
      *
