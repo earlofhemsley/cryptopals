@@ -240,22 +240,21 @@ public class Section01 {
      * Decrypt a message in AES-ECB mode
      *
      * this is the solution to challenge 7
-     * @param base64EncodedCipherText
-     * @param cipherKeyText
-     * @return
+     * @param cipherTextBytes bytes of the cipher text string
+     * @param cipherKeyBytes
+     * @param cipherMode one of the public static ints attached to {@link Cipher}
+     * @return a string of the decrypted bytes
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public static String decryptAESInECBMode(String base64EncodedCipherText, String cipherKeyText) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        byte[] cipherTextBytes = Base64.getDecoder().decode(base64EncodedCipherText);
+    public static byte[] AESInECBMode(byte[] cipherTextBytes, byte[] cipherKeyBytes, int cipherMode) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
-        Key cipherKey = new SecretKeySpec(cipherKeyText.getBytes(), "AES");
-        cipher.init(Cipher.DECRYPT_MODE, cipherKey);
-        byte[] decryptedBytes = cipher.doFinal(cipherTextBytes);
-        return new String(decryptedBytes);
+        Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
+        cipher.init(cipherMode, cipherKey);
+        return cipher.doFinal(cipherTextBytes);
     }
 
 

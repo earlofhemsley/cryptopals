@@ -17,6 +17,7 @@ import java.util.Base64;
 import java.util.List;
 
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
@@ -105,8 +106,9 @@ public class Section01Tests {
         assertEquals(16, cipherKey.length());
 
         var fileContents = String.join("", Utils.readFileAsListOfLines("src/test/resources/7.txt"));
-        String decrypted = Section01.decryptAESInECBMode(fileContents, cipherKey);
-        assertTrue(decrypted.contains("I'm back and I'm ringin' the bell"));
+        byte[] cipherTextBytes = Base64.getDecoder().decode(fileContents);
+        byte[] decrypted = Section01.AESInECBMode(cipherTextBytes, cipherKey.getBytes(), Cipher.DECRYPT_MODE);
+        assertTrue(new String(decrypted).contains("I'm back and I'm ringin' the bell"));
     }
 
     @Test
