@@ -120,7 +120,7 @@ public class Section01Tests {
             byte[] decodedRow = Hex.decodeHex(fileContents.get(i));
 
             //run detection
-            if(Section01.detectECBInCipherBytes(decodedRow)) {
+            if(Section01.detectECBInCipherBytes(decodedRow, "1234567890123456".getBytes())) {
                 rowNumber = i;
                 break;
             }

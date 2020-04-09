@@ -1,10 +1,14 @@
 package cryptopals.challenges;
 
 import cryptopals.utils.Utils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -97,5 +101,30 @@ public class Section02 {
         }
 
         return resultBytes;
+    }
+
+    public static Pair<Boolean, byte[]> encryptionOracle(byte[] myInput) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+        //prepend 5-10 bytes
+        Random r = new Random();
+        Iterator<Integer> interator = r.ints(5, 11).iterator();
+        byte[] withPrepended = ArrayUtils.addAll(Utils.randomBytes(interator.next()), myInput);
+
+        //append 5-10 bytes
+        byte[] toEncrypt = ArrayUtils.addAll(withPrepended, Utils.randomBytes(interator.next()));
+
+        //set block size
+        int blockSize = 16;
+
+        //get key
+        byte[] cipherKey = Utils.randomBytes(blockSize);
+
+        //choose ebc or cbc
+        if (r.nextInt(2) == 0) {
+            //pad manually here since the ECB function doesn't do it
+            toEncrypt = Section02.implementPKCS7Padding(toEncrypt, blockSize);
+            return Pair.of(true, Section01.AESInECBMode(toEncrypt, cipherKey, Cipher.ENCRYPT_MODE));
+        } else {
+            return Pair.of(false, Section02.AESinCBC(toEncrypt, cipherKey, Utils.randomBytes(blockSize), Cipher.ENCRYPT_MODE));
+        }
     }
 }

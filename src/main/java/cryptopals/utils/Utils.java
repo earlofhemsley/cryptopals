@@ -4,12 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 public class Utils {
     private Utils() {
@@ -150,6 +150,13 @@ public class Utils {
             }
         }
         return lines;
+    }
+
+    public static byte[] randomBytes(int length) {
+        byte[] retVal = new byte[length];
+        Random r = new Random();
+        r.nextBytes(retVal);
+        return retVal;
     }
 
 }

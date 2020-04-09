@@ -2,16 +2,15 @@ package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.utils.Utils;
+import org.apache.commons.codec.DecoderException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -55,6 +54,16 @@ public class Section02Tests {
         byte[] reEncryptedFileContents = Section02.AESinCBC(decryptedFileContents, key.getBytes(), iv, Cipher.ENCRYPT_MODE);
         assertArrayEquals(fileContents, reEncryptedFileContents);
 
-        System.out.println(new String(decryptedFileContents));
+        assertTrue(new String(decryptedFileContents).contains("You're weakenin' fast, YO! and I can tell it"));
+    }
+
+    @Test
+    public void testChallenge11() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, DecoderException {
+        String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+        for(int i = 0; i<1000; i++) {
+            var result = Section02.encryptionOracle(myHackerInput.getBytes());
+            boolean ecbDetected = Section01.detectECBInCipherBytes(result.getRight(), "1234567890123456".getBytes());
+            assertEquals(result.getLeft(), ecbDetected);
+        }
     }
 }

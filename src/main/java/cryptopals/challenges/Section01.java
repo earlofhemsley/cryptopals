@@ -236,6 +236,7 @@ public class Section01 {
 
     }
 
+    //TODO: Include PCKS7 padding (implemented in section 2) as a default and deal with the fallout from that
     /**
      * Decrypt a message in AES-ECB mode
      *
@@ -259,8 +260,6 @@ public class Section01 {
 
 
 
-    private static final byte[] cipherKeyBytes = "1234567890123456".getBytes();
-
     /**
      * given a series of messages, detect which of the messages was decrypted in ECB mode.
      *
@@ -274,7 +273,7 @@ public class Section01 {
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public static boolean detectECBInCipherBytes(byte[] cipherBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException, BadPaddingException, IllegalBlockSizeException {
+    public static boolean detectECBInCipherBytes(byte[] cipherBytes, byte[] cipherKeyBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
 
@@ -282,7 +281,11 @@ public class Section01 {
         cipher.init(Cipher.DECRYPT_MODE, cipherKey);
         byte[] decryptedCipherBytes = cipher.doFinal(cipherBytes);
 
-        int loopIterations = decryptedCipherBytes.length/16;
+        if (cipherBytes.length % cipherKeyBytes.length != 0) {
+            throw new IllegalBlockSizeException("message length must be a multiple of the cipher key length, which is " + cipherKeyBytes.length);
+        }
+
+        int loopIterations = decryptedCipherBytes.length/cipherKeyBytes.length;
 
         //break the decoded text into 16-byte blocks
         byte[][] decryptedBlocks = new byte[loopIterations][16];
