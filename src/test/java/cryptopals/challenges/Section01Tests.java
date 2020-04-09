@@ -114,9 +114,19 @@ public class Section01Tests {
     @Test
     public void eightTest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, DecoderException, BadPaddingException, IllegalBlockSizeException {
         var fileContents = Utils.readFileAsListOfLines("src/test/resources/8.txt");
-        int row = Section01.detectECBInCipherText(fileContents);
-        assertNotEquals(-1, row);
-        assertEquals(132, row);
+        Integer rowNumber = null;
+        for (int i = 0; i < fileContents.size(); i++) {
+            //hex decode
+            byte[] decodedRow = Hex.decodeHex(fileContents.get(i));
+
+            //run detection
+            if(Section01.detectECBInCipherBytes(decodedRow)) {
+                rowNumber = i;
+                break;
+            }
+        }
+        assertNotNull(rowNumber);
+        assertEquals(132, rowNumber);
     }
 
 }
