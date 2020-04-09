@@ -116,6 +116,7 @@ public class Section01Tests {
         var fileContents = Utils.readFileAsListOfLines("src/test/resources/8.txt");
         int row = Section01.detectECBInCipherText(fileContents);
         assertNotEquals(-1, row);
+        assertEquals(132, row);
     }
 
 }
