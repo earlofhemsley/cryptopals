@@ -42,16 +42,16 @@ public class Section02Tests {
         String key = "YELLOW SUBMARINE";
         byte[] iv = new byte[key.length()];
 
-        byte[] enc = Section02.AESinCBC(lorem.getBytes(), key.getBytes(), iv, Cipher.ENCRYPT_MODE);
-        String loremPost = new String(Section02.AESinCBC(enc, key.getBytes(), iv, Cipher.DECRYPT_MODE));
+        byte[] enc = Section02.AESinCBCMode(lorem.getBytes(), key.getBytes(), iv, Cipher.ENCRYPT_MODE);
+        String loremPost = new String(Section02.AESinCBCMode(enc, key.getBytes(), iv, Cipher.DECRYPT_MODE));
         assertEquals(lorem, loremPost);
 
         String base64Contents = String.join("", Utils.readFileAsListOfLines("src/test/resources/10.txt"));
         byte[] fileContents = Base64.getDecoder().decode(base64Contents);
-        byte[] decryptedFileContents = Section02.AESinCBC(fileContents, key.getBytes(), iv, Cipher.DECRYPT_MODE);
+        byte[] decryptedFileContents = Section02.AESinCBCMode(fileContents, key.getBytes(), iv, Cipher.DECRYPT_MODE);
 
         //sanity check
-        byte[] reEncryptedFileContents = Section02.AESinCBC(decryptedFileContents, key.getBytes(), iv, Cipher.ENCRYPT_MODE);
+        byte[] reEncryptedFileContents = Section02.AESinCBCMode(decryptedFileContents, key.getBytes(), iv, Cipher.ENCRYPT_MODE);
         assertArrayEquals(fileContents, reEncryptedFileContents);
 
         assertTrue(new String(decryptedFileContents).contains("You're weakenin' fast, YO! and I can tell it"));

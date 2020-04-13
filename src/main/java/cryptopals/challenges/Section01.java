@@ -258,6 +258,22 @@ public class Section01 {
         return cipher.doFinal(cipherTextBytes);
     }
 
+    public static byte[] AESinECBModeWPadding(byte[] cipherTextBytes, byte[] cipherKeyBytes, int cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+        //implement padding
+        if (cipherMode == Cipher.ENCRYPT_MODE) {
+            cipherTextBytes = Section02.implementPKCS7Padding(cipherTextBytes, cipherKeyBytes.length);
+        }
+
+        var theFinal = Section01.AESInECBMode(cipherTextBytes, cipherKeyBytes, cipherMode);
+
+        if (cipherMode == Cipher.DECRYPT_MODE) {
+            int numToDrop = theFinal[theFinal.length - 1];
+            int numToKeep = theFinal.length - numToDrop;
+            theFinal = Utils.sliceByteArray(theFinal, 0, numToKeep);
+        }
+
+        return theFinal;
+    }
 
 
     /**

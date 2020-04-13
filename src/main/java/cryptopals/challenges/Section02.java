@@ -45,7 +45,7 @@ public class Section02 {
         return paddedMessage;
     }
 
-    public static byte[] AESinCBC(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, int cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+    public static byte[] AESinCBCMode(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, int cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
         if (cipherMode != Cipher.ENCRYPT_MODE && cipherMode != Cipher.DECRYPT_MODE) {
             throw new IllegalArgumentException("cipherMode must be Cipher.ENCRYPT_MODE or Cipher.DECRYPT_MODE");
         }
@@ -121,10 +121,9 @@ public class Section02 {
         //choose ebc or cbc
         if (r.nextInt(2) == 0) {
             //pad manually here since the ECB function doesn't do it
-            toEncrypt = Section02.implementPKCS7Padding(toEncrypt, blockSize);
-            return Pair.of(true, Section01.AESInECBMode(toEncrypt, cipherKey, Cipher.ENCRYPT_MODE));
+            return Pair.of(true, Section01.AESinECBModeWPadding(toEncrypt, cipherKey, Cipher.ENCRYPT_MODE));
         } else {
-            return Pair.of(false, Section02.AESinCBC(toEncrypt, cipherKey, Utils.randomBytes(blockSize), Cipher.ENCRYPT_MODE));
+            return Pair.of(false, Section02.AESinCBCMode(toEncrypt, cipherKey, Utils.randomBytes(blockSize), Cipher.ENCRYPT_MODE));
         }
     }
 }
