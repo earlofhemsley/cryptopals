@@ -151,9 +151,6 @@ public class Section02 {
         //get a key
         final byte[] cipherKey = Utils.randomBytes(16);
 
-        //to make it interesting, let's encrypt this message straight away and then break it
-//        final byte[] encryptedInput = Section01.AESinECBModeWPadding(unknownInput, cipherKey, Cipher.ENCRYPT_MODE);
-
         //discover the block size of the cipher
         Integer blockSize = null;
         byte[] oracleResult = new byte[1];
