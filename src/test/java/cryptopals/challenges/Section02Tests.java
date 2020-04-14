@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -61,9 +62,21 @@ public class Section02Tests {
     public void testChallenge11() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, DecoderException {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
-            var result = Section02.encryptionOracle(myHackerInput.getBytes());
+            var result = Section02.encryptionOracleUnknownMode(myHackerInput.getBytes());
             boolean ecbDetected = Section01.detectECBInCipherBytes(result.getRight(), "1234567890123456".getBytes());
             assertEquals(result.getLeft(), ecbDetected);
         }
+    }
+
+    @Test
+    public void testChallenge12() throws DecoderException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
+        String unknownInput = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg" +
+        "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq" +
+        "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg" +
+        "YnkK";
+
+        byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
+        byte[] decrypted = Section02.breakECBEncryptionUsingOracle(unknownInputDecoded);
+        assertArrayEquals(unknownInputDecoded, decrypted);
     }
 }
