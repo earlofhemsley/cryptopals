@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -218,22 +219,36 @@ public class Section02 {
 
     public static String userProfileEncoding(String userEmail) {
         //encode metachars
-        Map<String, Object> upMap = new HashMap<>();
-        upMap.put("email", URLEncoder.encode(userEmail, Charset.defaultCharset()));
+        Map<String, Object> upMap = new LinkedHashMap<>();
+        userEmail = userEmail.replace("=","");
+        userEmail = userEmail.replace("&","");
+        upMap.put("email", userEmail);
+        upMap.put("uid", 10);
         upMap.put("role", "user");
-
-        Random r = new Random();
-        var stream = r.ints(1, 100);
-        upMap.put("uid", stream.iterator().next());
 
         return upMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
     }
 
-    public static Map<String, Object> convertUserToAdmin(byte[] encryptedProfile, byte[] cipherKey) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        byte[] decryptedProfile = Section01.AESinECBModeWPadding(encryptedProfile, cipherKey, Cipher.DECRYPT_MODE);
-        Map<String, Object> profile = Section02.keyValueParsing(new String(decryptedProfile));
-        assert profile.containsKey("role");
-        profile.put("role", "admin");
-        return profile;
+    //TODO: Take an already created profile and hack the already created profile, turning it into an admin
+    public static String hackAUserProfile(byte[] cipherKey) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+        // |email=AAAAAAAAAA|admin\b\b\b\b\b\b\b\b\b\b\b|AAA&uid=10&role=|user\c\c\c\c\c\c\c\c\c\c\c\c|
+        // |email=AAAAAAAAAA|AAA&uid=10&role=|admin\b\b\b\b\b\b\b\b\b\b\b
+        StringBuilder string = new StringBuilder("AAAAAAAAAAadmin");
+        string.append(String.valueOf((char) 11).repeat(11));
+        string.append("AAA");
+        var profile = Section02.userProfileEncoding(string.toString());
+        var ecrypted = Section01.AESinECBModeWPadding(profile.getBytes(), cipherKey, Cipher.ENCRYPT_MODE);
+        assert ecrypted.length == 16*4;
+
+        var block1 = ArrayUtils.subarray(ecrypted, 0, 16);
+        var block2 = ArrayUtils.subarray(ecrypted, 16, 32);
+        var block3 = ArrayUtils.subarray(ecrypted, 32, 48);
+
+        var hackedInput = ArrayUtils.addAll(block1, ArrayUtils.addAll(block3, block2));
+
+        var decrypted = Section01.AESinECBModeWPadding(hackedInput, cipherKey, Cipher.DECRYPT_MODE);
+
+        return new String(decrypted);
     }
+
 }
