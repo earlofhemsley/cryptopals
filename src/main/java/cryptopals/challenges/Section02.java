@@ -1,6 +1,7 @@
 package cryptopals.challenges;
 
 import cryptopals.utils.Utils;
+import jdk.jshell.execution.Util;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -217,7 +218,7 @@ public class Section02 {
         return retval;
     }
 
-    public static String userProfileEncoding(String userEmail) {
+    public static String profileFor(String userEmail) {
         //encode metachars
         Map<String, Object> upMap = new LinkedHashMap<>();
         userEmail = userEmail.replace("=","");
@@ -229,26 +230,14 @@ public class Section02 {
         return upMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
     }
 
-    //TODO: Take an already created profile and hack the already created profile, turning it into an admin
-    public static String hackAUserProfile(byte[] cipherKey) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        // |email=AAAAAAAAAA|admin\b\b\b\b\b\b\b\b\b\b\b|AAA&uid=10&role=|user\c\c\c\c\c\c\c\c\c\c\c\c|
-        // |email=AAAAAAAAAA|AAA&uid=10&role=|admin\b\b\b\b\b\b\b\b\b\b\b
-        StringBuilder string = new StringBuilder("AAAAAAAAAAadmin");
-        string.append(String.valueOf((char) 11).repeat(11));
-        string.append("AAA");
-        var profile = Section02.userProfileEncoding(string.toString());
-        var ecrypted = Section01.AESinECBModeWPadding(profile.getBytes(), cipherKey, Cipher.ENCRYPT_MODE);
-        assert ecrypted.length == 16*4;
+    private static byte[] challenge13key = Utils.randomBytes(16);
 
-        var block1 = ArrayUtils.subarray(ecrypted, 0, 16);
-        var block2 = ArrayUtils.subarray(ecrypted, 16, 32);
-        var block3 = ArrayUtils.subarray(ecrypted, 32, 48);
-
-        var hackedInput = ArrayUtils.addAll(block1, ArrayUtils.addAll(block3, block2));
-
-        var decrypted = Section01.AESinECBModeWPadding(hackedInput, cipherKey, Cipher.DECRYPT_MODE);
-
-        return new String(decrypted);
+    public static byte[] encryptProfile(String profile) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+        return Section01.AESinECBModeWPadding(profile.getBytes(), challenge13key, Cipher.ENCRYPT_MODE);
     }
 
+    public static Map<String, Object> decryptAndParse(byte[] encryptedProfile) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+        return keyValueParsing(new String(Section01.AESinECBModeWPadding(encryptedProfile, challenge13key, Cipher.DECRYPT_MODE)));
+
+    }
 }

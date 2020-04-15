@@ -6,14 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -91,20 +90,19 @@ public class Section02Tests {
         assertEquals("zazzle", objectMap.get("zap"));
 
         //test user profile encoding method
-        var naughtyProfile = Section02.userProfileEncoding("foo@bar.com&role=admin");
+        var naughtyProfile = Section02.profileFor("foo@bar.com&role=admin");
         assertEquals("email=foo@bar.comroleadmin&uid=10&role=user", naughtyProfile);
 
-        //generate random key
-        var key = Utils.randomBytes(16);
-
-        //give the key to the hacker ... that's me! yay!
-        //encrypt the profile with the key
-        //generate a profile
-
-        //send the encrypted profile off to be hacked into an admin profile
-        String hacked = Section02.hackAUserProfile(key);
-
-        var hackedMap = Section02.keyValueParsing(hacked);
-        assertEquals("admin", hackedMap.get("role"));
+        //send a profile off to be hacked into an admin profile
+        String string = "AAAAAAAAAAadmin" + String.valueOf((char) 11).repeat(11) + "AAA";
+        var profile = Section02.profileFor(string);
+        var encryptedProfile = Section02.encryptProfile(profile);
+        assert encryptedProfile.length == 16*4;
+        var block1 = ArrayUtils.subarray(encryptedProfile, 0, 16);
+        var block2 = ArrayUtils.subarray(encryptedProfile, 16, 32);
+        var block3 = ArrayUtils.subarray(encryptedProfile, 32, 48);
+        var hackedInput = ArrayUtils.addAll(block1, ArrayUtils.addAll(block3, block2));
+        var decryptedAndParsed = Section02.decryptAndParse(hackedInput);
+        assertEquals("admin", decryptedAndParsed.get("role"));
     }
 }
