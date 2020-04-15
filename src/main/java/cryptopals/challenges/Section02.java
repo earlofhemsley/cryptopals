@@ -5,6 +5,8 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -12,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -200,5 +203,37 @@ public class Section02 {
         }
 
         return decrypted;
+    }
+
+    public static Map<String, Object> keyValueParsing(String theString) {
+        String[] pairs = theString.split("&");
+        Map<String, Object> retval = new HashMap<>();
+        for (String pair : pairs) {
+            String[] kv = pair.split("=");
+            retval.put(kv[0], kv[1]);
+        }
+
+        return retval;
+    }
+
+    public static String userProfileEncoding(String userEmail) {
+        //encode metachars
+        Map<String, Object> upMap = new HashMap<>();
+        upMap.put("email", URLEncoder.encode(userEmail, Charset.defaultCharset()));
+        upMap.put("role", "user");
+
+        Random r = new Random();
+        var stream = r.ints(1, 100);
+        upMap.put("uid", stream.iterator().next());
+
+        return upMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
+    }
+
+    public static Map<String, Object> convertUserToAdmin(byte[] encryptedProfile, byte[] cipherKey) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+        byte[] decryptedProfile = Section01.AESinECBModeWPadding(encryptedProfile, cipherKey, Cipher.DECRYPT_MODE);
+        Map<String, Object> profile = Section02.keyValueParsing(new String(decryptedProfile));
+        assert profile.containsKey("role");
+        profile.put("role", "admin");
+        return profile;
     }
 }

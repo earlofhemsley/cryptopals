@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -78,5 +79,38 @@ public class Section02Tests {
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
         byte[] decrypted = Section02.breakECBEncryptionUsingOracle(unknownInputDecoded);
         assertArrayEquals(unknownInputDecoded, decrypted);
+    }
+
+    @Test
+    public void testChallenge13() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+        //test kv parsing method
+        var kvString = "foo=bar&baz=qux&zap=zazzle";
+        var objectMap = Section02.keyValueParsing(kvString);
+        assertEquals("bar", objectMap.get("foo"));
+        assertEquals("qux", objectMap.get("baz"));
+        assertEquals("zazzle", objectMap.get("zap"));
+
+        Pattern p = Pattern.compile("uid=1?[1-9]{1,2}");
+
+        //test user profile encoding method
+        var naughtyProfile = Section02.userProfileEncoding("foo@bar.com&role=admin");
+        assertTrue(naughtyProfile.contains("email=foo%40bar.com%26role%3Dadmin"));
+        assertTrue(naughtyProfile.contains("role=user"));
+        Matcher m = p.matcher(naughtyProfile);
+        assertTrue(m.find());
+
+        //generate a profile
+        String profile = Section02.userProfileEncoding("foo@bar.com");
+
+        //generate random key
+        var key = Utils.randomBytes(16);
+
+        //give the key to the hacker ... that's me! yay!
+        //encrypt the profile with the key
+        var encryptedProfile = Section01.AESinECBModeWPadding(profile.getBytes(), key, Cipher.ENCRYPT_MODE);
+
+        //send the encrypted profile off to be hacked into an admin profile
+        var hackedProfile = Section02.convertUserToAdmin(encryptedProfile, key);
+        assertEquals("admin", hackedProfile.get("role"));
     }
 }
