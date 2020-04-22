@@ -105,4 +105,16 @@ public class Section02Tests {
         var decryptedAndParsed = Section02.decryptAndParse(hackedInput);
         assertEquals("admin", decryptedAndParsed.get("role"));
     }
+
+    @Test
+    public void testChallenge14() throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+        String unknownInput = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg" +
+                "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq" +
+                "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg" +
+                "YnkK";
+
+        byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
+        byte[] decrypted = Section02.breakECBEncryptionWithPrefixUsingOracle(unknownInputDecoded);
+        assertArrayEquals(unknownInputDecoded, decrypted);
+    }
 }
