@@ -1,7 +1,9 @@
 package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.utils.Utils;
@@ -116,5 +118,18 @@ public class Section02Tests {
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
         byte[] decrypted = Section02.breakECBEncryptionWithPrefixUsingOracle(unknownInputDecoded);
         assertArrayEquals(unknownInputDecoded, decrypted);
+    }
+
+    @Test
+    public void testChallenge15() throws BadPaddingException {
+        assertArrayEquals("ICE ICE BABY".getBytes(), Section02.stripPCKS7Padding(generatePaddingSample(new byte[] {4,4,4,4})));
+        assertThrows(BadPaddingException.class, () -> Section02.stripPCKS7Padding(generatePaddingSample(new byte[] {5,5,5,5})));
+        assertThrows(BadPaddingException.class, () -> Section02.stripPCKS7Padding(generatePaddingSample(new byte[] {1,2,3,4})));
+    }
+
+    private static byte[] generatePaddingSample(byte[] paddingBytes) {
+        String sb = "ICE ICE BABY" +
+                new String(paddingBytes);
+        return sb.getBytes();
     }
 }

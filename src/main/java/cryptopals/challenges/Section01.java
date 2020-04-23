@@ -267,9 +267,7 @@ public class Section01 {
         var theFinal = Section01.AESInECBMode(cipherTextBytes, cipherKeyBytes, cipherMode);
 
         if (cipherMode == Cipher.DECRYPT_MODE) {
-            int numToDrop = theFinal[theFinal.length - 1];
-            int numToKeep = theFinal.length - numToDrop;
-            theFinal = Utils.sliceByteArray(theFinal, 0, numToKeep);
+            theFinal = Section02.stripPCKS7Padding(theFinal);
         }
 
         return theFinal;

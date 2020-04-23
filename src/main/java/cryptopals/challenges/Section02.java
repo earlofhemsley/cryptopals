@@ -321,4 +321,15 @@ public class Section02 {
         return decryptedMessage;
     }
 
+    public static byte[] stripPCKS7Padding(byte[] plainText) throws BadPaddingException {
+        int last = plainText[plainText.length - 1];
+        for (int i = last; i > 0; i--) {
+            if (plainText[plainText.length - last] != last) {
+                throw new BadPaddingException("This is bad padding");
+            }
+        }
+        int toKeep = plainText.length - last;
+        return Utils.sliceByteArray(plainText, 0, toKeep);
+    }
+
 }
