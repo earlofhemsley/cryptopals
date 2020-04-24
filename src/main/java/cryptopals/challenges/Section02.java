@@ -66,7 +66,7 @@ public class Section02 {
 
         if (cipherMode == Cipher.ENCRYPT_MODE) {
             //pad the message only if encrypting
-            textBytes = Section02.implementPKCS7Padding(textBytes, cipherKeyBytes.length);
+            textBytes = implementPKCS7Padding(textBytes, cipherKeyBytes.length);
         } else if (textBytes.length % cipherKeyBytes.length != 0) {
             //make sure the message length is a multiple of the iv
             throw new IllegalArgumentException("When decrypting, the message's length must be a multiple of the key's length");
@@ -102,10 +102,7 @@ public class Section02 {
 
         //strip padding if decrypting
         if (cipherMode == Cipher.DECRYPT_MODE) {
-            //get last byte
-            int numToStrip = resultBytes[resultBytes.length - 1];
-            int numToKeep = resultBytes.length - numToStrip;
-            resultBytes = Utils.sliceByteArray(resultBytes, 0, numToKeep);
+            resultBytes = stripPCKS7Padding(resultBytes);
         }
 
         return resultBytes;
@@ -131,7 +128,7 @@ public class Section02 {
             //pad manually here since the ECB function doesn't do it
             return Pair.of(true, Section01.AESinECBModeWPadding(toEncrypt, cipherKey, Cipher.ENCRYPT_MODE));
         } else {
-            return Pair.of(false, Section02.AESinCBCMode(toEncrypt, cipherKey, Utils.randomBytes(blockSize), Cipher.ENCRYPT_MODE));
+            return Pair.of(false, AESinCBCMode(toEncrypt, cipherKey, Utils.randomBytes(blockSize), Cipher.ENCRYPT_MODE));
         }
     }
 
@@ -164,7 +161,7 @@ public class Section02 {
             //watch for repetition
             byte[] hackerInput = new byte[i];
             Arrays.fill(hackerInput, (byte) 'A');
-            oracleResult = Section02.encryptionOracleECBOnlyWithConcatenation(hackerInput, unknownInput, cipherKey);
+            oracleResult = encryptionOracleECBOnlyWithConcatenation(hackerInput, unknownInput, cipherKey);
 
             //see if the first i/2 bytes equals the second i/2 bytes
             if (Arrays.equals(Utils.sliceByteArray(oracleResult, 0, i/2), Utils.sliceByteArray(oracleResult, i/2, i/2))) {
@@ -186,7 +183,7 @@ public class Section02 {
         Map<Integer, byte[]> dictionary = new HashMap<>();
         for (int i = 0; i < 256; i++) {
             hackerInput[blockSize-1] = (byte) i;
-            var result = Section02.encryptionOracleECBOnlyWithConcatenation(hackerInput, new byte[0], cipherKey);
+            var result = encryptionOracleECBOnlyWithConcatenation(hackerInput, new byte[0], cipherKey);
             dictionary.put(i, result);
         }
 
@@ -197,7 +194,7 @@ public class Section02 {
             //slice off a byte of the unknown input
             hackerInput[blockSize-1] = unknownInput[i];
             //encrypt
-            var encrypted = Section02.encryptionOracleECBOnlyWithConcatenation(hackerInput, new byte[0], cipherKey);
+            var encrypted = encryptionOracleECBOnlyWithConcatenation(hackerInput, new byte[0], cipherKey);
             //look up the result in the dictionary
             var dictionaryResult = dictionary.entrySet().stream().filter(e -> Arrays.equals(encrypted, e.getValue())).findAny()
                     .orElseThrow(() -> new IllegalStateException("Could not find encrypted result in dictionary"));
@@ -208,7 +205,11 @@ public class Section02 {
     }
 
     public static Map<String, Object> keyValueParsing(String theString) {
-        String[] pairs = theString.split("&");
+        return keyValueParsing(theString, '&');
+    }
+
+    public static Map<String, Object> keyValueParsing(String theString, char delimiter) {
+        String[] pairs = theString.split(String.valueOf(delimiter));
         Map<String, Object> retval = new HashMap<>();
         for (String pair : pairs) {
             String[] kv = pair.split("=");
@@ -330,6 +331,11 @@ public class Section02 {
         }
         int toKeep = plainText.length - last;
         return Utils.sliceByteArray(plainText, 0, toKeep);
+    }
+
+    private static final byte[] challenge16Key = Utils.randomBytes(16);
+    public static byte[] CBCbitFlip() {
+        return new byte[0];
     }
 
 }

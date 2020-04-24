@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cryptopals.utils.Challenge16Oracle;
 import cryptopals.utils.Utils;
+import jdk.jshell.execution.Util;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -131,5 +134,25 @@ public class Section02Tests {
         String sb = "ICE ICE BABY" +
                 new String(paddingBytes);
         return sb.getBytes();
+    }
+
+    @Test
+    public void testChallenge16() throws Exception {
+        var key = Utils.randomBytes(16);
+        var iv = Utils.randomBytes(16);
+        var oracle = new Challenge16Oracle(key, iv);
+        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAA;comm|...
+        String knownInput = "AAAAAAAAAAA";
+        byte[] desired = ";admin=true".getBytes();
+        byte[] bitFlipper = Utils.multiByteXOR(knownInput.getBytes(), desired);
+
+        var cipherText = oracle.padAndEncrypt(knownInput);
+        var textToAlter = Utils.sliceByteArray(cipherText, 16, bitFlipper.length);
+        var alteredText = Utils.multiByteXOR(textToAlter, bitFlipper);
+        for (int i = 0; i < alteredText.length; i++) {
+            cipherText[i + 16] = alteredText[i];
+        }
+
+        assertTrue(oracle.findAdminInCipherText(cipherText));
     }
 }
