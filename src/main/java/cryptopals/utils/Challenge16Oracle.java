@@ -18,9 +18,13 @@ public class Challenge16Oracle {
     }
 
     public byte[] padAndEncrypt(String inputString) throws Exception {
+        //strip out any semicolons and equal signs to protect against hacks and encode
+        var sanitizedInput = inputString.replace(";", "");
+        sanitizedInput  = inputString.replace("=", "");
+        sanitizedInput = URLEncoder.encode(sanitizedInput, Charset.defaultCharset());
         var sb = new StringBuilder();
         sb.append("comment1=cooking%20MCs;userdata=");
-        sb.append(URLEncoder.encode(inputString, Charset.defaultCharset()));
+        sb.append(sanitizedInput);
         sb.append(";comment2=%20like%20a%20pound%20of%20bacon");
         try {
             return Section02.AESinCBCMode(sb.toString().getBytes(), key, iv, Cipher.ENCRYPT_MODE);
@@ -33,6 +37,7 @@ public class Challenge16Oracle {
         byte[] decrypted;
         try {
             decrypted = Section02.AESinCBCMode(cipherText, key, iv, Cipher.DECRYPT_MODE);
+            System.out.println(new String(decrypted));
         } catch (Exception e) {
             throw new Exception("could not decrypt", e);
         }

@@ -3,9 +3,11 @@ package cryptopals.challenges;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.common.collect.Lists;
 import cryptopals.utils.Challenge16Oracle;
 import cryptopals.utils.Utils;
 import jdk.jshell.execution.Util;
@@ -18,6 +20,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -141,17 +144,41 @@ public class Section02Tests {
         var key = Utils.randomBytes(16);
         var iv = Utils.randomBytes(16);
         var oracle = new Challenge16Oracle(key, iv);
-        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAA;comm|...
-        String knownInput = "AAAAAAAAAAA";
-        byte[] desired = ";admin=true".getBytes();
-        byte[] bitFlipper = Utils.multiByteXOR(knownInput.getBytes(), desired);
+        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|:admin<true:A<AA|;comment2=...
+        String knownInput = "7admin9true7A9AA";
+        String desired = ";admin=true;A=AA";
+        assertEquals(16, knownInput.length());
+        assertEquals(16, desired.length());
+
+        byte[] xord = Utils.multiByteXOR(knownInput.getBytes(), desired.getBytes());
+        assertArrayEquals(desired.getBytes(), Utils.multiByteXOR(knownInput.getBytes(), xord));
+        assertArrayEquals(knownInput.getBytes(), Utils.multiByteXOR(desired.getBytes(), xord));
+
+        List<Integer> positionsOf12 = Lists.newArrayList(0, 11);
+        List<Integer> positionsOf4 = Lists.newArrayList(6, 13);
+        for (int i =0; i<xord.length; i++) {
+            if (positionsOf4.contains(i)) {
+                assertEquals(4, xord[i]);
+            } else if (positionsOf12.contains(i)) {
+                assertEquals(12, xord[i]);
+            } else {
+                assertEquals(0, xord[i]);
+            }
+        }
+
+        //prepend with a block that we don't care if it gets scrambled
+        knownInput = "AAAAAAAAAAAAAAAA" + knownInput;
 
         var cipherText = oracle.padAndEncrypt(knownInput);
-        var textToAlter = Utils.sliceByteArray(cipherText, 16, bitFlipper.length);
-        var alteredText = Utils.multiByteXOR(textToAlter, bitFlipper);
-        for (int i = 0; i < alteredText.length; i++) {
-            cipherText[i + 16] = alteredText[i];
-        }
+
+        assertFalse(oracle.findAdminInCipherText(cipherText));
+
+        var textToAlter = Utils.sliceByteArray(cipherText, 32, xord.length);
+        var alteredText = Utils.multiByteXOR(textToAlter, xord);
+
+        assertArrayEquals(textToAlter, Utils.multiByteXOR(alteredText, xord));
+        assertArrayEquals(xord, Utils.multiByteXOR(textToAlter, alteredText));
+        System.arraycopy(alteredText, 0, cipherText, 32, alteredText.length);
 
         assertTrue(oracle.findAdminInCipherText(cipherText));
     }

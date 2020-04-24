@@ -1,13 +1,10 @@
 package cryptopals.challenges;
 
 import cryptopals.utils.Utils;
-import jdk.jshell.execution.Util;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -95,9 +92,7 @@ public class Section02 {
                     throw new IllegalArgumentException("illegal cipher mode");
             }
 
-            for (int i = 0; i < iv.length; i++ ) {
-                resultBytes[n+i] = currentBlock[i];
-            }
+            System.arraycopy(currentBlock, 0, resultBytes, n, iv.length);
         }
 
         //strip padding if decrypting
@@ -212,6 +207,9 @@ public class Section02 {
         String[] pairs = theString.split(String.valueOf(delimiter));
         Map<String, Object> retval = new HashMap<>();
         for (String pair : pairs) {
+            if(!pair.contains("=")) {
+                continue;
+            }
             String[] kv = pair.split("=");
             retval.put(kv[0], kv[1]);
         }
@@ -332,10 +330,4 @@ public class Section02 {
         int toKeep = plainText.length - last;
         return Utils.sliceByteArray(plainText, 0, toKeep);
     }
-
-    private static final byte[] challenge16Key = Utils.randomBytes(16);
-    public static byte[] CBCbitFlip() {
-        return new byte[0];
-    }
-
 }
