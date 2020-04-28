@@ -1,6 +1,11 @@
 package cryptopals.utils;
 
+import static cryptopals.challenges.Section02.AESinCBCMode;
+import static cryptopals.challenges.Section02.implementPKCS7Padding;
+import static cryptopals.challenges.Section02.stripPCKS7Padding;
+
 import cryptopals.challenges.Section02;
+import cryptopals.enums.CipherMode;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -27,7 +32,7 @@ public class Challenge16Oracle {
         sb.append(sanitizedInput);
         sb.append(";comment2=%20like%20a%20pound%20of%20bacon");
         try {
-            return Section02.AESinCBCMode(sb.toString().getBytes(), key, iv, Cipher.ENCRYPT_MODE);
+            return AESinCBCMode(implementPKCS7Padding(sb.toString().getBytes(), key.length), key, iv, CipherMode.ENCRYPT);
         } catch (Exception e) {
             throw new Exception("could not encrypt", e);
         }
@@ -36,7 +41,7 @@ public class Challenge16Oracle {
     public boolean findAdminInCipherText(byte[] cipherText) throws Exception {
         byte[] decrypted;
         try {
-            decrypted = Section02.AESinCBCMode(cipherText, key, iv, Cipher.DECRYPT_MODE);
+            decrypted = stripPCKS7Padding(AESinCBCMode(cipherText, key, iv, CipherMode.DECRYPT));
             System.out.println(new String(decrypted));
         } catch (Exception e) {
             throw new Exception("could not decrypt", e);

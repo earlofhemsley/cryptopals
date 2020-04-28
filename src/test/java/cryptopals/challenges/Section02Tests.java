@@ -1,16 +1,19 @@
 package cryptopals.challenges;
 
+import static cryptopals.challenges.Section02.AESinCBCMode;
+import static cryptopals.challenges.Section02.implementPKCS7Padding;
+import static cryptopals.challenges.Section02.stripPCKS7Padding;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Lists;
+import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Challenge16Oracle;
 import cryptopals.utils.Utils;
-import jdk.jshell.execution.Util;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -18,12 +21,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
@@ -46,21 +47,21 @@ public class Section02Tests {
 
 
     @Test
-    public void testChallenge10() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, IOException {
+    public void testChallenge10() throws IOException {
         String lorem = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s";
         String key = "YELLOW SUBMARINE";
         byte[] iv = new byte[key.length()];
 
-        byte[] enc = Section02.AESinCBCMode(lorem.getBytes(), key.getBytes(), iv, Cipher.ENCRYPT_MODE);
-        String loremPost = new String(Section02.AESinCBCMode(enc, key.getBytes(), iv, Cipher.DECRYPT_MODE));
+        byte[] enc = AESinCBCMode(Section02.implementPKCS7Padding(lorem.getBytes(), key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
+        String loremPost = new String(stripPCKS7Padding(AESinCBCMode(enc, key.getBytes(), iv, CipherMode.DECRYPT)));
         assertEquals(lorem, loremPost);
 
         String base64Contents = String.join("", Utils.readFileAsListOfLines("src/test/resources/10.txt"));
         byte[] fileContents = Base64.getDecoder().decode(base64Contents);
-        byte[] decryptedFileContents = Section02.AESinCBCMode(fileContents, key.getBytes(), iv, Cipher.DECRYPT_MODE);
+        byte[] decryptedFileContents = stripPCKS7Padding(AESinCBCMode(fileContents, key.getBytes(), iv, CipherMode.DECRYPT));
 
         //sanity check
-        byte[] reEncryptedFileContents = Section02.AESinCBCMode(decryptedFileContents, key.getBytes(), iv, Cipher.ENCRYPT_MODE);
+        byte[] reEncryptedFileContents = AESinCBCMode(implementPKCS7Padding(decryptedFileContents, key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
         assertArrayEquals(fileContents, reEncryptedFileContents);
 
         assertTrue(new String(decryptedFileContents).contains("You're weakenin' fast, YO! and I can tell it"));
@@ -128,9 +129,9 @@ public class Section02Tests {
 
     @Test
     public void testChallenge15() throws BadPaddingException {
-        assertArrayEquals("ICE ICE BABY".getBytes(), Section02.stripPCKS7Padding(generatePaddingSample(new byte[] {4,4,4,4})));
-        assertThrows(BadPaddingException.class, () -> Section02.stripPCKS7Padding(generatePaddingSample(new byte[] {5,5,5,5})));
-        assertThrows(BadPaddingException.class, () -> Section02.stripPCKS7Padding(generatePaddingSample(new byte[] {1,2,3,4})));
+        assertArrayEquals("ICE ICE BABY".getBytes(), stripPCKS7Padding(generatePaddingSample(new byte[] {4,4,4,4})));
+        assertThrows(CryptopalsException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {5,5,5,5})));
+        assertThrows(CryptopalsException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {1,2,3,4})));
     }
 
     private static byte[] generatePaddingSample(byte[] paddingBytes) {

@@ -1,5 +1,7 @@
 package cryptopals.challenges;
 
+import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -50,23 +52,18 @@ public class Section02 {
         return paddedMessage;
     }
 
-    public static byte[] AESinCBCMode(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, int cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
-        if (cipherMode != Cipher.ENCRYPT_MODE && cipherMode != Cipher.DECRYPT_MODE) {
-            throw new IllegalArgumentException("cipherMode must be Cipher.ENCRYPT_MODE or Cipher.DECRYPT_MODE");
+    public static byte[] AESinCBCMode(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, CipherMode cipherMode)  {
+        if (cipherMode == null) {
+            throw new IllegalArgumentException("Cipher mode is required");
         }
-
         //block size will be the size of the cipher key
         //make sure the iv and the cipherkey are the same size
         if (cipherKeyBytes.length != iv.length) {
             throw new IllegalArgumentException("cipher key and init vector must be the same length");
         }
 
-        if (cipherMode == Cipher.ENCRYPT_MODE) {
-            //pad the message only if encrypting
-            textBytes = implementPKCS7Padding(textBytes, cipherKeyBytes.length);
-        } else if (textBytes.length % cipherKeyBytes.length != 0) {
-            //make sure the message length is a multiple of the iv
-            throw new IllegalArgumentException("When decrypting, the message's length must be a multiple of the key's length");
+        if (textBytes.length % cipherKeyBytes.length != 0) {
+            throw new IllegalArgumentException("text length must be a multiple of the block size. Did you pad your message?");
         }
 
         byte[] resultBytes = new byte[textBytes.length];
@@ -77,27 +74,26 @@ public class Section02 {
             byte[] nthBlock = Utils.sliceByteArray(textBytes, n, iv.length);
 
             byte[] currentBlock;
-            switch (cipherMode) {
-                case Cipher.ENCRYPT_MODE:
-                    byte[] xorNthBlock = Utils.multiByteXOR(nthBlock, previousBlock);
-                    currentBlock = Section01.AESInECBMode(xorNthBlock, cipherKeyBytes, cipherMode);
-                    previousBlock = currentBlock;
-                    break;
-                case Cipher.DECRYPT_MODE:
-                    byte[] decNthBlock = Section01.AESInECBMode(nthBlock, cipherKeyBytes, cipherMode);
-                    currentBlock = Utils.multiByteXOR(decNthBlock, previousBlock);
-                    previousBlock = nthBlock;
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal cipher mode");
+            try {
+                switch (cipherMode) {
+                    case ENCRYPT:
+                        byte[] xorNthBlock = Utils.multiByteXOR(nthBlock, previousBlock);
+                        currentBlock = Section01.AESInECBMode(xorNthBlock, cipherKeyBytes, cipherMode.getIntValue());
+                        previousBlock = currentBlock;
+                        break;
+                    case DECRYPT:
+                        byte[] decNthBlock = Section01.AESInECBMode(nthBlock, cipherKeyBytes, cipherMode.getIntValue());
+                        currentBlock = Utils.multiByteXOR(decNthBlock, previousBlock);
+                        previousBlock = nthBlock;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal cipher mode");
+                }
+            } catch (Exception e) {
+                throw new CryptopalsException("could not execute the desired operation", e);
             }
 
             System.arraycopy(currentBlock, 0, resultBytes, n, iv.length);
-        }
-
-        //strip padding if decrypting
-        if (cipherMode == Cipher.DECRYPT_MODE) {
-            resultBytes = stripPCKS7Padding(resultBytes);
         }
 
         return resultBytes;
@@ -123,7 +119,7 @@ public class Section02 {
             //pad manually here since the ECB function doesn't do it
             return Pair.of(true, Section01.AESinECBModeWPadding(toEncrypt, cipherKey, Cipher.ENCRYPT_MODE));
         } else {
-            return Pair.of(false, AESinCBCMode(toEncrypt, cipherKey, Utils.randomBytes(blockSize), Cipher.ENCRYPT_MODE));
+            return Pair.of(false, AESinCBCMode(implementPKCS7Padding(toEncrypt, cipherKey.length), cipherKey, Utils.randomBytes(blockSize), CipherMode.ENCRYPT));
         }
     }
 
@@ -320,11 +316,11 @@ public class Section02 {
         return decryptedMessage;
     }
 
-    public static byte[] stripPCKS7Padding(byte[] plainText) throws BadPaddingException {
+    public static byte[] stripPCKS7Padding(byte[] plainText) {
         int last = plainText[plainText.length - 1];
         for (int i = last; i > 0; i--) {
             if (plainText[plainText.length - last] != last) {
-                throw new BadPaddingException("This is bad padding");
+                throw new CryptopalsException("This is bad padding");
             }
         }
         int toKeep = plainText.length - last;
