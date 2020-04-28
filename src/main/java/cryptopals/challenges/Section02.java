@@ -320,7 +320,7 @@ public class Section02 {
         int last = plainText[plainText.length - 1];
         for (int i = last; i > 0; i--) {
             if (plainText[plainText.length - last] != last) {
-                throw new CryptopalsException("This is bad padding");
+                throw new CryptopalsException("Could not strip padding", new BadPaddingException("The padding is bad"));
             }
         }
         int toKeep = plainText.length - last;
