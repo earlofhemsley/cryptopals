@@ -4,18 +4,20 @@ import static cryptopals.challenges.Section02.AESinCBCMode;
 import static cryptopals.challenges.Section02.implementPKCS7Padding;
 import static cryptopals.challenges.Section02.stripPCKS7Padding;
 
-import cryptopals.challenges.Section02;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.CryptopalsException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
 
-public class Challenge17Oracle {
+public class CBCPaddingOracle {
 
     private static final List<String> stringList = new ArrayList<>();
     static {
@@ -42,6 +44,16 @@ public class Challenge17Oracle {
         return Pair.of(ivec, encryptedString);
     }
 
+    public Map<byte[], byte[]> getAllIvecsAndStrings() {
+        var map = new LinkedHashMap<byte[], byte[]>();
+        for (String s : stringList) {
+            var ivec = Utils.randomBytes(16);
+            var encryptedString = AESinCBCMode(implementPKCS7Padding(s.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
+            map.put(ivec, encryptedString);
+        }
+        return map;
+    }
+
     public boolean validatePKCS7Padding(byte[] cipherText, byte[] ivec) {
         var decrypted = AESinCBCMode(cipherText, key, ivec, CipherMode.DECRYPT);
         try {
@@ -50,7 +62,11 @@ public class Challenge17Oracle {
             return true;
         } catch (CryptopalsException e) {
             //catch an exception, it's bad padding ... verifying the cause is indeed because of bad padding
-            return (e.getCause() instanceof BadPaddingException);
+            return !(e.getCause() instanceof BadPaddingException);
         }
+    }
+
+    public boolean stringIsPresentInHiddenPlainTexts(String candidate) {
+        return stringList.stream().anyMatch(s -> StringUtils.equals(candidate, s));
     }
 }
