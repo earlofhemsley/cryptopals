@@ -4,6 +4,7 @@ import static cryptopals.challenges.Section02.AESinCBCMode;
 import static cryptopals.challenges.Section02.implementPKCS7Padding;
 import static cryptopals.challenges.Section02.stripPCKS7Padding;
 
+import cryptopals.challenges.Section02;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.CryptopalsException;
 import org.apache.commons.lang3.StringUtils;
@@ -66,7 +67,8 @@ public class CBCPaddingOracle {
         }
     }
 
-    public boolean stringIsPresentInHiddenPlainTexts(String candidate) {
+    public boolean decryptionIsPresentInOriginalPlainTexts(byte[] decryption) {
+        String candidate = new String(Section02.stripPCKS7Padding(decryption));
         return stringList.stream().anyMatch(s -> StringUtils.equals(candidate, s));
     }
 }
