@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Lists;
 import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Challenge16Oracle;
 import cryptopals.utils.Utils;
@@ -130,8 +131,8 @@ public class Section02Tests {
     @Test
     public void testChallenge15() throws BadPaddingException {
         assertArrayEquals("ICE ICE BABY".getBytes(), stripPCKS7Padding(generatePaddingSample(new byte[] {4,4,4,4})));
-        assertThrows(CryptopalsException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {5,5,5,5})));
-        assertThrows(CryptopalsException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {1,2,3,4})));
+        assertThrows(BadPaddingRuntimeException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {5,5,5,5})));
+        assertThrows(BadPaddingRuntimeException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {1,2,3,4})));
     }
 
     private static byte[] generatePaddingSample(byte[] paddingBytes) {

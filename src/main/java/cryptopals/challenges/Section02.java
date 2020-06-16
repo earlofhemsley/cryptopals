@@ -1,6 +1,7 @@
 package cryptopals.challenges;
 
 import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
@@ -319,11 +320,11 @@ public class Section02 {
     public static byte[] stripPCKS7Padding(byte[] plainText) {
         int last = plainText[plainText.length - 1];
         if (plainText.length - last < 0 || plainText.length - last >= plainText.length) {
-            throw new CryptopalsException("Could not strip padding", new BadPaddingException("padding bytes result in indices outside the length of the plain text"));
+            throw new BadPaddingRuntimeException("padding bytes result in indices outside the length of the plain text");
         }
         for (int i = last; i > 0; i--) {
             if (plainText[plainText.length - last] != last) {
-                throw new CryptopalsException("Could not strip padding", new BadPaddingException("last n bytes of block didn't match"));
+                throw new BadPaddingRuntimeException("last n bytes of block didn't match");
             }
         }
         int toKeep = plainText.length - last;
