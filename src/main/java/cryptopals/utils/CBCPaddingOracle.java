@@ -1,12 +1,8 @@
 package cryptopals.utils;
 
-import static cryptopals.challenges.Section02.AESinCBCMode;
-import static cryptopals.challenges.Section02.implementPKCS7Padding;
-import static cryptopals.challenges.Section02.stripPCKS7Padding;
-
 import cryptopals.challenges.Section02;
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.CryptopalsException;
+import cryptopals.exceptions.BadPaddingRuntimeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -16,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.crypto.BadPaddingException;
+import static cryptopals.challenges.Section02.AESinCBCMode;
+import static cryptopals.challenges.Section02.implementPKCS7Padding;
+import static cryptopals.challenges.Section02.stripPCKS7Padding;
 
 public class CBCPaddingOracle {
 
@@ -35,7 +33,7 @@ public class CBCPaddingOracle {
     }
 
 
-    byte[] key = Utils.randomBytes(16);
+    private static final byte[] key = Utils.randomBytes(16);
 
     public Pair<byte[], byte[]> selectRandomStringAndEncrypt() {
         var r = new Random(System.currentTimeMillis());
@@ -61,9 +59,9 @@ public class CBCPaddingOracle {
             //don't catch an exception, it's good padding
             stripPCKS7Padding(decrypted);
             return true;
-        } catch (CryptopalsException e) {
-            //catch an exception, it's bad padding ... verifying the cause is indeed because of bad padding
-            return !(e.getCause() instanceof BadPaddingException);
+        } catch (BadPaddingRuntimeException e) {
+            //if it's bad padding, then we return false
+            return false;
         }
     }
 

@@ -159,4 +159,12 @@ public class Utils {
         return retVal;
     }
 
+    public static byte[] groupByteNegation(byte[] toNegate) {
+        var retval = new byte[toNegate.length];
+        for (int i = 0; i < toNegate.length; i++) {
+            retval[i] = (byte) (~toNegate[i] & 0xFF);
+        }
+        return retval;
+    }
+
 }
