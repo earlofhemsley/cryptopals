@@ -13,7 +13,7 @@ public class Section03Tests {
 
     @Test
     public void multipleTimes() {
-        for(int i = 0; i<50; i++) {
+        for(int i = 0; i<10; i++) {
             challenge17();
             System.out.println(String.format("Test %d successful", i));
         }
