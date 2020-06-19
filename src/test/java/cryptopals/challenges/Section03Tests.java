@@ -53,20 +53,21 @@ public class Section03Tests {
 
     private void findIByte(byte[] intermediate, byte[] realCipherBlock, int blockSize, int position, CBCPaddingOracle oracle) {
         //do this twice to be twice as sure
-        byte[] pcba = Utils.randomBytes(blockSize);
-        byte[] pcbb = Utils.groupByteNegation(pcba);
+        //get the bitwise complement to be absolutely sure there's no fluke
+        byte[] cPrimeA = Utils.randomBytes(blockSize);
+        byte[] cPrimeB = Utils.groupByteNegation(cPrimeA);
 
         byte plainTextPrime = (byte) (blockSize - position);
         for (int afterPosition = position + 1; afterPosition < blockSize; afterPosition++) {
-            pcba[afterPosition] = pcbb[afterPosition] = (byte) (plainTextPrime ^ intermediate[afterPosition]);
+            cPrimeA[afterPosition] = cPrimeB[afterPosition] = (byte) (plainTextPrime ^ intermediate[afterPosition]);
         }
 
         int countOfCandidates = 0;
         for (int j = Byte.MIN_VALUE; j <= Byte.MAX_VALUE; j++) {
-            pcba[position] = pcbb[position] = (byte) j;
-            if (oracle.validatePKCS7Padding(realCipherBlock, pcba)
-                    && oracle.validatePKCS7Padding(realCipherBlock, pcbb)) {
-                intermediate[position] = (byte) (pcba[position] ^ plainTextPrime);
+            cPrimeA[position] = cPrimeB[position] = (byte) j;
+            if (oracle.validatePKCS7Padding(realCipherBlock, cPrimeA)
+                    && oracle.validatePKCS7Padding(realCipherBlock, cPrimeB)) {
+                intermediate[position] = (byte) (cPrimeA[position] ^ plainTextPrime);
                 countOfCandidates++;
             }
         }
