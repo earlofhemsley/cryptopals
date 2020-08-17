@@ -1,5 +1,6 @@
 package cryptopals.challenges;
 
+import cryptopals.utils.Chi;
 import cryptopals.utils.Utils;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -10,8 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 import javax.crypto.BadPaddingException;
@@ -35,30 +34,6 @@ public class Section01 {
     }
 
 
-    /**
-     * single-character encryption. this is the solution to challenge 2
-     * @param hexString1
-     * @param hexString2
-     * @return
-     * @throws DecoderException
-     */
-    public static String fixedXOR(String hexString1, String hexString2) throws DecoderException {
-        byte[] input1 = Hex.decodeHex(hexString1);
-        byte[] input2 = Hex.decodeHex(hexString2);
-
-        int looplimit = Math.min(input1.length, input2.length);
-
-        byte[] result = new byte[looplimit];
-
-        for (int i = 0; i < looplimit; i++) {
-            int left = Byte.toUnsignedInt(input1[i]);
-            int right = Byte.toUnsignedInt(input2[i]);
-            int xordResult = left ^ right;
-            result[i] = (byte) (xordResult & 0xFF);
-        }
-
-        return String.valueOf(Hex.encodeHex(result));
-    }
 
     /**
      * Decrypt a message encrypted with single key encryption, scoring the message using X^2 goodness of fit test
@@ -68,14 +43,14 @@ public class Section01 {
      * @return
      * @throws DecoderException
      */
-    public static String decrypt(byte[] decodedInput) throws DecoderException {
+    public static String decrypt(byte[] decodedInput) {
 
         String reigningChampion = null;
         double lowScore = Double.MAX_VALUE;
 
         for(int key = 0; key < 256; key++ ) {
             char[] decrypted = Utils.singleKeyXOR(decodedInput, key);
-            double candidateScore = Utils.chiSquaredScore(decrypted);
+            double candidateScore = new Chi().score(decrypted);
             if (candidateScore < lowScore) {
                 reigningChampion = String.valueOf(decrypted);
                 lowScore = candidateScore;
@@ -84,35 +59,6 @@ public class Section01 {
         return reigningChampion;
     }
 
-    /**
-     * consider a series of messages encrypted with single char encryption. find the message that actually decrypts
-     *
-     * this is the solution to challenge four
-     * @param candidates
-     * @return
-     * @throws DecoderException
-     */
-    public static String seekAndDestroy(List<String> candidates) throws DecoderException {
-
-        String reigningChampion = null;
-        double lowestScore = Double.MAX_VALUE;
-
-        //find the best possible decryption
-        for (String candidate : candidates) {
-            byte[] decodedCandidate = Hex.decodeHex(candidate);
-            for (int key = 0; key <= 256; key++) {
-                char[] decrypted = Utils.singleKeyXOR(decodedCandidate, key);
-                double chiScore = Utils.chiSquaredScore(decrypted);
-                if (chiScore < lowestScore) {
-                    reigningChampion = String.valueOf(decrypted);
-                    lowestScore = chiScore;
-                }
-            }
-        }
-
-        //return the string with the lowest score
-        return reigningChampion.trim();
-    }
 
 
     private static byte[] key = "ICE".getBytes();
@@ -152,6 +98,7 @@ public class Section01 {
      * @return
      */
     public static String breakTheCipher(String input) {
+        final Chi chi = new Chi();
         byte[] contentBytes = Base64.getDecoder().decode(input);
 
         String debugString = Base64.getEncoder().encodeToString(contentBytes);
@@ -207,7 +154,7 @@ public class Section01 {
                 double lowSingleScore = Double.MAX_VALUE;
                 for (int c = 0; c < 256; c++) {
                     char[] decrypted = Utils.singleKeyXOR(transposed[block], c);
-                    double chiScore = Utils.chiSquaredScore(decrypted);
+                    double chiScore = chi.score(decrypted);
                     if (chiScore < lowSingleScore) {
                         lowSingleScore = chiScore;
                         bestKeyInt = c;
@@ -221,7 +168,7 @@ public class Section01 {
             String decryptedBody = new String(Utils.multiByteXOR(contentBytes, keybytes));
 
             //chi square score the body
-            double fullChi = Utils.chiSquaredScore(decryptedBody.toCharArray());
+            double fullChi = chi.score(decryptedBody.toCharArray());
 
             //check if better
             if(fullChi < lowFullScore) {
@@ -236,7 +183,6 @@ public class Section01 {
 
     }
 
-    //TODO: Include PCKS7 padding (implemented in section 2) as a default and deal with the fallout from that
     /**
      * Decrypt a message in AES-ECB mode
      *

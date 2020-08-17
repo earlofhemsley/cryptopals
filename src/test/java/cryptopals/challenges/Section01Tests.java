@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cryptopals.sec01.util.Challenge4Tool;
 import cryptopals.utils.Utils;
+import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ public class Section01Tests {
     public void twoTest() throws DecoderException {
         String input1 = "1c0111001f010100061a024b53535009181c";
         String input2 = "686974207468652062756c6c277320657965";
-        String result = Section01.fixedXOR(input1, input2);
+        String result = new XOR().hexStringFixedXor(input1, input2);
         assertEquals("746865206b696420646f6e277420706c6179", result);
     }
 
@@ -50,7 +52,7 @@ public class Section01Tests {
     public void fourTest() throws DecoderException, IOException {
         String filePath = "src/test/resources/4.txt";
         List<String> contents = Utils.readFileAsListOfLines(filePath);
-        String value = Section01.seekAndDestroy(contents);
+        String value = new Challenge4Tool().seekAndDestroy(contents);
         assertEquals("Now that the party is jumping", value);
     }
 
