@@ -4,6 +4,7 @@ import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Utils;
+import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -67,6 +68,7 @@ public class Section02 {
             throw new IllegalArgumentException("text length must be a multiple of the block size. Did you pad your message?");
         }
 
+        final XOR xor = new XOR();
         byte[] resultBytes = new byte[textBytes.length];
         byte[] previousBlock = iv;
 
@@ -78,13 +80,13 @@ public class Section02 {
             try {
                 switch (cipherMode) {
                     case ENCRYPT:
-                        byte[] xorNthBlock = Utils.multiByteXOR(nthBlock, previousBlock);
+                        byte[] xorNthBlock = xor.multiByteXOR(nthBlock, previousBlock);
                         currentBlock = Section01.AESInECBMode(xorNthBlock, cipherKeyBytes, cipherMode.getIntValue());
                         previousBlock = currentBlock;
                         break;
                     case DECRYPT:
                         byte[] decNthBlock = Section01.AESInECBMode(nthBlock, cipherKeyBytes, cipherMode.getIntValue());
-                        currentBlock = Utils.multiByteXOR(decNthBlock, previousBlock);
+                        currentBlock = xor.multiByteXOR(decNthBlock, previousBlock);
                         previousBlock = nthBlock;
                         break;
                     default:

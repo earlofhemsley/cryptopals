@@ -2,6 +2,7 @@ package cryptopals.challenges;
 
 import cryptopals.utils.Chi;
 import cryptopals.utils.Utils;
+import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -33,8 +34,6 @@ public class Section01 {
         return Base64.getEncoder().encodeToString(hextBytes);
     }
 
-
-
     /**
      * Decrypt a message encrypted with single key encryption, scoring the message using X^2 goodness of fit test
      *
@@ -49,7 +48,7 @@ public class Section01 {
         double lowScore = Double.MAX_VALUE;
 
         for(int key = 0; key < 256; key++ ) {
-            char[] decrypted = Utils.singleKeyXOR(decodedInput, key);
+            char[] decrypted = new XOR().singleKeyXOR(decodedInput, key);
             double candidateScore = new Chi().score(decrypted);
             if (candidateScore < lowScore) {
                 reigningChampion = String.valueOf(decrypted);
@@ -69,7 +68,7 @@ public class Section01 {
      * @return
      */
     public static String repeatingKeyEncrypt(String toEncrypt) {
-        byte[] result = Utils.multiByteXOR(toEncrypt.getBytes(), key);
+        byte[] result = new XOR().multiByteXOR(toEncrypt.getBytes(), key);
         return String.valueOf(Hex.encodeHex(result));
     }
 
@@ -81,7 +80,7 @@ public class Section01 {
      */
     public static String repeatingKeyDecrypt(String toDecrypt) throws DecoderException {
         byte[] hexDecoded = Hex.decodeHex(toDecrypt);
-        byte[] decrypted = Utils.multiByteXOR(hexDecoded, key);
+        byte[] decrypted = new XOR().multiByteXOR(hexDecoded, key);
         StringBuilder result = new StringBuilder();
         for (byte b : decrypted) {
             result.append((char)b);
@@ -98,6 +97,7 @@ public class Section01 {
      * @return
      */
     public static String breakTheCipher(String input) {
+        final XOR xor = new XOR();
         final Chi chi = new Chi();
         byte[] contentBytes = Base64.getDecoder().decode(input);
 
@@ -153,7 +153,7 @@ public class Section01 {
                 int bestKeyInt = -1;
                 double lowSingleScore = Double.MAX_VALUE;
                 for (int c = 0; c < 256; c++) {
-                    char[] decrypted = Utils.singleKeyXOR(transposed[block], c);
+                    char[] decrypted = xor.singleKeyXOR(transposed[block], c);
                     double chiScore = chi.score(decrypted);
                     if (chiScore < lowSingleScore) {
                         lowSingleScore = chiScore;
@@ -165,7 +165,7 @@ public class Section01 {
             }
 
             //decrypt the body
-            String decryptedBody = new String(Utils.multiByteXOR(contentBytes, keybytes));
+            String decryptedBody = new String(xor.multiByteXOR(contentBytes, keybytes));
 
             //chi square score the body
             double fullChi = chi.score(decryptedBody.toCharArray());

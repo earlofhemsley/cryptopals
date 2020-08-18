@@ -3,6 +3,7 @@ package cryptopals.challenges;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.CBCPaddingOracle;
 import cryptopals.utils.Utils;
+import cryptopals.utils.XOR;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -22,6 +23,7 @@ public class Section03Tests {
     private void challenge17() {
         var oracle = new CBCPaddingOracle();
         var set = oracle.getAllIvecsAndStrings();
+        final XOR xor = new XOR();
         for (Map.Entry<byte[], byte[]> pair : set.entrySet()) {
             byte[] ivec = pair.getKey();
             byte[] cipherText = pair.getValue();
@@ -42,7 +44,7 @@ public class Section03Tests {
                 //at this point, we should have the whole i for the block under consideration
                 //to decrypt, take the actual block and xor it against the true i to get the true plain text
                 // don't worry about padding
-                var plainTextBlock = Utils.multiByteXOR(ivec, i);
+                var plainTextBlock = xor.multiByteXOR(ivec, i);
                 System.arraycopy(plainTextBlock,0, plainText, blockNum*blockSize, blockSize);
                 ivec = realCipherBlock;
             }

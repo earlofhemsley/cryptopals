@@ -31,4 +31,34 @@ public class XOR {
 
         return String.valueOf(Hex.encodeHex(result));
     }
+
+    /**
+     * xor's a byte array against a single integer key
+     * @param input
+     * @param key
+     * @return
+     */
+    public char[] singleKeyXOR(byte[] input, int key) {
+        char[] decrypted = new char[input.length];
+        for(int i = 0; i < decrypted.length; i++) {
+            decrypted[i] = (char) (Byte.toUnsignedInt(input[i]) ^ key);
+        }
+        return decrypted;
+    }
+
+
+    /**
+     * xor's each successive byte of one byte array against each successive byte
+     * of a key byte array.
+     * @param input
+     * @param key
+     * @return
+     */
+    public byte[] multiByteXOR(byte[] input, byte[] key) {
+        byte[] xord = new byte[input.length];
+        for(int i = 0; i < xord.length; i++) {
+            xord[i] = (byte) (input[i] ^ key[i % key.length]);
+        }
+        return xord;
+    }
 }

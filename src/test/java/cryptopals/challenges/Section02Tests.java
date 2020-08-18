@@ -15,6 +15,7 @@ import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Challenge16Oracle;
 import cryptopals.utils.Utils;
+import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -152,9 +153,10 @@ public class Section02Tests {
         assertEquals(16, knownInput.length());
         assertEquals(16, desired.length());
 
-        byte[] xord = Utils.multiByteXOR(knownInput.getBytes(), desired.getBytes());
-        assertArrayEquals(desired.getBytes(), Utils.multiByteXOR(knownInput.getBytes(), xord));
-        assertArrayEquals(knownInput.getBytes(), Utils.multiByteXOR(desired.getBytes(), xord));
+        final XOR xor = new XOR();
+        byte[] xord = xor.multiByteXOR(knownInput.getBytes(), desired.getBytes());
+        assertArrayEquals(desired.getBytes(), xor.multiByteXOR(knownInput.getBytes(), xord));
+        assertArrayEquals(knownInput.getBytes(), xor.multiByteXOR(desired.getBytes(), xord));
 
         List<Integer> positionsOf12 = Lists.newArrayList(0, 11);
         List<Integer> positionsOf4 = Lists.newArrayList(6, 13);
@@ -176,10 +178,10 @@ public class Section02Tests {
         assertFalse(oracle.findAdminInCipherText(cipherText));
 
         var textToAlter = Utils.sliceByteArray(cipherText, 32, xord.length);
-        var alteredText = Utils.multiByteXOR(textToAlter, xord);
+        var alteredText = xor.multiByteXOR(textToAlter, xord);
 
-        assertArrayEquals(textToAlter, Utils.multiByteXOR(alteredText, xord));
-        assertArrayEquals(xord, Utils.multiByteXOR(textToAlter, alteredText));
+        assertArrayEquals(textToAlter, xor.multiByteXOR(alteredText, xord));
+        assertArrayEquals(xord, xor.multiByteXOR(textToAlter, alteredText));
         System.arraycopy(alteredText, 0, cipherText, 32, alteredText.length);
 
         assertTrue(oracle.findAdminInCipherText(cipherText));
