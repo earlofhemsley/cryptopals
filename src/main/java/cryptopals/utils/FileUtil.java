@@ -5,34 +5,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.IntStream;
 
-public class Utils {
-    private Utils() {
-        throw new AssertionError("Cannot instantiate");
+/**
+ * a util for reading files
+ */
+public class FileUtil {
+    private FileUtil() {
+        throw new AssertionError("Cannot instantiate FileUtil");
     }
-
-
-
-    public static byte[] sliceByteArray(byte[] original, int start, int length) {
-        byte[] slice = new byte[length];
-        for (int i = 0; i < length; i++) {
-            if (start + i < original.length) {
-                slice[i] = original[start + i];
-            }
-        }
-
-        return slice;
-    }
-
-
-
-
-
 
     public static String readFileAsWhole(String filePath) throws IOException {
         File f = new File(filePath);
@@ -57,20 +38,4 @@ public class Utils {
         }
         return lines;
     }
-
-    public static byte[] randomBytes(int length) {
-        byte[] retVal = new byte[length];
-        Random r = new Random();
-        r.nextBytes(retVal);
-        return retVal;
-    }
-
-    public static byte[] groupByteNegation(byte[] toNegate) {
-        var retval = new byte[toNegate.length];
-        for (int i = 0; i < toNegate.length; i++) {
-            retval[i] = (byte) (~toNegate[i] & 0xFF);
-        }
-        return retval;
-    }
-
 }

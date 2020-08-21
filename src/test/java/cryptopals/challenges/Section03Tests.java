@@ -2,7 +2,7 @@ package cryptopals.challenges;
 
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.CBCPaddingOracle;
-import cryptopals.utils.Utils;
+import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.XOR;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +35,7 @@ public class Section03Tests {
                 byte[] i = new byte[blockSize];
 
                 //then, we're going to cut off the nth block, starting at beginning
-                byte[] realCipherBlock = Utils.sliceByteArray(cipherText, blockNum*blockSize, blockSize);
+                byte[] realCipherBlock = ByteArrayUtil.sliceByteArray(cipherText, blockNum*blockSize, blockSize);
 
                 //then, we're going to find the intermediate bytes
                 for (int position = blockSize - 1; position >= 0; position--) {
@@ -56,8 +56,8 @@ public class Section03Tests {
     private void findIByte(byte[] intermediate, byte[] realCipherBlock, int blockSize, int position, CBCPaddingOracle oracle) {
         //do this twice to be twice as sure
         //get the bitwise complement to be absolutely sure there's no fluke
-        byte[] cPrimeA = Utils.randomBytes(blockSize);
-        byte[] cPrimeB = Utils.groupByteNegation(cPrimeA);
+        byte[] cPrimeA = ByteArrayUtil.randomBytes(blockSize);
+        byte[] cPrimeB = ByteArrayUtil.groupByteNegation(cPrimeA);
 
         byte plainTextPrime = (byte) (blockSize - position);
         for (int afterPosition = position + 1; afterPosition < blockSize; afterPosition++) {

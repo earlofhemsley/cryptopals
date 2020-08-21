@@ -5,7 +5,8 @@ import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.sec02.Challenge16Tool;
 import cryptopals.utils.ECB;
-import cryptopals.utils.Utils;
+import cryptopals.utils.ByteArrayUtil;
+import cryptopals.utils.FileUtil;
 import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -57,7 +58,7 @@ public class Section02Tests {
         String loremPost = new String(stripPadding(AESinCBCMode(enc, key.getBytes(), iv, CipherMode.DECRYPT)));
         assertEquals(lorem, loremPost);
 
-        String base64Contents = String.join("", Utils.readFileAsListOfLines("src/test/resources/10.txt"));
+        String base64Contents = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/10.txt"));
         byte[] fileContents = Base64.getDecoder().decode(base64Contents);
         byte[] decryptedFileContents = stripPadding(AESinCBCMode(fileContents, key.getBytes(), iv, CipherMode.DECRYPT));
 
@@ -143,8 +144,8 @@ public class Section02Tests {
 
     @Test
     public void testChallenge16() throws Exception {
-        var key = Utils.randomBytes(16);
-        var iv = Utils.randomBytes(16);
+        var key = ByteArrayUtil.randomBytes(16);
+        var iv = ByteArrayUtil.randomBytes(16);
         var oracle = new Challenge16Tool(key, iv);
         //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|:admin<true:A<AA|;comment2=...
         String knownInput = "7admin9true7A9AA";
@@ -176,7 +177,7 @@ public class Section02Tests {
 
         assertFalse(oracle.findAdminInCipherText(cipherText));
 
-        var textToAlter = Utils.sliceByteArray(cipherText, 32, xord.length);
+        var textToAlter = ByteArrayUtil.sliceByteArray(cipherText, 32, xord.length);
         var alteredText = xor.multiByteXOR(textToAlter, xord);
 
         assertArrayEquals(textToAlter, xor.multiByteXOR(alteredText, xord));

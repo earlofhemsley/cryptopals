@@ -1,7 +1,7 @@
 package cryptopals.tool.sec01;
 
 import cryptopals.utils.Chi;
-import cryptopals.utils.Utils;
+import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.XOR;
 
 import java.util.Base64;
@@ -29,10 +29,10 @@ public class Challenge6Tool {
 
         //find the hamming distance between blocks of the input
         for (int candidateKeySize = 2; candidateKeySize <= 40; candidateKeySize++) {
-            byte[] firstNBytes = Utils.sliceByteArray(contentBytes, 0, candidateKeySize);
-            byte[] secondNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize, candidateKeySize);
-            byte[] thirdNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize * 2, candidateKeySize);
-            byte[] fourthNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize * 3, candidateKeySize);
+            byte[] firstNBytes = ByteArrayUtil.sliceByteArray(contentBytes, 0, candidateKeySize);
+            byte[] secondNBytes = ByteArrayUtil.sliceByteArray(contentBytes, candidateKeySize, candidateKeySize);
+            byte[] thirdNBytes = ByteArrayUtil.sliceByteArray(contentBytes, candidateKeySize * 2, candidateKeySize);
+            byte[] fourthNBytes = ByteArrayUtil.sliceByteArray(contentBytes, candidateKeySize * 3, candidateKeySize);
             double hammingDist1 = (double) calculateHammingDistance(firstNBytes, secondNBytes) / candidateKeySize;
             double hammingDist2 = (double) calculateHammingDistance(secondNBytes, thirdNBytes) / candidateKeySize;
             double hammingDist3 = (double) calculateHammingDistance(thirdNBytes, fourthNBytes) / candidateKeySize;
@@ -56,7 +56,7 @@ public class Challenge6Tool {
             int matrixHeight = (contentBytes.length % keysize == 0) ? contentBytes.length/keysize : contentBytes.length/keysize + 1;
             byte[][] matrix = new byte[matrixHeight][keysize];
             for (int i = 0; i<matrixHeight; i++){
-                matrix[i] = Utils.sliceByteArray(contentBytes,i*keysize, keysize);
+                matrix[i] = ByteArrayUtil.sliceByteArray(contentBytes,i*keysize, keysize);
             }
 
             //transpose the blocks. group 1 is the first byte of each block, group 2 is the second, etc

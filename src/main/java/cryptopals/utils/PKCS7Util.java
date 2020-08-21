@@ -57,6 +57,6 @@ public class PKCS7Util {
             }
         }
         int toKeep = plainText.length - last;
-        return Utils.sliceByteArray(plainText, 0, toKeep);
+        return ByteArrayUtil.sliceByteArray(plainText, 0, toKeep);
     }
 }

@@ -10,12 +10,14 @@ import cryptopals.tool.sec01.Challenge4Tool;
 import cryptopals.tool.sec01.Challenge5Tool;
 import cryptopals.tool.sec01.Challenge6Tool;
 import cryptopals.utils.ECB;
-import cryptopals.utils.Utils;
+import cryptopals.utils.ByteArrayUtil;
+import cryptopals.utils.FileUtil;
 import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -56,7 +58,7 @@ public class Section01Tests {
     @Test
     public void fourTest() throws DecoderException, IOException {
         String filePath = "src/test/resources/4.txt";
-        List<String> contents = Utils.readFileAsListOfLines(filePath);
+        List<String> contents = FileUtil.readFileAsListOfLines(filePath);
         String value = new Challenge4Tool().seekAndDestroy(contents);
         assertEquals("Now that the party is jumping", value);
     }
@@ -70,13 +72,13 @@ public class Section01Tests {
         var expected = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
         assertEquals(expected, result);
 
-        var bloodContents = Utils.readFileAsWhole("src/test/resources/blood");
+        var bloodContents = FileUtil.readFileAsWhole("src/test/resources/blood");
         var singleStringBloodContents = String.join("\n", bloodContents);
 
         encryptAndOutputAndDecryptAndOutput(tool, singleStringBloodContents, false);
-        encryptAndOutputAndDecryptAndOutput(tool, Utils.readFileAsWhole("src/test/resources/enid.jok"), false);
-        encryptAndOutputAndDecryptAndOutput(tool, Utils.readFileAsWhole("src/test/resources/einstein"), false);
-        encryptAndOutputAndDecryptAndOutput(tool, Utils.readFileAsWhole("src/test/resources/spock.txt"), true);
+        encryptAndOutputAndDecryptAndOutput(tool, FileUtil.readFileAsWhole("src/test/resources/enid.jok"), false);
+        encryptAndOutputAndDecryptAndOutput(tool, FileUtil.readFileAsWhole("src/test/resources/einstein"), false);
+        encryptAndOutputAndDecryptAndOutput(tool, FileUtil.readFileAsWhole("src/test/resources/spock.txt"), true);
     }
 
     private void encryptAndOutputAndDecryptAndOutput(Challenge5Tool tool, String original, boolean print) throws DecoderException {
@@ -99,7 +101,7 @@ public class Section01Tests {
         assertEquals(37, hamming);
 
         //read the file contents into a single string
-        var fileContents = Utils.readFileAsListOfLines("src/test/resources/6.txt");
+        var fileContents = FileUtil.readFileAsListOfLines("src/test/resources/6.txt");
         var joinedContents = String.join("", fileContents);
 
         String decrypted = Challenge6Tool.breakTheCipher(joinedContents);
@@ -112,7 +114,7 @@ public class Section01Tests {
         String cipherKey = "YELLOW SUBMARINE";
         assertEquals(16, cipherKey.length());
 
-        var fileContents = String.join("", Utils.readFileAsListOfLines("src/test/resources/7.txt"));
+        var fileContents = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/7.txt"));
         byte[] cipherTextBytes = Base64.getDecoder().decode(fileContents);
         byte[] decrypted = new ECB(cipherKey.getBytes()).AESInECBMode(cipherTextBytes, CipherMode.DECRYPT);
         assertTrue(new String(decrypted).contains("I'm back and I'm ringin' the bell"));
@@ -120,7 +122,7 @@ public class Section01Tests {
 
     @Test
     public void eightTest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, DecoderException, BadPaddingException, IllegalBlockSizeException {
-        var fileContents = Utils.readFileAsListOfLines("src/test/resources/8.txt");
+        var fileContents = FileUtil.readFileAsListOfLines("src/test/resources/8.txt");
         Integer rowNumber = null;
         for (int i = 0; i < fileContents.size(); i++) {
             //hex decode

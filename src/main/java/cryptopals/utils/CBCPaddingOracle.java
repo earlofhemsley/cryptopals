@@ -32,12 +32,12 @@ public class CBCPaddingOracle {
     }
 
 
-    private static final byte[] key = Utils.randomBytes(16);
+    private static final byte[] key = ByteArrayUtil.randomBytes(16);
 
     public Pair<byte[], byte[]> selectRandomStringAndEncrypt() {
         var r = new Random(System.currentTimeMillis());
         var selectedString = stringList.get(r.nextInt(stringList.size()));
-        var ivec = Utils.randomBytes(16);
+        var ivec = ByteArrayUtil.randomBytes(16);
         var encryptedString = AESinCBCMode(applyPadding(selectedString.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
         return Pair.of(ivec, encryptedString);
     }
@@ -45,7 +45,7 @@ public class CBCPaddingOracle {
     public Map<byte[], byte[]> getAllIvecsAndStrings() {
         var map = new LinkedHashMap<byte[], byte[]>();
         for (String s : stringList) {
-            var ivec = Utils.randomBytes(16);
+            var ivec = ByteArrayUtil.randomBytes(16);
             var encryptedString = AESinCBCMode(applyPadding(s.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
             map.put(ivec, encryptedString);
         }
