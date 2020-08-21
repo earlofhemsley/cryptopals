@@ -3,7 +3,7 @@ package cryptopals.challenges;
 import com.google.common.collect.Lists;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
-import cryptopals.utils.Challenge16Oracle;
+import cryptopals.tool.sec02.Challenge16Tool;
 import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;
@@ -145,7 +145,7 @@ public class Section02Tests {
     public void testChallenge16() throws Exception {
         var key = Utils.randomBytes(16);
         var iv = Utils.randomBytes(16);
-        var oracle = new Challenge16Oracle(key, iv);
+        var oracle = new Challenge16Tool(key, iv);
         //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|:admin<true:A<AA|;comment2=...
         String knownInput = "7admin9true7A9AA";
         String desired = ";admin=true;A=AA";

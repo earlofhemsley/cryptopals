@@ -1,4 +1,4 @@
-package cryptopals.sec01.tool;
+package cryptopals.tool.sec01;
 
 import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;

@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.sec01.tool.Challenge3Tool;
-import cryptopals.sec01.tool.Challenge4Tool;
-import cryptopals.sec01.tool.Challenge5Tool;
-import cryptopals.sec01.tool.Challenge6Tool;
+import cryptopals.tool.sec01.Challenge3Tool;
+import cryptopals.tool.sec01.Challenge4Tool;
+import cryptopals.tool.sec01.Challenge5Tool;
+import cryptopals.tool.sec01.Challenge6Tool;
 import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;

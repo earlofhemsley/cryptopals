@@ -1,4 +1,4 @@
-package cryptopals.utils;
+package cryptopals.tool.sec02;
 
 import cryptopals.challenges.Section02;
 import cryptopals.enums.CipherMode;
@@ -10,12 +10,15 @@ import static cryptopals.challenges.Section02.AESinCBCMode;
 import static cryptopals.utils.PKCS7Util.applyPadding;
 import static cryptopals.utils.PKCS7Util.stripPadding;
 
-public class Challenge16Oracle {
+/**
+ * This tool aids in the accomplishment of challenge 16
+ */
+public class Challenge16Tool {
 
     private final byte[] key;
     private final byte[] iv;
 
-    public Challenge16Oracle(byte[] key, byte[] iv) {
+    public Challenge16Tool(byte[] key, byte[] iv) {
         this.key = key;
         this.iv = iv;
     }
