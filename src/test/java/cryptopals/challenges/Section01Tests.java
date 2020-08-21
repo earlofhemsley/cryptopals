@@ -5,9 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.sec01.util.Challenge4Tool;
-import cryptopals.sec01.util.Challenge5Tool;
-import cryptopals.sec01.util.Challenge6Tool;
+import cryptopals.sec01.tool.Challenge3Tool;
+import cryptopals.sec01.tool.Challenge4Tool;
+import cryptopals.sec01.tool.Challenge5Tool;
+import cryptopals.sec01.tool.Challenge6Tool;
 import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;
@@ -22,7 +23,6 @@ import java.util.Base64;
 import java.util.List;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
@@ -31,7 +31,8 @@ public class Section01Tests {
     @Test
     public void oneTest() throws DecoderException {
         String input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
-        String result = Section01.convertHexToBase64(input);
+        byte[] hexBytes = Hex.decodeHex(input);
+        String result = Base64.getEncoder().encodeToString(hexBytes);
         assertEquals("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t", result);
         String reconverted = Hex.encodeHexString(Base64.getDecoder().decode(result));
         assertEquals(input, reconverted);
@@ -47,7 +48,7 @@ public class Section01Tests {
 
     @Test
     public void threeTest() throws DecoderException {
-        String value = Section01.decrypt(Hex.decodeHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"));
+        String value = Challenge3Tool.decrypt(Hex.decodeHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"));
         assertNotNull(value);
         assertEquals("Cooking MC's like a pound of bacon", value);
     }
