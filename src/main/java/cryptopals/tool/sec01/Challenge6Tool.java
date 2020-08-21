@@ -33,9 +33,9 @@ public class Challenge6Tool {
             byte[] secondNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize, candidateKeySize);
             byte[] thirdNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize * 2, candidateKeySize);
             byte[] fourthNBytes = Utils.sliceByteArray(contentBytes, candidateKeySize * 3, candidateKeySize);
-            double hammingDist1 = (double) Utils.calculateHammingDistance(firstNBytes, secondNBytes) / candidateKeySize;
-            double hammingDist2 = (double) Utils.calculateHammingDistance(secondNBytes, thirdNBytes) / candidateKeySize;
-            double hammingDist3 = (double) Utils.calculateHammingDistance(thirdNBytes, fourthNBytes) / candidateKeySize;
+            double hammingDist1 = (double) calculateHammingDistance(firstNBytes, secondNBytes) / candidateKeySize;
+            double hammingDist2 = (double) calculateHammingDistance(secondNBytes, thirdNBytes) / candidateKeySize;
+            double hammingDist3 = (double) calculateHammingDistance(thirdNBytes, fourthNBytes) / candidateKeySize;
             double averageHammingDistance = (hammingDist1 + hammingDist2 + hammingDist3) / 3;
             hammingPairs.put(candidateKeySize, averageHammingDistance);
         }
@@ -100,6 +100,24 @@ public class Challenge6Tool {
 
         //return it
         return best;
+    }
 
+    public static int calculateHammingDistance(byte[] bytes1, byte[] bytes2) {
+        if (bytes1.length != bytes2.length) {
+            throw new IllegalArgumentException("arguments must be same length");
+        }
+
+        int count = 0;
+        for (int i = 0; i < bytes1.length; i++) {
+            byte one = bytes1[i];
+            byte two = bytes2[i];
+            byte xor = (byte) (one ^ two);
+            for (int j = 0; j < 8; j++) {
+                if( ((xor >> j) & 1) == 1 ) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 }

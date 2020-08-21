@@ -17,24 +17,6 @@ public class Utils {
     }
 
 
-    public static int calculateHammingDistance(byte[] bytes1, byte[] bytes2) {
-        if (bytes1.length != bytes2.length) {
-            throw new IllegalArgumentException("arguments must be same length");
-        }
-
-        int count = 0;
-        for (int i = 0; i < bytes1.length; i++) {
-            byte one = bytes1[i];
-            byte two = bytes2[i];
-            byte xor = (byte) (one ^ two);
-            for (int j = 0; j < 8; j++) {
-                if( ((xor >> j) & 1) == 1 ) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
 
     public static byte[] sliceByteArray(byte[] original, int start, int length) {
         byte[] slice = new byte[length];

@@ -95,7 +95,7 @@ public class Section01Tests {
     public void sixTest() throws IOException {
         String first = "this is a test";
         String second = "wokka wokka!!!";
-        int hamming = Utils.calculateHammingDistance(first.getBytes(), second.getBytes());
+        int hamming = Challenge6Tool.calculateHammingDistance(first.getBytes(), second.getBytes());
         assertEquals(37, hamming);
 
         //read the file contents into a single string
