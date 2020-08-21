@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Random;
 
 import static cryptopals.challenges.Section02.AESinCBCMode;
-import static cryptopals.utils.PKCS7Padding.applyPadding;
-import static cryptopals.utils.PKCS7Padding.stripPadding;
+import static cryptopals.utils.PKCS7Util.applyPadding;
+import static cryptopals.utils.PKCS7Util.stripPadding;
 
 public class CBCPaddingOracle {
 

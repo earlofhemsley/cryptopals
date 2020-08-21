@@ -21,8 +21,8 @@ import java.util.Base64;
 import java.util.List;
 
 import static cryptopals.challenges.Section02.AESinCBCMode;
-import static cryptopals.utils.PKCS7Padding.applyPadding;
-import static cryptopals.utils.PKCS7Padding.stripPadding;
+import static cryptopals.utils.PKCS7Util.applyPadding;
+import static cryptopals.utils.PKCS7Util.stripPadding;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

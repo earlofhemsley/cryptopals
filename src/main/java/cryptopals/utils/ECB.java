@@ -13,8 +13,8 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import static cryptopals.utils.PKCS7Padding.applyPadding;
-import static cryptopals.utils.PKCS7Padding.stripPadding;
+import static cryptopals.utils.PKCS7Util.applyPadding;
+import static cryptopals.utils.PKCS7Util.stripPadding;
 
 /**
  * A tool for ECB-related operations

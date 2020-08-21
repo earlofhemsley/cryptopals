@@ -7,7 +7,12 @@ import java.util.Arrays;
 /**
  * a tool to apply or strip padding from a plain text
  */
-public class PKCS7Padding {
+public class PKCS7Util {
+
+    private PKCS7Util() {
+        throw new AssertionError("Cannot instantiate PCKS7Util");
+    }
+
     /**
      * given a message and a block size, implement pkcs7 padding on the message to make the message conform to the block size
      *

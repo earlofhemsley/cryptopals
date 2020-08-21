@@ -23,7 +23,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import static cryptopals.utils.PKCS7Padding.applyPadding;
+import static cryptopals.utils.PKCS7Util.applyPadding;
 
 public class Section02 {
 
