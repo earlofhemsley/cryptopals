@@ -4,7 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cryptopals.enums.CipherMode;
 import cryptopals.sec01.util.Challenge4Tool;
+import cryptopals.sec01.util.Challenge5Tool;
+import cryptopals.sec01.util.Challenge6Tool;
+import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
@@ -58,24 +62,25 @@ public class Section01Tests {
 
     @Test
     public void fiveTest() throws IOException, DecoderException {
+        Challenge5Tool tool = new Challenge5Tool("ICE".getBytes());
         String toEncrypt = "Burning 'em, if you ain't quick and nimble\n" +
                 "I go crazy when I hear a cymbal";
-        var result = Section01.repeatingKeyEncrypt(toEncrypt);
+        var result = tool.repeatingKeyEncrypt(toEncrypt);
         var expected = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f";
         assertEquals(expected, result);
 
         var bloodContents = Utils.readFileAsWhole("src/test/resources/blood");
         var singleStringBloodContents = String.join("\n", bloodContents);
 
-        encryptAndOutputAndDecryptAndOutput(singleStringBloodContents, false);
-        encryptAndOutputAndDecryptAndOutput(Utils.readFileAsWhole("src/test/resources/enid.jok"), false);
-        encryptAndOutputAndDecryptAndOutput(Utils.readFileAsWhole("src/test/resources/einstein"), false);
-        encryptAndOutputAndDecryptAndOutput(Utils.readFileAsWhole("src/test/resources/spock.txt"), true);
+        encryptAndOutputAndDecryptAndOutput(tool, singleStringBloodContents, false);
+        encryptAndOutputAndDecryptAndOutput(tool, Utils.readFileAsWhole("src/test/resources/enid.jok"), false);
+        encryptAndOutputAndDecryptAndOutput(tool, Utils.readFileAsWhole("src/test/resources/einstein"), false);
+        encryptAndOutputAndDecryptAndOutput(tool, Utils.readFileAsWhole("src/test/resources/spock.txt"), true);
     }
 
-    private void encryptAndOutputAndDecryptAndOutput(String original, boolean print) throws DecoderException {
-        var encrypted = Section01.repeatingKeyEncrypt(original);
-        var decrypted = Section01.repeatingKeyDecrypt(encrypted);
+    private void encryptAndOutputAndDecryptAndOutput(Challenge5Tool tool, String original, boolean print) throws DecoderException {
+        var encrypted = tool.repeatingKeyEncrypt(original);
+        var decrypted = tool.repeatingKeyDecrypt(encrypted);
 
         assertEquals(original, decrypted);
 
@@ -96,7 +101,7 @@ public class Section01Tests {
         var fileContents = Utils.readFileAsListOfLines("src/test/resources/6.txt");
         var joinedContents = String.join("", fileContents);
 
-        String decrypted = Section01.breakTheCipher(joinedContents);
+        String decrypted = Challenge6Tool.breakTheCipher(joinedContents);
         System.out.println(decrypted);
         assertTrue(decrypted.contains("I'm back and I'm ringin' the bell"));
     }
@@ -108,7 +113,7 @@ public class Section01Tests {
 
         var fileContents = String.join("", Utils.readFileAsListOfLines("src/test/resources/7.txt"));
         byte[] cipherTextBytes = Base64.getDecoder().decode(fileContents);
-        byte[] decrypted = Section01.AESInECBMode(cipherTextBytes, cipherKey.getBytes(), Cipher.DECRYPT_MODE);
+        byte[] decrypted = new ECB(cipherKey.getBytes()).AESInECBMode(cipherTextBytes, CipherMode.DECRYPT);
         assertTrue(new String(decrypted).contains("I'm back and I'm ringin' the bell"));
     }
 
@@ -121,7 +126,7 @@ public class Section01Tests {
             byte[] decodedRow = Hex.decodeHex(fileContents.get(i));
 
             //run detection
-            if(Section01.detectECBInCipherBytes(decodedRow, "1234567890123456".getBytes())) {
+            if(new ECB("1234567890123456".getBytes()).detectECBInCipherBytes(decodedRow)) {
                 rowNumber = i;
                 break;
             }

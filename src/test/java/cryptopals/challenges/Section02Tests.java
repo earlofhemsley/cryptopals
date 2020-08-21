@@ -14,6 +14,7 @@ import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Challenge16Oracle;
+import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;
 import org.apache.commons.codec.DecoderException;
@@ -74,7 +75,7 @@ public class Section02Tests {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
             var result = Section02.encryptionOracleUnknownMode(myHackerInput.getBytes());
-            boolean ecbDetected = Section01.detectECBInCipherBytes(result.getRight(), "1234567890123456".getBytes());
+            boolean ecbDetected = new ECB("1234567890123456".getBytes()).detectECBInCipherBytes(result.getRight());
             assertEquals(result.getLeft(), ecbDetected);
         }
     }

@@ -3,8 +3,10 @@ package cryptopals.challenges;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
+import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;
+import jdk.jshell.execution.Util;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,6 +57,7 @@ public class Section02 {
     }
 
     public static byte[] AESinCBCMode(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, CipherMode cipherMode)  {
+        final ECB ecb = new ECB(cipherKeyBytes);
         if (cipherMode == null) {
             throw new IllegalArgumentException("Cipher mode is required");
         }
@@ -81,11 +84,11 @@ public class Section02 {
                 switch (cipherMode) {
                     case ENCRYPT:
                         byte[] xorNthBlock = xor.multiByteXOR(nthBlock, previousBlock);
-                        currentBlock = Section01.AESInECBMode(xorNthBlock, cipherKeyBytes, cipherMode.getIntValue());
+                        currentBlock = ecb.AESInECBMode(xorNthBlock, cipherMode);
                         previousBlock = currentBlock;
                         break;
                     case DECRYPT:
-                        byte[] decNthBlock = Section01.AESInECBMode(nthBlock, cipherKeyBytes, cipherMode.getIntValue());
+                        byte[] decNthBlock = ecb.AESInECBMode(nthBlock, cipherMode);
                         currentBlock = xor.multiByteXOR(decNthBlock, previousBlock);
                         previousBlock = nthBlock;
                         break;
@@ -115,22 +118,22 @@ public class Section02 {
         int blockSize = 16;
 
         //get key
-        byte[] cipherKey = Utils.randomBytes(blockSize);
+        final ECB ecb = new ECB(Utils.randomBytes(blockSize));
 
         //choose ebc or cbc
         if (r.nextInt(2) == 0) {
             //pad manually here since the ECB function doesn't do it
-            return Pair.of(true, Section01.AESinECBModeWPadding(toEncrypt, cipherKey, Cipher.ENCRYPT_MODE));
+            return Pair.of(true, ecb.AESinECBModeWPadding(toEncrypt, CipherMode.ENCRYPT));
         } else {
-            return Pair.of(false, AESinCBCMode(implementPKCS7Padding(toEncrypt, cipherKey.length), cipherKey, Utils.randomBytes(blockSize), CipherMode.ENCRYPT));
+            return Pair.of(false, AESinCBCMode(implementPKCS7Padding(toEncrypt, blockSize), ecb.getCipherKeyBytes(), Utils.randomBytes(blockSize), CipherMode.ENCRYPT));
         }
     }
 
     /**
      * for use in challenge 12
+     * @param ecb
      * @param myInput
      * @param unknownInput
-     * @param cipherKeyBytes
      * @return
      * @throws InvalidKeyException
      * @throws BadPaddingException
@@ -138,14 +141,14 @@ public class Section02 {
      * @throws IllegalBlockSizeException
      * @throws NoSuchPaddingException
      */
-    private static byte[] encryptionOracleECBOnlyWithConcatenation(byte[] myInput, byte[] unknownInput, byte[] cipherKeyBytes) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+    private static byte[] encryptionOracleECBOnlyWithConcatenation(final ECB ecb, byte[] myInput, byte[] unknownInput) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
         byte[] concatenatedInput = ArrayUtils.addAll(myInput, unknownInput);
-        return Section01.AESinECBModeWPadding(concatenatedInput, cipherKeyBytes, Cipher.ENCRYPT_MODE);
+        return ecb.AESinECBModeWPadding(concatenatedInput, CipherMode.ENCRYPT);
     }
 
     public static byte[] breakECBEncryptionUsingOracle(byte[] unknownInput) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException {
         //get a key
-        final byte[] cipherKey = Utils.randomBytes(16);
+        final ECB ecb = new ECB(Utils.randomBytes(16));
 
         //discover the block size of the cipher
         Integer blockSize = null;
@@ -155,7 +158,7 @@ public class Section02 {
             //watch for repetition
             byte[] hackerInput = new byte[i];
             Arrays.fill(hackerInput, (byte) 'A');
-            oracleResult = encryptionOracleECBOnlyWithConcatenation(hackerInput, unknownInput, cipherKey);
+            oracleResult = encryptionOracleECBOnlyWithConcatenation(ecb, hackerInput, unknownInput);
 
             //see if the first i/2 bytes equals the second i/2 bytes
             if (Arrays.equals(Utils.sliceByteArray(oracleResult, 0, i/2), Utils.sliceByteArray(oracleResult, i/2, i/2))) {
@@ -167,7 +170,7 @@ public class Section02 {
         assert blockSize != null && blockSize == 16;
 
         //detect that ECB is being used
-        boolean ecbDetected = Section01.detectECBInCipherBytes(oracleResult, cipherKey);
+        boolean ecbDetected = ecb.detectECBInCipherBytes(oracleResult);
         assert ecbDetected;
 
         //discover the first byte in the message
@@ -177,7 +180,7 @@ public class Section02 {
         Map<Integer, byte[]> dictionary = new HashMap<>();
         for (int i = 0; i < 256; i++) {
             hackerInput[blockSize-1] = (byte) i;
-            var result = encryptionOracleECBOnlyWithConcatenation(hackerInput, new byte[0], cipherKey);
+            var result = encryptionOracleECBOnlyWithConcatenation(ecb, hackerInput, new byte[0]);
             dictionary.put(i, result);
         }
 
@@ -188,7 +191,7 @@ public class Section02 {
             //slice off a byte of the unknown input
             hackerInput[blockSize-1] = unknownInput[i];
             //encrypt
-            var encrypted = encryptionOracleECBOnlyWithConcatenation(hackerInput, new byte[0], cipherKey);
+            var encrypted = encryptionOracleECBOnlyWithConcatenation(ecb, hackerInput, new byte[0]);
             //look up the result in the dictionary
             var dictionaryResult = dictionary.entrySet().stream().filter(e -> Arrays.equals(encrypted, e.getValue())).findAny()
                     .orElseThrow(() -> new IllegalStateException("Could not find encrypted result in dictionary"));
@@ -231,17 +234,17 @@ public class Section02 {
     private static byte[] challenge13key = Utils.randomBytes(16);
 
     public static byte[] encryptProfile(String profile) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        return Section01.AESinECBModeWPadding(profile.getBytes(), challenge13key, Cipher.ENCRYPT_MODE);
+        return new ECB(challenge13key).AESinECBModeWPadding(profile.getBytes(), CipherMode.ENCRYPT);
     }
 
     public static Map<String, Object> decryptAndParse(byte[] encryptedProfile) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        return keyValueParsing(new String(Section01.AESinECBModeWPadding(encryptedProfile, challenge13key, Cipher.DECRYPT_MODE)));
+        return keyValueParsing(new String(new ECB(challenge13key).AESinECBModeWPadding(encryptedProfile, CipherMode.DECRYPT)));
     }
 
     private static final byte[] randomPrefix = Utils.randomBytes(new Random().nextInt(100));
     private static byte[] encryptionOracleECBWithPrefix(byte[] myInput, byte[] unknownInput, byte[] cipherKeyBytes) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
         byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, myInput);
-        return encryptionOracleECBOnlyWithConcatenation(prefixPlusInput, unknownInput, cipherKeyBytes);
+        return encryptionOracleECBOnlyWithConcatenation(new ECB(cipherKeyBytes), prefixPlusInput, unknownInput);
     }
 
     public static byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException, DecoderException {
@@ -275,7 +278,7 @@ public class Section02 {
         byte[] repeatingBytes = new byte[3*blockSize];
         Arrays.fill(repeatingBytes, (byte) 'A');
         var oracled = encryptionOracleECBWithPrefix(repeatingBytes, unknownInput, cipherKey);
-        boolean ecbDetected = Section01.detectECBInCipherBytes(oracled, cipherKey);
+        boolean ecbDetected = new ECB(cipherKey).detectECBInCipherBytes(oracled);
         assert ecbDetected;
 
         //figure out how many to add until this block no longer changes
