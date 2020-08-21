@@ -1,6 +1,5 @@
 package cryptopals.utils;
 
-import cryptopals.challenges.Section02;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import org.apache.commons.lang3.StringUtils;
@@ -13,8 +12,8 @@ import java.util.Map;
 import java.util.Random;
 
 import static cryptopals.challenges.Section02.AESinCBCMode;
-import static cryptopals.challenges.Section02.implementPKCS7Padding;
-import static cryptopals.challenges.Section02.stripPCKS7Padding;
+import static cryptopals.utils.PKCS7Padding.applyPadding;
+import static cryptopals.utils.PKCS7Padding.stripPadding;
 
 public class CBCPaddingOracle {
 
@@ -39,7 +38,7 @@ public class CBCPaddingOracle {
         var r = new Random(System.currentTimeMillis());
         var selectedString = stringList.get(r.nextInt(stringList.size()));
         var ivec = Utils.randomBytes(16);
-        var encryptedString = AESinCBCMode(implementPKCS7Padding(selectedString.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
+        var encryptedString = AESinCBCMode(applyPadding(selectedString.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
         return Pair.of(ivec, encryptedString);
     }
 
@@ -47,7 +46,7 @@ public class CBCPaddingOracle {
         var map = new LinkedHashMap<byte[], byte[]>();
         for (String s : stringList) {
             var ivec = Utils.randomBytes(16);
-            var encryptedString = AESinCBCMode(implementPKCS7Padding(s.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
+            var encryptedString = AESinCBCMode(applyPadding(s.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
             map.put(ivec, encryptedString);
         }
         return map;
@@ -57,7 +56,7 @@ public class CBCPaddingOracle {
         var decrypted = AESinCBCMode(cipherText, key, ivec, CipherMode.DECRYPT);
         try {
             //don't catch an exception, it's good padding
-            stripPCKS7Padding(decrypted);
+            stripPadding(decrypted);
             return true;
         } catch (BadPaddingRuntimeException e) {
             //if it's bad padding, then we return false
@@ -66,7 +65,7 @@ public class CBCPaddingOracle {
     }
 
     public boolean decryptionIsPresentInOriginalPlainTexts(byte[] decryption) {
-        String candidate = new String(Section02.stripPCKS7Padding(decryption));
+        String candidate = new String(stripPadding(decryption));
         return stringList.stream().anyMatch(s -> StringUtils.equals(candidate, s));
     }
 }

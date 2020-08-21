@@ -1,18 +1,8 @@
 package cryptopals.challenges;
 
-import static cryptopals.challenges.Section02.AESinCBCMode;
-import static cryptopals.challenges.Section02.implementPKCS7Padding;
-import static cryptopals.challenges.Section02.stripPCKS7Padding;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.google.common.collect.Lists;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
-import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.Challenge16Oracle;
 import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
@@ -21,29 +11,37 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import static cryptopals.challenges.Section02.AESinCBCMode;
+import static cryptopals.utils.PKCS7Padding.applyPadding;
+import static cryptopals.utils.PKCS7Padding.stripPadding;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Section02Tests {
     @Test
-    public void implementPKCS7PaddingTest() {
+    public void testChallengeNine() {
         String testString = "YELLOW SUBMARINE";
-        byte[] result = Section02.implementPKCS7Padding(testString.getBytes(), 20);
+        byte[] result = applyPadding(testString.getBytes(), 20);
         String expected = testString + (char) 4 + (char) 4 + (char) 4 + (char) 4;
         assertArrayEquals(expected.getBytes(), result);
 
-        result = Section02.implementPKCS7Padding(testString.getBytes(), 3);
+        result = applyPadding(testString.getBytes(), 3);
         expected = testString + (char) 2 + (char) 2;
         assertArrayEquals(expected.getBytes(), result);
 
-        result = Section02.implementPKCS7Padding(testString.getBytes(), 4);
+        result = applyPadding(testString.getBytes(), 4);
         expected = testString + (char) 4 + (char) 4 + (char) 4 + (char) 4;
         assertArrayEquals(expected.getBytes(), result);
     }
@@ -55,16 +53,16 @@ public class Section02Tests {
         String key = "YELLOW SUBMARINE";
         byte[] iv = new byte[key.length()];
 
-        byte[] enc = AESinCBCMode(Section02.implementPKCS7Padding(lorem.getBytes(), key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
-        String loremPost = new String(stripPCKS7Padding(AESinCBCMode(enc, key.getBytes(), iv, CipherMode.DECRYPT)));
+        byte[] enc = AESinCBCMode(applyPadding(lorem.getBytes(), key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
+        String loremPost = new String(stripPadding(AESinCBCMode(enc, key.getBytes(), iv, CipherMode.DECRYPT)));
         assertEquals(lorem, loremPost);
 
         String base64Contents = String.join("", Utils.readFileAsListOfLines("src/test/resources/10.txt"));
         byte[] fileContents = Base64.getDecoder().decode(base64Contents);
-        byte[] decryptedFileContents = stripPCKS7Padding(AESinCBCMode(fileContents, key.getBytes(), iv, CipherMode.DECRYPT));
+        byte[] decryptedFileContents = stripPadding(AESinCBCMode(fileContents, key.getBytes(), iv, CipherMode.DECRYPT));
 
         //sanity check
-        byte[] reEncryptedFileContents = AESinCBCMode(implementPKCS7Padding(decryptedFileContents, key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
+        byte[] reEncryptedFileContents = AESinCBCMode(applyPadding(decryptedFileContents, key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
         assertArrayEquals(fileContents, reEncryptedFileContents);
 
         assertTrue(new String(decryptedFileContents).contains("You're weakenin' fast, YO! and I can tell it"));
@@ -132,9 +130,9 @@ public class Section02Tests {
 
     @Test
     public void testChallenge15() throws BadPaddingException {
-        assertArrayEquals("ICE ICE BABY".getBytes(), stripPCKS7Padding(generatePaddingSample(new byte[] {4,4,4,4})));
-        assertThrows(BadPaddingRuntimeException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {5,5,5,5})));
-        assertThrows(BadPaddingRuntimeException.class, () -> stripPCKS7Padding(generatePaddingSample(new byte[] {1,2,3,4})));
+        assertArrayEquals("ICE ICE BABY".getBytes(), stripPadding(generatePaddingSample(new byte[] {4,4,4,4})));
+        assertThrows(BadPaddingRuntimeException.class, () -> stripPadding(generatePaddingSample(new byte[] {5,5,5,5})));
+        assertThrows(BadPaddingRuntimeException.class, () -> stripPadding(generatePaddingSample(new byte[] {1,2,3,4})));
     }
 
     private static byte[] generatePaddingSample(byte[] paddingBytes) {

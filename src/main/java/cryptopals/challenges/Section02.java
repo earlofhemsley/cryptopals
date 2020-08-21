@@ -1,12 +1,10 @@
 package cryptopals.challenges;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.ECB;
 import cryptopals.utils.Utils;
 import cryptopals.utils.XOR;
-import jdk.jshell.execution.Util;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,39 +20,12 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import static cryptopals.utils.PKCS7Padding.applyPadding;
+
 public class Section02 {
-    /**
-     * given a message and a block size, implement pkcs7 padding on the message to make the message conform to the block size
-     *
-     * this is the solution to challenge nine
-     *
-     * @param messageBytes
-     * @param blockSize
-     * @return
-     */
-    public static byte[] implementPKCS7Padding(byte[] messageBytes, int blockSize) {
-        if (blockSize >= 256 || blockSize <= 0) {
-            throw new IllegalArgumentException("Block size can only be between 1 and 255, inclusive");
-        }
-        int numOfPaddingBytes = blockSize - messageBytes.length % blockSize;
-
-        int newLength = (int) Math.ceil((double) messageBytes.length / blockSize) * blockSize;
-        if (newLength == messageBytes.length) {
-            newLength += blockSize;
-        }
-
-        byte[] paddedMessage = Arrays.copyOf(messageBytes, newLength);
-
-        for (int i = messageBytes.length; i<messageBytes.length + numOfPaddingBytes; i++) {
-            paddedMessage[i] = (byte) numOfPaddingBytes;
-        }
-
-        return paddedMessage;
-    }
 
     public static byte[] AESinCBCMode(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, CipherMode cipherMode)  {
         final ECB ecb = new ECB(cipherKeyBytes);
@@ -125,7 +96,7 @@ public class Section02 {
             //pad manually here since the ECB function doesn't do it
             return Pair.of(true, ecb.AESinECBModeWPadding(toEncrypt, CipherMode.ENCRYPT));
         } else {
-            return Pair.of(false, AESinCBCMode(implementPKCS7Padding(toEncrypt, blockSize), ecb.getCipherKeyBytes(), Utils.randomBytes(blockSize), CipherMode.ENCRYPT));
+            return Pair.of(false, AESinCBCMode(applyPadding(toEncrypt, blockSize), ecb.getCipherKeyBytes(), Utils.randomBytes(blockSize), CipherMode.ENCRYPT));
         }
     }
 
@@ -322,17 +293,4 @@ public class Section02 {
         return decryptedMessage;
     }
 
-    public static byte[] stripPCKS7Padding(byte[] plainText) {
-        int last = plainText[plainText.length - 1];
-        if (plainText.length - last < 0 || plainText.length - last >= plainText.length) {
-            throw new BadPaddingRuntimeException("padding bytes result in indices outside the length of the plain text");
-        }
-        for (int i = last; i > 0; i--) {
-            if (plainText[plainText.length - last] != last) {
-                throw new BadPaddingRuntimeException("last n bytes of block didn't match");
-            }
-        }
-        int toKeep = plainText.length - last;
-        return Utils.sliceByteArray(plainText, 0, toKeep);
-    }
 }

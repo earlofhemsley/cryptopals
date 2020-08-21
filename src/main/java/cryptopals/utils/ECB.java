@@ -1,6 +1,5 @@
 package cryptopals.utils;
 
-import cryptopals.challenges.Section02;
 import cryptopals.enums.CipherMode;
 import org.apache.commons.codec.DecoderException;
 
@@ -13,6 +12,9 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import static cryptopals.utils.PKCS7Padding.applyPadding;
+import static cryptopals.utils.PKCS7Padding.stripPadding;
 
 /**
  * A tool for ECB-related operations
@@ -95,13 +97,13 @@ public class ECB {
     public byte[] AESinECBModeWPadding(byte[] cipherTextBytes, CipherMode cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
         //implement padding
         if (cipherMode == CipherMode.ENCRYPT) {
-            cipherTextBytes = Section02.implementPKCS7Padding(cipherTextBytes, cipherKeyBytes.length);
+            cipherTextBytes = applyPadding(cipherTextBytes, cipherKeyBytes.length);
         }
 
         var theFinal = AESInECBMode(cipherTextBytes, cipherMode);
 
         if (cipherMode == CipherMode.DECRYPT) {
-            theFinal = Section02.stripPCKS7Padding(theFinal);
+            theFinal = stripPadding(theFinal);
         }
 
         return theFinal;
