@@ -1,7 +1,8 @@
-package cryptopals.utils;
+package cryptopals.tool.sec03;
 
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
+import cryptopals.utils.ByteArrayUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,7 +16,10 @@ import static cryptopals.challenges.Section02.AESinCBCMode;
 import static cryptopals.utils.PKCS7Util.applyPadding;
 import static cryptopals.utils.PKCS7Util.stripPadding;
 
-public class CBCPaddingOracle {
+/**
+ * A tool for challenge 17, formerly known as the CBC Padding Oracle
+ */
+public class Challenge17Tool {
 
     private static final List<String> stringList = new ArrayList<>();
     static {
@@ -30,10 +34,15 @@ public class CBCPaddingOracle {
         stringList.add("MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=");
         stringList.add("MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93");
     }
-
-
     private static final byte[] key = ByteArrayUtil.randomBytes(16);
 
+    /**
+     * The first function should select at random one of 10 strings,
+     * generate a random AES key (which it should save for all future encryptions),
+     * pad the string out to the 16-byte AES block size
+     * and CBC-encrypt it under that key, providing the caller the ciphertext and IV.
+     * @return pair of cipher text and iv
+     */
     public Pair<byte[], byte[]> selectRandomStringAndEncrypt() {
         var r = new Random(System.currentTimeMillis());
         var selectedString = stringList.get(r.nextInt(stringList.size()));
@@ -42,6 +51,11 @@ public class CBCPaddingOracle {
         return Pair.of(ivec, encryptedString);
     }
 
+    /**
+     * This function does the same as {@link Challenge17Tool#selectRandomStringAndEncrypt()}
+     * except that it will return a map of _all_ strings and _all_ ivecs for comprehensive testing
+     * @return map of ciphertext - iv pairs
+     */
     public Map<byte[], byte[]> getAllIvecsAndStrings() {
         var map = new LinkedHashMap<byte[], byte[]>();
         for (String s : stringList) {
@@ -52,7 +66,11 @@ public class CBCPaddingOracle {
         return map;
     }
 
-    public boolean validatePKCS7Padding(byte[] cipherText, byte[] ivec) {
+    /**
+     * The second function should consume the ciphertext produced by the first function,
+     * decrypt it, check its padding, and return true or false depending on whether the padding is valid.
+     */
+    public boolean askTheOracleIsPaddingValid(byte[] cipherText, byte[] ivec) {
         var decrypted = AESinCBCMode(cipherText, key, ivec, CipherMode.DECRYPT);
         try {
             //don't catch an exception, it's good padding

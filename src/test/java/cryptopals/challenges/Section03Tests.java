@@ -1,7 +1,7 @@
 package cryptopals.challenges;
 
 import cryptopals.exceptions.CryptopalsException;
-import cryptopals.utils.CBCPaddingOracle;
+import cryptopals.tool.sec03.Challenge17Tool;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.XOR;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ public class Section03Tests {
     }
 
     private void challenge17() {
-        var oracle = new CBCPaddingOracle();
+        var oracle = new Challenge17Tool();
         var set = oracle.getAllIvecsAndStrings();
         final XOR xor = new XOR();
         for (Map.Entry<byte[], byte[]> pair : set.entrySet()) {
@@ -53,7 +53,7 @@ public class Section03Tests {
         }
     }
 
-    private void findIByte(byte[] intermediate, byte[] realCipherBlock, int blockSize, int position, CBCPaddingOracle oracle) {
+    private void findIByte(byte[] intermediate, byte[] realCipherBlock, int blockSize, int position, Challenge17Tool oracle) {
         //do this twice to be twice as sure
         //get the bitwise complement to be absolutely sure there's no fluke
         byte[] cPrimeA = ByteArrayUtil.randomBytes(blockSize);
@@ -67,8 +67,8 @@ public class Section03Tests {
         int countOfCandidates = 0;
         for (int j = Byte.MIN_VALUE; j <= Byte.MAX_VALUE; j++) {
             cPrimeA[position] = cPrimeB[position] = (byte) j;
-            if (oracle.validatePKCS7Padding(realCipherBlock, cPrimeA)
-                    && oracle.validatePKCS7Padding(realCipherBlock, cPrimeB)) {
+            if (oracle.askTheOracleIsPaddingValid(realCipherBlock, cPrimeA)
+                    && oracle.askTheOracleIsPaddingValid(realCipherBlock, cPrimeB)) {
                 intermediate[position] = (byte) (cPrimeA[position] ^ plainTextPrime);
                 countOfCandidates++;
             }
