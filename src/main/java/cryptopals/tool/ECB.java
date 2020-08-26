@@ -1,4 +1,4 @@
-package cryptopals.utils;
+package cryptopals.tool;
 
 import cryptopals.enums.CipherMode;
 import org.apache.commons.codec.DecoderException;

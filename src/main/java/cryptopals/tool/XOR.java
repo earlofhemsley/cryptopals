@@ -1,4 +1,4 @@
-package cryptopals.utils;
+package cryptopals.tool;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;

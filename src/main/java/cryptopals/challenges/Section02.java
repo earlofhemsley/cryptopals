@@ -2,9 +2,9 @@ package cryptopals.challenges;
 
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.CryptopalsException;
-import cryptopals.utils.ECB;
+import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
-import cryptopals.utils.XOR;
+import cryptopals.tool.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;

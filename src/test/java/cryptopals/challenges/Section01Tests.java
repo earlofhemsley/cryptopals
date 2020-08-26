@@ -9,15 +9,13 @@ import cryptopals.tool.sec01.Challenge3Tool;
 import cryptopals.tool.sec01.Challenge4Tool;
 import cryptopals.tool.sec01.Challenge5Tool;
 import cryptopals.tool.sec01.Challenge6Tool;
-import cryptopals.utils.ECB;
-import cryptopals.utils.ByteArrayUtil;
+import cryptopals.tool.ECB;
 import cryptopals.utils.FileUtil;
-import cryptopals.utils.XOR;
+import cryptopals.tool.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

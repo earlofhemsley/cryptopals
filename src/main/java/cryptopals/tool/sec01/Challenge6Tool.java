@@ -1,8 +1,8 @@
 package cryptopals.tool.sec01;
 
-import cryptopals.utils.Chi;
+import cryptopals.tool.Chi;
 import cryptopals.utils.ByteArrayUtil;
-import cryptopals.utils.XOR;
+import cryptopals.tool.XOR;
 
 import java.util.Base64;
 import java.util.HashMap;

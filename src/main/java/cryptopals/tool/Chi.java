@@ -1,4 +1,4 @@
-package cryptopals.utils;
+package cryptopals.tool;
 
 import java.util.HashMap;
 import java.util.Map;

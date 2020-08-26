@@ -1,7 +1,7 @@
 package cryptopals.tool.sec01;
 
-import cryptopals.utils.Chi;
-import cryptopals.utils.XOR;
+import cryptopals.tool.Chi;
+import cryptopals.tool.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 

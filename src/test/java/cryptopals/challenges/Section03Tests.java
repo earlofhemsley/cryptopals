@@ -3,7 +3,7 @@ package cryptopals.challenges;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.sec03.Challenge17Tool;
 import cryptopals.utils.ByteArrayUtil;
-import cryptopals.utils.XOR;
+import cryptopals.tool.XOR;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
