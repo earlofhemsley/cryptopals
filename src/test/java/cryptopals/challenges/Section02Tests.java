@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.CBC;
+import cryptopals.tool.sec02.Challenge11Tool;
 import cryptopals.tool.sec02.Challenge16Tool;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
@@ -74,7 +75,7 @@ public class Section02Tests {
     public void testChallenge11() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, DecoderException {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
-            var result = Section02.encryptionOracleUnknownMode(myHackerInput.getBytes());
+            var result = new Challenge11Tool().encryptionOracleUnknownMode(myHackerInput.getBytes());
             boolean ecbDetected = new ECB("1234567890123456".getBytes()).detectECBInCipherBytes(result.getRight());
             assertEquals(result.getLeft(), ecbDetected);
         }
