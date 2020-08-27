@@ -2,6 +2,7 @@ package cryptopals.tool.sec03;
 
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
+import cryptopals.tool.CBC;
 import cryptopals.utils.ByteArrayUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static cryptopals.challenges.Section02.AESinCBCMode;
 import static cryptopals.utils.PKCS7Util.applyPadding;
 import static cryptopals.utils.PKCS7Util.stripPadding;
 
@@ -34,7 +34,11 @@ public class Challenge17Tool {
         stringList.add("MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=");
         stringList.add("MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93");
     }
-    private static final byte[] key = ByteArrayUtil.randomBytes(16);
+    private final CBC cbc;
+
+    public Challenge17Tool() {
+        this.cbc = new CBC(ByteArrayUtil.randomBytes(16));
+    }
 
     /**
      * The first function should select at random one of 10 strings,
@@ -47,7 +51,7 @@ public class Challenge17Tool {
         var r = new Random(System.currentTimeMillis());
         var selectedString = stringList.get(r.nextInt(stringList.size()));
         var ivec = ByteArrayUtil.randomBytes(16);
-        var encryptedString = AESinCBCMode(applyPadding(selectedString.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
+        var encryptedString = cbc.encryptToByteArray(selectedString.getBytes(), ivec);
         return Pair.of(ivec, encryptedString);
     }
 
@@ -60,7 +64,7 @@ public class Challenge17Tool {
         var map = new LinkedHashMap<byte[], byte[]>();
         for (String s : stringList) {
             var ivec = ByteArrayUtil.randomBytes(16);
-            var encryptedString = AESinCBCMode(applyPadding(s.getBytes(), key.length), key, ivec, CipherMode.ENCRYPT);
+            var encryptedString = cbc.encryptToByteArray(s.getBytes(), ivec);
             map.put(ivec, encryptedString);
         }
         return map;
@@ -71,10 +75,9 @@ public class Challenge17Tool {
      * decrypt it, check its padding, and return true or false depending on whether the padding is valid.
      */
     public boolean askTheOracleIsPaddingValid(byte[] cipherText, byte[] ivec) {
-        var decrypted = AESinCBCMode(cipherText, key, ivec, CipherMode.DECRYPT);
         try {
+            cbc.decryptAsString(cipherText, ivec);
             //don't catch an exception, it's good padding
-            stripPadding(decrypted);
             return true;
         } catch (BadPaddingRuntimeException e) {
             //if it's bad padding, then we return false

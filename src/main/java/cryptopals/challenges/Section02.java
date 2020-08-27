@@ -1,14 +1,16 @@
 package cryptopals.challenges;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.CryptopalsException;
+import cryptopals.tool.CBC;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
-import cryptopals.tool.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -19,62 +21,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
-import static cryptopals.utils.PKCS7Util.applyPadding;
-
 public class Section02 {
 
-    public static byte[] AESinCBCMode(byte[] textBytes, final byte[] cipherKeyBytes, final byte[] iv, CipherMode cipherMode)  {
-        final ECB ecb = new ECB(cipherKeyBytes);
-        if (cipherMode == null) {
-            throw new IllegalArgumentException("Cipher mode is required");
-        }
-        //block size will be the size of the cipher key
-        //make sure the iv and the cipherkey are the same size
-        if (cipherKeyBytes.length != iv.length) {
-            throw new IllegalArgumentException("cipher key and init vector must be the same length");
-        }
-
-        if (textBytes.length % cipherKeyBytes.length != 0) {
-            throw new IllegalArgumentException("text length must be a multiple of the block size. Did you pad your message?");
-        }
-
-        final XOR xor = new XOR();
-        byte[] resultBytes = new byte[textBytes.length];
-        byte[] previousBlock = iv;
-
-        for (int n = 0; n < textBytes.length; n+=iv.length) {
-            //get the nth block
-            byte[] nthBlock = ByteArrayUtil.sliceByteArray(textBytes, n, iv.length);
-
-            byte[] currentBlock;
-            try {
-                switch (cipherMode) {
-                    case ENCRYPT:
-                        byte[] xorNthBlock = xor.multiByteXOR(nthBlock, previousBlock);
-                        currentBlock = ecb.AESInECBMode(xorNthBlock, cipherMode);
-                        previousBlock = currentBlock;
-                        break;
-                    case DECRYPT:
-                        byte[] decNthBlock = ecb.AESInECBMode(nthBlock, cipherMode);
-                        currentBlock = xor.multiByteXOR(decNthBlock, previousBlock);
-                        previousBlock = nthBlock;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal cipher mode");
-                }
-            } catch (Exception e) {
-                throw new CryptopalsException("could not execute the desired operation", e);
-            }
-
-            System.arraycopy(currentBlock, 0, resultBytes, n, iv.length);
-        }
-
-        return resultBytes;
-    }
 
     public static Pair<Boolean, byte[]> encryptionOracleUnknownMode(byte[] myInput) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
         //prepend 5-10 bytes
@@ -89,14 +37,14 @@ public class Section02 {
         int blockSize = 16;
 
         //get key
-        final ECB ecb = new ECB(ByteArrayUtil.randomBytes(blockSize));
+        final byte[] cipherKeyBytes = ByteArrayUtil.randomBytes(blockSize);
 
         //choose ebc or cbc
         if (r.nextInt(2) == 0) {
             //pad manually here since the ECB function doesn't do it
-            return Pair.of(true, ecb.AESinECBModeWPadding(toEncrypt, CipherMode.ENCRYPT));
+            return Pair.of(true, new ECB(cipherKeyBytes).AESinECBModeWPadding(toEncrypt, CipherMode.ENCRYPT));
         } else {
-            return Pair.of(false, AESinCBCMode(applyPadding(toEncrypt, blockSize), ecb.getCipherKeyBytes(), ByteArrayUtil.randomBytes(blockSize), CipherMode.ENCRYPT));
+            return Pair.of(false, new CBC(cipherKeyBytes).encryptToByteArray(toEncrypt, ByteArrayUtil.randomBytes(blockSize)));
         }
     }
 

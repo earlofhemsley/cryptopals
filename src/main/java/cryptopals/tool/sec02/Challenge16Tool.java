@@ -1,25 +1,21 @@
 package cryptopals.tool.sec02;
 
 import cryptopals.challenges.Section02;
-import cryptopals.enums.CipherMode;
+import cryptopals.tool.CBC;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-
-import static cryptopals.challenges.Section02.AESinCBCMode;
-import static cryptopals.utils.PKCS7Util.applyPadding;
-import static cryptopals.utils.PKCS7Util.stripPadding;
 
 /**
  * This tool aids in the accomplishment of challenge 16
  */
 public class Challenge16Tool {
 
-    private final byte[] key;
+    private final CBC cbc;
     private final byte[] iv;
 
     public Challenge16Tool(byte[] key, byte[] iv) {
-        this.key = key;
+        this.cbc = new CBC(key);
         this.iv = iv;
     }
 
@@ -33,21 +29,21 @@ public class Challenge16Tool {
         sb.append(sanitizedInput);
         sb.append(";comment2=%20like%20a%20pound%20of%20bacon");
         try {
-            return AESinCBCMode(applyPadding(sb.toString().getBytes(), key.length), key, iv, CipherMode.ENCRYPT);
+            return cbc.encryptToByteArray(sb.toString().getBytes(), iv);
         } catch (Exception e) {
             throw new Exception("could not encrypt", e);
         }
     }
 
     public boolean findAdminInCipherText(byte[] cipherText) throws Exception {
-        byte[] decrypted;
+        String decrypted;
         try {
-            decrypted = stripPadding(AESinCBCMode(cipherText, key, iv, CipherMode.DECRYPT));
-            System.out.println(new String(decrypted));
+            decrypted = cbc.decryptAsString(cipherText, iv);
+            System.out.println(decrypted);
         } catch (Exception e) {
             throw new Exception("could not decrypt", e);
         }
-        var mapped = Section02.keyValueParsing(new String(decrypted), ';');
+        var mapped = Section02.keyValueParsing(decrypted, ';');
         return mapped.get("admin") != null && Boolean.parseBoolean( (String) mapped.get("admin"));
     }
 }

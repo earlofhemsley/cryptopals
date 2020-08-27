@@ -3,6 +3,7 @@ package cryptopals.challenges;
 import com.google.common.collect.Lists;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
+import cryptopals.tool.CBC;
 import cryptopals.tool.sec02.Challenge16Tool;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
@@ -21,7 +22,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
 
-import static cryptopals.challenges.Section02.AESinCBCMode;
 import static cryptopals.utils.PKCS7Util.applyPadding;
 import static cryptopals.utils.PKCS7Util.stripPadding;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -52,18 +52,19 @@ public class Section02Tests {
     public void testChallenge10() throws IOException {
         String lorem = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s";
         String key = "YELLOW SUBMARINE";
+        final CBC cbc = new CBC(key.getBytes());
         byte[] iv = new byte[key.length()];
 
-        byte[] enc = AESinCBCMode(applyPadding(lorem.getBytes(), key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
-        String loremPost = new String(stripPadding(AESinCBCMode(enc, key.getBytes(), iv, CipherMode.DECRYPT)));
+        byte[] enc = cbc.encryptToByteArray(lorem.getBytes(), iv);
+        String loremPost = cbc.decryptAsString(enc, iv);
         assertEquals(lorem, loremPost);
 
         String base64Contents = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/10.txt"));
         byte[] fileContents = Base64.getDecoder().decode(base64Contents);
-        byte[] decryptedFileContents = stripPadding(AESinCBCMode(fileContents, key.getBytes(), iv, CipherMode.DECRYPT));
+        byte[] decryptedFileContents = cbc.decryptAsByteArray(fileContents, iv);
 
         //sanity check
-        byte[] reEncryptedFileContents = AESinCBCMode(applyPadding(decryptedFileContents, key.length()), key.getBytes(), iv, CipherMode.ENCRYPT);
+        byte[] reEncryptedFileContents = cbc.encryptToByteArray(decryptedFileContents, iv);
         assertArrayEquals(fileContents, reEncryptedFileContents);
 
         assertTrue(new String(decryptedFileContents).contains("You're weakenin' fast, YO! and I can tell it"));
