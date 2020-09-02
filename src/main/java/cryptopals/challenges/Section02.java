@@ -1,6 +1,5 @@
 package cryptopals.challenges;
 
-import cryptopals.enums.CipherMode;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
 import org.apache.commons.codec.DecoderException;
@@ -13,10 +12,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class Section02 {
 

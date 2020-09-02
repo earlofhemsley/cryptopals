@@ -1,17 +1,24 @@
 package cryptopals.challenges;
 
+import static cryptopals.utils.PKCS7Util.applyPadding;
+import static cryptopals.utils.PKCS7Util.stripPadding;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.Lists;
-import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.CBC;
+import cryptopals.tool.ECB;
 import cryptopals.tool.Profile;
+import cryptopals.tool.XOR;
 import cryptopals.tool.sec02.Challenge11Tool;
 import cryptopals.tool.sec02.Challenge12Tool;
 import cryptopals.tool.sec02.Challenge16Tool;
-import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.FileUtil;
-import cryptopals.tool.XOR;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -24,14 +31,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
-
-import static cryptopals.utils.PKCS7Util.applyPadding;
-import static cryptopals.utils.PKCS7Util.stripPadding;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Section02Tests {
     @Test

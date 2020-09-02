@@ -1,5 +1,8 @@
 package cryptopals.tool;
 
+import static cryptopals.utils.PKCS7Util.applyPadding;
+import static cryptopals.utils.PKCS7Util.stripPadding;
+
 import cryptopals.enums.CipherMode;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,9 +16,6 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-
-import static cryptopals.utils.PKCS7Util.applyPadding;
-import static cryptopals.utils.PKCS7Util.stripPadding;
 
 /**
  * A tool for ECB-related operations
