@@ -19,45 +19,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class Section02 {
-    public static Map<String, Object> keyValueParsing(String theString) {
-        return keyValueParsing(theString, '&');
-    }
-
-    public static Map<String, Object> keyValueParsing(String theString, char delimiter) {
-        String[] pairs = theString.split(String.valueOf(delimiter));
-        Map<String, Object> retval = new HashMap<>();
-        for (String pair : pairs) {
-            if(!pair.contains("=")) {
-                continue;
-            }
-            String[] kv = pair.split("=");
-            retval.put(kv[0], kv[1]);
-        }
-
-        return retval;
-    }
-
-    public static String profileFor(String userEmail) {
-        //encode metachars
-        Map<String, Object> upMap = new LinkedHashMap<>();
-        userEmail = userEmail.replace("=","");
-        userEmail = userEmail.replace("&","");
-        upMap.put("email", userEmail);
-        upMap.put("uid", 10);
-        upMap.put("role", "user");
-
-        return upMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
-    }
-
-    private static byte[] challenge13key = ByteArrayUtil.randomBytes(16);
-
-    public static byte[] encryptProfile(String profile) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        return new ECB(challenge13key).AESinECBModeWPadding(profile.getBytes(), CipherMode.ENCRYPT);
-    }
-
-    public static Map<String, Object> decryptAndParse(byte[] encryptedProfile) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        return keyValueParsing(new String(new ECB(challenge13key).AESinECBModeWPadding(encryptedProfile, CipherMode.DECRYPT)));
-    }
 
     private static final byte[] randomPrefix = ByteArrayUtil.randomBytes(new Random().nextInt(100));
     private static byte[] encryptionOracleECBWithPrefix(byte[] myInput, byte[] unknownInput, byte[] cipherKeyBytes) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {

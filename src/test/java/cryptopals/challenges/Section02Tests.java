@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.CBC;
+import cryptopals.tool.Profile;
 import cryptopals.tool.sec02.Challenge11Tool;
 import cryptopals.tool.sec02.Challenge12Tool;
 import cryptopals.tool.sec02.Challenge16Tool;
@@ -98,25 +99,25 @@ public class Section02Tests {
     public void testChallenge13() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
         //test kv parsing method
         var kvString = "foo=bar&baz=qux&zap=zazzle";
-        var objectMap = Section02.keyValueParsing(kvString);
+        var objectMap = Profile.keyValueParsing(kvString);
         assertEquals("bar", objectMap.get("foo"));
         assertEquals("qux", objectMap.get("baz"));
         assertEquals("zazzle", objectMap.get("zap"));
 
         //test user profile encoding method
-        var naughtyProfile = Section02.profileFor("foo@bar.com&role=admin");
-        assertEquals("email=foo@bar.comroleadmin&uid=10&role=user", naughtyProfile);
+        var naughtyProfile = new Profile("foo@bar.com&role=admin");
+        assertEquals("email=foo@bar.comroleadmin&uid=10&role=user", naughtyProfile.profileFor());
 
         //send a profile off to be hacked into an admin profile
         String string = "AAAAAAAAAAadmin" + String.valueOf((char) 11).repeat(11) + "AAA";
-        var profile = Section02.profileFor(string);
-        var encryptedProfile = Section02.encryptProfile(profile);
+        var profile = new Profile(string);
+        var encryptedProfile = profile.encryptProfile();
         assert encryptedProfile.length == 16*4;
         var block1 = ArrayUtils.subarray(encryptedProfile, 0, 16);
         var block2 = ArrayUtils.subarray(encryptedProfile, 16, 32);
         var block3 = ArrayUtils.subarray(encryptedProfile, 32, 48);
         var hackedInput = ArrayUtils.addAll(block1, ArrayUtils.addAll(block3, block2));
-        var decryptedAndParsed = Section02.decryptAndParse(hackedInput);
+        var decryptedAndParsed = new Profile(hackedInput);
         assertEquals("admin", decryptedAndParsed.get("role"));
     }
 

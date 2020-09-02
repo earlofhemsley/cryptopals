@@ -2,6 +2,7 @@ package cryptopals.tool.sec02;
 
 import cryptopals.challenges.Section02;
 import cryptopals.tool.CBC;
+import cryptopals.tool.Profile;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -43,7 +44,7 @@ public class Challenge16Tool {
         } catch (Exception e) {
             throw new Exception("could not decrypt", e);
         }
-        var mapped = Section02.keyValueParsing(decrypted, ';');
+        var mapped = Profile.keyValueParsing(decrypted, ';');
         return mapped.get("admin") != null && Boolean.parseBoolean( (String) mapped.get("admin"));
     }
 }
