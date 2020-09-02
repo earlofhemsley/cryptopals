@@ -2,6 +2,7 @@ package cryptopals.tool;
 
 import cryptopals.enums.CipherMode;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -107,5 +108,10 @@ public class ECB {
         }
 
         return theFinal;
+    }
+
+    public byte[] AESinEBCModeWConcatenation(byte[] myInput, byte[] unknownInput) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+        byte[] concatenatedInput = ArrayUtils.addAll(myInput, unknownInput);
+        return AESinECBModeWPadding(concatenatedInput, CipherMode.ENCRYPT);
     }
 }

@@ -5,6 +5,7 @@ import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.CBC;
 import cryptopals.tool.sec02.Challenge11Tool;
+import cryptopals.tool.sec02.Challenge12Tool;
 import cryptopals.tool.sec02.Challenge16Tool;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
@@ -89,7 +90,7 @@ public class Section02Tests {
         "YnkK";
 
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
-        byte[] decrypted = Section02.breakECBEncryptionUsingOracle(unknownInputDecoded);
+        byte[] decrypted = new Challenge12Tool().breakECBEncryption(unknownInputDecoded);
         assertArrayEquals(unknownInputDecoded, decrypted);
     }
 

@@ -5,8 +5,6 @@ import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.PKCS7Util;
 
-import javax.crypto.Cipher;
-
 /**
  * implementation of a CBC encryption / decryption tool.
  */
