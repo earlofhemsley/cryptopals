@@ -1,4 +1,4 @@
-package cryptopals.challenges;
+package cryptopals.tool.sec02;
 
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
@@ -15,20 +15,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class Section02 {
+public class Challenge14Tool {
+    private final ECB ecb = new ECB(ByteArrayUtil.randomBytes(16));
+    private final byte[] randomPrefix = ByteArrayUtil.randomBytes(new Random().nextInt(100));
 
-    private static final byte[] randomPrefix = ByteArrayUtil.randomBytes(new Random().nextInt(100));
-    private static byte[] encryptionOracleECBWithPrefix(byte[] myInput, byte[] unknownInput, byte[] cipherKeyBytes) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, myInput);
-        return new ECB(cipherKeyBytes).AESinEBCModeWConcatenation(prefixPlusInput, unknownInput);
+    private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+        byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, hackerInput);
+        return ecb.AESinEBCModeWConcatenation(prefixPlusInput, unknownInput);
     }
 
-    public static byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException, DecoderException {
+    public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException, DecoderException {
         byte[] cipherKey = ByteArrayUtil.randomBytes(16);
 
         // look for the first byte that changes between no hacker input and a single character of hacker input
-        byte[] withouthacking = encryptionOracleECBWithPrefix(new byte[0], unknownInput, cipherKey);
-        byte[] withHackerInput = encryptionOracleECBWithPrefix(new byte[] {(byte) 'A'}, unknownInput, cipherKey);
+        byte[] withouthacking = encryptionOracleWrapper(new byte[0], unknownInput);
+        byte[] withHackerInput = encryptionOracleWrapper(new byte[] {(byte) 'A'}, unknownInput);
 
         //find index of modified cipher block
         Integer indexOfFirstModifiedBlock = null;
@@ -45,7 +46,7 @@ public class Section02 {
         for (int n = 1; withHackerInput.length == withouthacking.length; n++) {
             byte[] hackerInput = new byte[n];
             Arrays.fill(hackerInput, (byte) 'A');
-            withHackerInput = encryptionOracleECBWithPrefix(hackerInput, unknownInput, cipherKey);
+            withHackerInput = encryptionOracleWrapper(hackerInput, unknownInput);
         }
         final int blockSize = withHackerInput.length - withouthacking.length;
         assert indexOfFirstModifiedBlock % blockSize == 0;
@@ -53,21 +54,21 @@ public class Section02 {
         //detect ECB by submitting 3 blocks worth of repeating bytes
         byte[] repeatingBytes = new byte[3*blockSize];
         Arrays.fill(repeatingBytes, (byte) 'A');
-        var oracled = encryptionOracleECBWithPrefix(repeatingBytes, unknownInput, cipherKey);
+        var oracled = encryptionOracleWrapper(repeatingBytes, unknownInput);
         boolean ecbDetected = new ECB(cipherKey).detectECBInCipherBytes(oracled);
         assert ecbDetected;
 
         //figure out how many to add until this block no longer changes
         var hackerInput = new byte[0];
         byte[] previous;
-        byte[] current = ByteArrayUtil.sliceByteArray(encryptionOracleECBWithPrefix(hackerInput, unknownInput, cipherKey), indexOfFirstModifiedBlock, blockSize);
+        byte[] current = ByteArrayUtil.sliceByteArray(encryptionOracleWrapper(hackerInput, unknownInput), indexOfFirstModifiedBlock, blockSize);
         int bufferSize = -1;
         do {
             bufferSize++;
             previous = current;
             hackerInput = new byte[bufferSize + 1];
             Arrays.fill(hackerInput, (byte) 'A');
-            current = ByteArrayUtil.sliceByteArray(encryptionOracleECBWithPrefix(hackerInput, unknownInput, cipherKey), indexOfFirstModifiedBlock, blockSize);
+            current = ByteArrayUtil.sliceByteArray(encryptionOracleWrapper(hackerInput, unknownInput), indexOfFirstModifiedBlock, blockSize);
         } while (!Arrays.equals(previous, current));
         assert (randomPrefix.length + bufferSize) % blockSize == 0;
 
@@ -81,7 +82,7 @@ public class Section02 {
         for (int i = 0; i < 255; i++) {
             byte b = (byte) i;
             targetedBytes[targetedBytes.length - 1] = b;
-            var result = encryptionOracleECBWithPrefix(targetedBytes, unknownInput, cipherKey);
+            var result = encryptionOracleWrapper(targetedBytes, unknownInput);
             dictionary.put(i, ByteArrayUtil.sliceByteArray(result, indexOfFirstModifiedBlock, blockSize));
         }
 
@@ -89,7 +90,7 @@ public class Section02 {
         for (int j = 0; j < unknownInput.length; j++) {
             var messageByte = unknownInput[j];
             targetedBytes[bufferSize - 1] = messageByte;
-            var result = encryptionOracleECBWithPrefix(targetedBytes, unknownInput, cipherKey);
+            var result = encryptionOracleWrapper(targetedBytes, unknownInput);
             var encryptedBlock = ByteArrayUtil.sliceByteArray(result, indexOfFirstModifiedBlock, blockSize);
             int decryptedChar = dictionary.entrySet().stream().filter(e -> Arrays.equals(e.getValue(), encryptedBlock)).map(Map.Entry::getKey).findFirst().orElseThrow(() -> new AssertionError("Could not find the encrypted block"));
             decryptedMessage[j] = (byte) decryptedChar;
@@ -97,5 +98,4 @@ public class Section02 {
 
         return decryptedMessage;
     }
-
 }

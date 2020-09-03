@@ -1,6 +1,5 @@
 package cryptopals.tool.sec02;
 
-import cryptopals.challenges.Section02;
 import cryptopals.tool.CBC;
 import cryptopals.tool.Profile;
 

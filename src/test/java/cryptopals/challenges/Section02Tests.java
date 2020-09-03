@@ -16,6 +16,7 @@ import cryptopals.tool.Profile;
 import cryptopals.tool.XOR;
 import cryptopals.tool.sec02.Challenge11Tool;
 import cryptopals.tool.sec02.Challenge12Tool;
+import cryptopals.tool.sec02.Challenge14Tool;
 import cryptopals.tool.sec02.Challenge16Tool;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.FileUtil;
@@ -34,7 +35,7 @@ import java.util.List;
 
 public class Section02Tests {
     @Test
-    public void testChallengeNine() {
+    public void testChallenge09() {
         String testString = "YELLOW SUBMARINE";
         byte[] result = applyPadding(testString.getBytes(), 20);
         String expected = testString + (char) 4 + (char) 4 + (char) 4 + (char) 4;
@@ -128,7 +129,7 @@ public class Section02Tests {
                 "YnkK";
 
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
-        byte[] decrypted = Section02.breakECBEncryptionWithPrefixUsingOracle(unknownInputDecoded);
+        byte[] decrypted = new Challenge14Tool().breakECBEncryptionWithPrefixUsingOracle(unknownInputDecoded);
         assertArrayEquals(unknownInputDecoded, decrypted);
     }
 
