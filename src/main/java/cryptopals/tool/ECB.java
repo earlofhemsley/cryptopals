@@ -4,7 +4,6 @@ import static cryptopals.utils.PKCS7Util.applyPadding;
 import static cryptopals.utils.PKCS7Util.stripPadding;
 
 import cryptopals.enums.CipherMode;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.crypto.BadPaddingException;
@@ -28,10 +27,6 @@ public class ECB {
         this.cipherKeyBytes = cipherKeyBytes;
     }
 
-    public byte[] getCipherKeyBytes() {
-        return this.cipherKeyBytes;
-    }
-
     /**
      * given a series of messages, detect which of the messages was decrypted in ECB mode.
      *
@@ -41,11 +36,10 @@ public class ECB {
      * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeyException
-     * @throws DecoderException
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public boolean detectECBInCipherBytes(byte[] cipherBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException, BadPaddingException, IllegalBlockSizeException {
+    public boolean detectECBInCipherBytes(byte[] cipherBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
 
