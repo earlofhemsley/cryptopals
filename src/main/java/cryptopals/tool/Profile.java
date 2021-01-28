@@ -1,6 +1,7 @@
 package cryptopals.tool;
 
 import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.ECBException;
 import cryptopals.utils.ByteArrayUtil;
 
 import javax.crypto.BadPaddingException;
@@ -44,7 +45,7 @@ public class Profile {
      * @throws IllegalBlockSizeException
      * @throws NoSuchPaddingException
      */
-    public Profile(byte[] encryptedProfileArray) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+    public Profile(byte[] encryptedProfileArray) throws ECBException {
         propertyMap.putAll(keyValueParsing(new String(ecb.AESWithPadding(encryptedProfileArray, CipherMode.DECRYPT))));
     }
 
@@ -52,7 +53,7 @@ public class Profile {
         return propertyMap.get(key);
     }
 
-    public byte[] encryptProfile() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+    public byte[] encryptProfile() throws ECBException {
         return ecb.AESWithPadding(this.profileFor().getBytes(), CipherMode.ENCRYPT);
     }
 

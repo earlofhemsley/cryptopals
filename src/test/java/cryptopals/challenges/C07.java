@@ -4,16 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 /**
@@ -35,7 +31,7 @@ import java.util.Base64;
  */
 public class C07 {
     @Test
-    public void sevenTest() throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException {
+    public void sevenTest() throws IOException, ECBException {
         String cipherKey = "YELLOW SUBMARINE";
         assertEquals(16, cipherKey.length());
 

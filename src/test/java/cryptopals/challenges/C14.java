@@ -2,15 +2,10 @@ package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.sec02.Challenge14Tool;
-import org.apache.commons.codec.DecoderException;
 import org.junit.jupiter.api.Test;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 /**
@@ -29,7 +24,7 @@ import java.util.Base64;
  */
 public class C14 {
     @Test
-    public void testChallenge14() throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+    public void testChallenge14() throws ECBException {
         String unknownInput = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg" +
                 "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq" +
                 "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg" +

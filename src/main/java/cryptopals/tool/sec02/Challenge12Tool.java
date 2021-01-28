@@ -1,5 +1,6 @@
 package cryptopals.tool.sec02;
 
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
 import org.apache.commons.codec.DecoderException;
@@ -17,7 +18,7 @@ public class Challenge12Tool {
 
     private final ECB ecb = new ECB(ByteArrayUtil.randomBytes(16));
 
-    public byte[] breakECBEncryption(byte[] unknownInput) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+    public byte[] breakECBEncryption(byte[] unknownInput) throws ECBException {
 
         //discover the block size of the cipher
         Integer blockSize = null;

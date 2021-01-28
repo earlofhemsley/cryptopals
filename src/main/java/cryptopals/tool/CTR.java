@@ -2,21 +2,16 @@ package cryptopals.tool;
 
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.CryptopalsException;
+import cryptopals.exceptions.ECBException;
 import cryptopals.utils.ByteArrayUtil;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * a class intended for the implementation of CTR encryption
  */
 public class CTR {
 
-//    private final byte[] key;
     private final XOR xor = new XOR();
     private final ECB ecb;
 
@@ -61,7 +56,7 @@ public class CTR {
                 //increment nonce
                 nonce.increment();
             }
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+        } catch (ECBException e) {
             throw new CryptopalsException("Could not perform operation", e);
         }
         var result = new byte[text.length];

@@ -1,15 +1,10 @@
 package cryptopals.tool.sec02;
 
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,12 +14,12 @@ public class Challenge14Tool {
     private final ECB ecb = new ECB(ByteArrayUtil.randomBytes(16));
     private final byte[] randomPrefix = ByteArrayUtil.randomBytes(new Random().nextInt(100));
 
-    private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+    private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) throws ECBException {
         byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, hackerInput);
         return ecb.AESWithConcatenation(prefixPlusInput, unknownInput);
     }
 
-    public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException, DecoderException {
+    public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws ECBException {
         byte[] cipherKey = ByteArrayUtil.randomBytes(16);
 
         // look for the first byte that changes between no hacker input and a single character of hacker input

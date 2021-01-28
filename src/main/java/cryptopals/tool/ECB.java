@@ -4,16 +4,12 @@ import static cryptopals.utils.PKCS7Util.applyPadding;
 import static cryptopals.utils.PKCS7Util.stripPadding;
 
 import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.ECBException;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -33,23 +29,15 @@ public class ECB {
      * this is the solution to challenge eight
      * @param cipherBytes
      * @return true if found, false otherwise
-     * @throws NoSuchPaddingException
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
+     * @throws ECBException if a problem with ECB operation surfaces
      */
-    public boolean detectInCipherBytes(byte[] cipherBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
-        Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
+    public boolean detectInCipherBytes(byte[] cipherBytes) throws ECBException {
+        if (cipherBytes.length % cipherKeyBytes.length != 0) {
+            throw new ECBException("message length must be a multiple of the cipher key length, which is " + cipherKeyBytes.length);
+        }
 
         //decrypt
-        cipher.init(Cipher.DECRYPT_MODE, cipherKey);
-        byte[] decryptedCipherBytes = cipher.doFinal(cipherBytes);
-
-        if (cipherBytes.length % cipherKeyBytes.length != 0) {
-            throw new IllegalBlockSizeException("message length must be a multiple of the cipher key length, which is " + cipherKeyBytes.length);
-        }
+        byte[] decryptedCipherBytes = this.AES(cipherBytes, CipherMode.DECRYPT);
 
         int loopIterations = decryptedCipherBytes.length/cipherKeyBytes.length;
 
@@ -76,20 +64,20 @@ public class ECB {
      * @param cipherTextBytes bytes of the cipher text string
      * @param cipherMode one of the public static ints attached to {@link Cipher}
      * @return a string of the decrypted bytes
-     * @throws NoSuchPaddingException
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
-     * @throws BadPaddingException
-     * @throws IllegalBlockSizeException
+     * @throws ECBException if a problem with the operation surfaces
      */
-    public byte[] AES(byte[] cipherTextBytes, CipherMode cipherMode) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
-        Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
-        cipher.init(cipherMode.getIntValue(), cipherKey);
-        return cipher.doFinal(cipherTextBytes);
+    public byte[] AES(byte[] cipherTextBytes, CipherMode cipherMode) throws ECBException {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+            Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
+            cipher.init(cipherMode.getIntValue(), cipherKey);
+            return cipher.doFinal(cipherTextBytes);
+        } catch (Exception e) {
+            throw new ECBException(String.format("Could not perform %s operation", cipherMode), e);
+        }
     }
 
-    public byte[] AESWithPadding(byte[] cipherTextBytes, CipherMode cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+    public byte[] AESWithPadding(byte[] cipherTextBytes, CipherMode cipherMode) throws ECBException {
         //implement padding
         if (cipherMode == CipherMode.ENCRYPT) {
             cipherTextBytes = applyPadding(cipherTextBytes, cipherKeyBytes.length);
@@ -104,7 +92,7 @@ public class ECB {
         return theFinal;
     }
 
-    public byte[] AESWithConcatenation(byte[] myInput, byte[] unknownInput) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+    public byte[] AESWithConcatenation(byte[] myInput, byte[] unknownInput) throws ECBException {
         byte[] concatenatedInput = ArrayUtils.addAll(myInput, unknownInput);
         return AESWithPadding(concatenatedInput, CipherMode.ENCRYPT);
     }

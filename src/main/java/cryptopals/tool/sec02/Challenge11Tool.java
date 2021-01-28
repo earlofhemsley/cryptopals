@@ -1,6 +1,7 @@
 package cryptopals.tool.sec02;
 
 import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.CBC;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
@@ -16,7 +17,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 public class Challenge11Tool {
-    public Pair<Boolean, byte[]> encryptionOracleUnknownMode(byte[] myInput) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+    public Pair<Boolean, byte[]> encryptionOracleUnknownMode(byte[] myInput) throws ECBException {
         //prepend 5-10 bytes
         Random r = new Random();
         Iterator<Integer> interator = r.ints(5, 11).iterator();
