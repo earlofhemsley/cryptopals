@@ -2,16 +2,10 @@ package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.tool.sec02.Challenge11Tool;
-import org.apache.commons.codec.DecoderException;
 import org.junit.jupiter.api.Test;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * An ECB/CBC detection oracle
@@ -39,7 +33,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class C11 {
     @Test
-    public void testChallenge11() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, DecoderException {
+    public void testChallenge11() throws ECBException {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
             var result = new Challenge11Tool().encryptionOracleUnknownMode(myHackerInput.getBytes());

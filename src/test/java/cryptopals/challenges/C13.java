@@ -2,15 +2,10 @@ package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.Profile;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * ECB cut-and-paste
@@ -54,7 +49,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class C13 {
     @Test
-    public void testChallenge13() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+    public void testChallenge13() throws ECBException {
         //test kv parsing method
         var kvString = "foo=bar&baz=qux&zap=zazzle";
         var objectMap = Profile.keyValueParsing(kvString);

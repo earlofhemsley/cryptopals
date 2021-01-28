@@ -3,18 +3,14 @@ package cryptopals.challenges;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.FileUtil;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Detect AES in ECB mode
@@ -30,7 +26,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class C08 {
     @Test
-    public void eightTest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, DecoderException, BadPaddingException, IllegalBlockSizeException {
+    public void eightTest() throws IOException, DecoderException, ECBException {
         var fileContents = FileUtil.readFileAsListOfLines("src/test/resources/8.txt");
         Integer rowNumber = null;
         for (int i = 0; i < fileContents.size(); i++) {
