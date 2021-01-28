@@ -43,7 +43,7 @@ public class C11 {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
             var result = new Challenge11Tool().encryptionOracleUnknownMode(myHackerInput.getBytes());
-            boolean ecbDetected = new ECB("1234567890123456".getBytes()).detectECBInCipherBytes(result.getRight());
+            boolean ecbDetected = new ECB("1234567890123456".getBytes()).detectInCipherBytes(result.getRight());
             assertEquals(result.getLeft(), ecbDetected);
         }
     }

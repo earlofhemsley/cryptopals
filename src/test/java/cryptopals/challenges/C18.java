@@ -54,7 +54,7 @@ public class C18 {
     // work hard
 
     @Test
-    public void thing() {
+    public void ctrChallenge() {
         final CTR ctr = new CTR("YELLOW SUBMARINE".getBytes(StandardCharsets.UTF_8));
         byte[] decoded = Base64.getDecoder().decode("L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==");
         assertEquals("Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby ", ctr.decrypt(decoded));

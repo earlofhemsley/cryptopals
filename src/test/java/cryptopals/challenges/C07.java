@@ -41,7 +41,7 @@ public class C07 {
 
         var fileContents = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/7.txt"));
         byte[] cipherTextBytes = Base64.getDecoder().decode(fileContents);
-        byte[] decrypted = new ECB(cipherKey.getBytes()).AESInECBMode(cipherTextBytes, CipherMode.DECRYPT);
+        byte[] decrypted = new ECB(cipherKey.getBytes()).AES(cipherTextBytes, CipherMode.DECRYPT);
         assertTrue(new String(decrypted).contains("I'm back and I'm ringin' the bell"));
     }
 }

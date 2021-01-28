@@ -39,7 +39,7 @@ public class ECB {
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public boolean detectECBInCipherBytes(byte[] cipherBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public boolean detectInCipherBytes(byte[] cipherBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
 
@@ -82,20 +82,20 @@ public class ECB {
      * @throws BadPaddingException
      * @throws IllegalBlockSizeException
      */
-    public byte[] AESInECBMode(byte[] cipherTextBytes, CipherMode cipherMode) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public byte[] AES(byte[] cipherTextBytes, CipherMode cipherMode) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
         cipher.init(cipherMode.getIntValue(), cipherKey);
         return cipher.doFinal(cipherTextBytes);
     }
 
-    public byte[] AESinECBModeWPadding(byte[] cipherTextBytes, CipherMode cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+    public byte[] AESWithPadding(byte[] cipherTextBytes, CipherMode cipherMode) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
         //implement padding
         if (cipherMode == CipherMode.ENCRYPT) {
             cipherTextBytes = applyPadding(cipherTextBytes, cipherKeyBytes.length);
         }
 
-        var theFinal = AESInECBMode(cipherTextBytes, cipherMode);
+        var theFinal = AES(cipherTextBytes, cipherMode);
 
         if (cipherMode == CipherMode.DECRYPT) {
             theFinal = stripPadding(theFinal);
@@ -104,8 +104,8 @@ public class ECB {
         return theFinal;
     }
 
-    public byte[] AESinEBCModeWConcatenation(byte[] myInput, byte[] unknownInput) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
+    public byte[] AESWithConcatenation(byte[] myInput, byte[] unknownInput) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
         byte[] concatenatedInput = ArrayUtils.addAll(myInput, unknownInput);
-        return AESinECBModeWPadding(concatenatedInput, CipherMode.ENCRYPT);
+        return AESWithPadding(concatenatedInput, CipherMode.ENCRYPT);
     }
 }

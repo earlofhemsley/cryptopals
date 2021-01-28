@@ -38,7 +38,7 @@ public class C08 {
             byte[] decodedRow = Hex.decodeHex(fileContents.get(i));
 
             //run detection
-            if(new ECB("1234567890123456".getBytes()).detectECBInCipherBytes(decodedRow)) {
+            if(new ECB("1234567890123456".getBytes()).detectInCipherBytes(decodedRow)) {
                 rowNumber = i;
                 break;
             }

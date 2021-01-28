@@ -34,7 +34,7 @@ public class Challenge11Tool {
         //choose ebc or cbc
         if (r.nextInt(2) == 0) {
             //pad manually here since the ECB function doesn't do it
-            return Pair.of(true, new ECB(cipherKeyBytes).AESinECBModeWPadding(toEncrypt, CipherMode.ENCRYPT));
+            return Pair.of(true, new ECB(cipherKeyBytes).AESWithPadding(toEncrypt, CipherMode.ENCRYPT));
         } else {
             return Pair.of(false, new CBC(cipherKeyBytes).encryptToByteArray(toEncrypt, ByteArrayUtil.randomBytes(blockSize)));
         }

@@ -21,7 +21,7 @@ public class Challenge14Tool {
 
     private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) throws IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
         byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, hackerInput);
-        return ecb.AESinEBCModeWConcatenation(prefixPlusInput, unknownInput);
+        return ecb.AESWithConcatenation(prefixPlusInput, unknownInput);
     }
 
     public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException, DecoderException {
@@ -55,7 +55,7 @@ public class Challenge14Tool {
         byte[] repeatingBytes = new byte[3*blockSize];
         Arrays.fill(repeatingBytes, (byte) 'A');
         var oracled = encryptionOracleWrapper(repeatingBytes, unknownInput);
-        boolean ecbDetected = new ECB(cipherKey).detectECBInCipherBytes(oracled);
+        boolean ecbDetected = new ECB(cipherKey).detectInCipherBytes(oracled);
         assert ecbDetected;
 
         //figure out how many to add until this block no longer changes

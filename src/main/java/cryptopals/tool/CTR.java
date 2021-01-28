@@ -3,13 +3,10 @@ package cryptopals.tool;
 import cryptopals.enums.CipherMode;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.ByteArrayUtil;
-import org.apache.commons.lang3.ArrayUtils;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -19,11 +16,12 @@ import java.security.NoSuchAlgorithmException;
  */
 public class CTR {
 
-    private final byte[] key;
+//    private final byte[] key;
     private final XOR xor = new XOR();
+    private final ECB ecb;
 
     public CTR(byte[] key) {
-        this.key = key;
+        this.ecb = new ECB(key);
     }
 
     public byte[] encrypt(String plainText) {
@@ -46,16 +44,13 @@ public class CTR {
 
         final byte[] tempResult = new byte[newLength];
         try {
-            var key = new SecretKeySpec(this.key, "AES");
-            Cipher aes = Cipher.getInstance("AES/ECB/NoPadding");
-            aes.init(CipherMode.ENCRYPT.getIntValue(), key);
             final int numOfChunks = newLength / chunkLength;
             for (int chunkNum = 0; chunkNum < numOfChunks; chunkNum++) {
                 //get the first chunk of text
                 byte[] chunkOfText = ByteArrayUtil.sliceByteArray(newText, chunkLength * chunkNum, chunkLength);
 
                 //encrypt the nonce
-                var encryptedNonce = aes.doFinal(nonce.get());
+                var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
 
                 //xor against chunkOfText
                 var operatedBlock = xor.multiByteXOR(chunkOfText, encryptedNonce);

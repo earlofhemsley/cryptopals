@@ -45,7 +45,7 @@ public class Profile {
      * @throws NoSuchPaddingException
      */
     public Profile(byte[] encryptedProfileArray) throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        propertyMap.putAll(keyValueParsing(new String(ecb.AESinECBModeWPadding(encryptedProfileArray, CipherMode.DECRYPT))));
+        propertyMap.putAll(keyValueParsing(new String(ecb.AESWithPadding(encryptedProfileArray, CipherMode.DECRYPT))));
     }
 
     public Object get(String key) {
@@ -53,7 +53,7 @@ public class Profile {
     }
 
     public byte[] encryptProfile() throws InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-        return ecb.AESinECBModeWPadding(this.profileFor().getBytes(), CipherMode.ENCRYPT);
+        return ecb.AESWithPadding(this.profileFor().getBytes(), CipherMode.ENCRYPT);
     }
 
     public static Map<String, Object> keyValueParsing(String theString) {
