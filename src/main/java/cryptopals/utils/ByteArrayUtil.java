@@ -1,5 +1,6 @@
 package cryptopals.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 /**
@@ -14,6 +15,7 @@ public class ByteArrayUtil {
 
     public static byte[] sliceByteArray(byte[] original, int start, int length) {
         byte[] slice = new byte[length];
+        //don't use array copy to be length safe
         for (int i = 0; i < length; i++) {
             if (start + i < original.length) {
                 slice[i] = original[start + i];
@@ -23,9 +25,19 @@ public class ByteArrayUtil {
         return slice;
     }
 
+    public static byte[] sliceEnd(byte[] original, int lengthFromEnd) {
+        byte[] slice = new byte[lengthFromEnd];
+        System.arraycopy(original, original.length-lengthFromEnd, slice, 0, lengthFromEnd);
+        return slice;
+    }
+
     public static byte[] randomBytes(int length) {
+        return randomBytes(length, null);
+    }
+
+    public static byte[] randomBytes(int length, final String seed) {
         byte[] retVal = new byte[length];
-        Random r = new Random();
+        Random r = seed == null ? new Random(System.currentTimeMillis()) : new Random(seed.hashCode());
         r.nextBytes(retVal);
         return retVal;
     }
@@ -36,6 +48,26 @@ public class ByteArrayUtil {
             retval[i] = (byte) (~toNegate[i] & 0xFF);
         }
         return retval;
+    }
+
+    public static byte[][] transposeByteMatrix(final byte[][] matrix) {
+        if (matrix.length == 0) {
+            return new byte[0][0];
+        }
+        final int matrixHeight = matrix.length;
+        final int matrixWidth = matrix[0].length;
+
+        byte[][] transposed = new byte[matrixWidth][matrixHeight];
+
+        for (int y = 0; y < matrixHeight; y++) {
+            if (matrix[y].length != matrixWidth) {
+                throw new IllegalArgumentException("all rows in matrix must be equal width");
+            }
+            for (int x = 0; x < matrixWidth; x++) {
+                transposed[x][y] = matrix[y][x];
+            }
+        }
+        return transposed;
     }
 
 }
