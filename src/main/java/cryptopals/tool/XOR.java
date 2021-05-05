@@ -41,7 +41,7 @@ public class XOR {
     public char[] singleKeyXOR(byte[] input, int key) {
         char[] decrypted = new char[input.length];
         for(int i = 0; i < decrypted.length; i++) {
-            decrypted[i] = (char) (Byte.toUnsignedInt(input[i]) ^ key);
+            decrypted[i] = (char) ((int) input[i] ^ key);
         }
         return decrypted;
     }

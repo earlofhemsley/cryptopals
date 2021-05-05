@@ -1,8 +1,8 @@
 package cryptopals.tool.sec01;
 
 import cryptopals.tool.Chi;
-import cryptopals.utils.ByteArrayUtil;
 import cryptopals.tool.XOR;
+import cryptopals.utils.ByteArrayUtil;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -60,12 +60,7 @@ public class Challenge6Tool {
             }
 
             //transpose the blocks. group 1 is the first byte of each block, group 2 is the second, etc
-            byte[][] transposed = new byte[keysize][matrixHeight];
-            for (int y = 0; y < matrixHeight; y++) {
-                for (int x = 0; x < keysize; x++) {
-                    transposed[x][y] = matrix[y][x];
-                }
-            }
+            final byte[][] transposed = ByteArrayUtil.transposeByteMatrix(matrix);
 
             //decrypt each block as if it was single char xor
             byte[] keybytes = new byte[keysize];
