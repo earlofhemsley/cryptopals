@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import cryptopals.tool.CTR;
 import cryptopals.tool.XOR;
-import cryptopals.tool.sec03.AbstractFrequencyAnalyzingCTRKeyDeterminer;
 import cryptopals.tool.sec03.Challenge19Tool;
 import cryptopals.utils.ByteArrayUtil;
 import org.junit.jupiter.api.Test;

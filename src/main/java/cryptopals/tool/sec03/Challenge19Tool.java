@@ -1,5 +1,6 @@
 package cryptopals.tool.sec03;
 
+import cryptopals.tool.AbstractFrequencyAnalyzingCTRKeyDeterminer;
 import cryptopals.utils.ByteArrayUtil;
 
 public class Challenge19Tool extends AbstractFrequencyAnalyzingCTRKeyDeterminer {

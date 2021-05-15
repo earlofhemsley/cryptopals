@@ -1,4 +1,4 @@
-package cryptopals.tool.sec03;
+package cryptopals.tool;
 
 import cryptopals.tool.Chi;
 import cryptopals.tool.XOR;
