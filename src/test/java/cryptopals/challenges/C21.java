@@ -1,5 +1,7 @@
 package cryptopals.challenges;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import cryptopals.tool.MT19937;
 import org.junit.jupiter.api.Test;
 
@@ -10,10 +12,19 @@ import org.junit.jupiter.api.Test;
  */
 public class C21 {
 
+    /**
+     * given an identical seed
+     * the mersenne twister RNG should produce the same sequence of random numbers
+     */
     @Test
-    void testTheTwister() {
-        final MT19937 twister = new MT19937(1);
-        twister.nextInt();
+    void testSameSeedSameSequence() {
+        final int seed = 1776;
+        final MT19937 twister = new MT19937(seed);
+        final MT19937 otherTwister = new MT19937(seed);
+
+        for (int i = 0; i < 100000; i++) {
+            assertEquals(twister.nextInt(), otherTwister.nextInt());
+        }
     }
 
 }
