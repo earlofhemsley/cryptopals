@@ -15,6 +15,7 @@ public class C21 {
     /**
      * given an identical seed
      * the mersenne twister RNG should produce the same sequence of random numbers
+     * 100000 values is good enough to prove that the twister is deterministic
      */
     @Test
     void testSameSeedSameSequence() {
@@ -27,6 +28,10 @@ public class C21 {
         }
     }
 
+
+    /**
+     * original values obtained from <a href="https://create.stephan-brumme.com/mersenne-twister/">here</a>
+     */
     @Test
     void testSameSequenceAsOriginal() {
         final int[] expected = new int[] {
@@ -40,7 +45,6 @@ public class C21 {
             var next = twister.nextInt();
             assertEquals(j, next);
         }
-
     }
 
 }

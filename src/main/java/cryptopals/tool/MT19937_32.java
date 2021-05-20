@@ -1,5 +1,8 @@
 package cryptopals.tool;
 
+/**
+ * an implementation of the mersenne twister prng for a 32-bit integer
+ */
 public class MT19937_32 {
 
     // word length
@@ -10,9 +13,6 @@ public class MT19937_32 {
 
     // middle word, an offset used in the recurrence relation defining series x
     private static final int M = 397;
-
-    // number of bits in LMASK (separation point of one word)
-    private static final int R = 31;
 
     // a constant seemingly chosen at random
     private static final int F = 1812433253;
