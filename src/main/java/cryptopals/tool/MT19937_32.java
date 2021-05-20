@@ -1,9 +1,6 @@
 package cryptopals.tool;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-public class MT19937 {
+public class MT19937_32 {
 
     // word length
     private static final int W = 32;
@@ -40,7 +37,7 @@ public class MT19937 {
     private int index = N;
     private final int[] MT = new int[N];
 
-    public MT19937() {
+    public MT19937_32() {
         this(5489);
     }
 
@@ -48,7 +45,7 @@ public class MT19937 {
      * the constructor seeds the state array
      * @param seed the integer seed value
      */
-    public MT19937(final int seed) {
+    public MT19937_32(final int seed) {
         MT[0] = seed;
         for (int i = 1; i < N; i++) {
             MT[i] = F * (MT[i-1] ^ (MT[i-1] >>> (W-2))) + i;

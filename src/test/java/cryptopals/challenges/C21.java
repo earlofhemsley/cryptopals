@@ -2,7 +2,7 @@ package cryptopals.challenges;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cryptopals.tool.MT19937;
+import cryptopals.tool.MT19937_32;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -19,8 +19,8 @@ public class C21 {
     @Test
     void testSameSeedSameSequence() {
         final int seed = 1776;
-        final MT19937 twister = new MT19937(seed);
-        final MT19937 otherTwister = new MT19937(seed);
+        final MT19937_32 twister = new MT19937_32(seed);
+        final MT19937_32 otherTwister = new MT19937_32(seed);
 
         for (int i = 0; i < 100000; i++) {
             assertEquals(twister.nextInt(), otherTwister.nextInt());
@@ -34,7 +34,7 @@ public class C21 {
                 -133711905, -372047867, 949333985, -1579004998, 1323567403
         };
 
-        final MT19937 twister = new MT19937();
+        final MT19937_32 twister = new MT19937_32();
 
         for (int j : expected) {
             var next = twister.nextInt();
