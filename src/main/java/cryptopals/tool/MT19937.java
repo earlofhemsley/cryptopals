@@ -29,7 +29,6 @@ public class MT19937 {
     private static final int T = 15;
     private static final int L = 18;
 
-
     //masks
     private static final int LMASK = Integer.MAX_VALUE; //0x7fffffff
     private static final int UMASK = Integer.MIN_VALUE; //0x80000000
@@ -71,7 +70,7 @@ public class MT19937 {
         y = y ^ ((y << T) & C);
         y = y ^ (y >>> L);
 
-        return (int) y;
+        return y;
     }
 
     /**
@@ -81,17 +80,15 @@ public class MT19937 {
      */
     private void twist() {
         for (int i = 0; i < N; i++) {
-            int xku = (MT[i] & UMASK);
-            //index is i + 1 % N to protect against out of bounds
-            int xkl = (MT[(i + 1) % N]) & LMASK;
-            int x = xku | xkl;
-            int xA = x >>> 1;
-            if ((x & 1) != 0) {
-                xA = xA ^ A;
-            }
+            //index in second half is i + 1 % N to protect against out of bounds
+            int x = (MT[i] & UMASK) | ((MT[(i + 1) % N]) & LMASK);
+
+            //the second half is only something if the lsb of x is 1
+            // because an xor against 0 is the same as doing nothing
+            int xA = (x >>> 1) ^ ((x & 1) * A);
+
             //index is, again, 1+M mod N to protect against out of bounds
-            int ii = (i + M) % N;
-            MT[i] = MT[ii] ^ xA;
+            MT[i] = MT[(i + M) % N] ^ xA;
         }
         index = 0;
     }
