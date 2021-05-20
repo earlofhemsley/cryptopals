@@ -27,4 +27,20 @@ public class C21 {
         }
     }
 
+    @Test
+    void testSameSequenceAsOriginal() {
+        final int[] expected = new int[] {
+                -795755684, 581869302, -404620562, -708632711, 545404204,
+                -133711905, -372047867, 949333985, -1579004998, 1323567403
+        };
+
+        final MT19937 twister = new MT19937();
+
+        for (int j : expected) {
+            var next = twister.nextInt();
+            assertEquals(j, next);
+        }
+
+    }
+
 }

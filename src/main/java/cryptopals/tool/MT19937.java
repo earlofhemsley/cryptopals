@@ -1,5 +1,8 @@
 package cryptopals.tool;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MT19937 {
 
     // word length
@@ -21,9 +24,9 @@ public class MT19937 {
     private static final int A = 0x9908B0DF;
 
     //shifting constants
-    private static final int U = 29;
-    private static final int S = 17;
-    private static final int T = 37;
+    private static final int U = 11;
+    private static final int S = 7;
+    private static final int T = 15;
     private static final int L = 18;
 
 
@@ -39,7 +42,7 @@ public class MT19937 {
     private final int[] MT = new int[N];
 
     public MT19937() {
-        this((int) System.currentTimeMillis());
+        this(5489);
     }
 
     /**
@@ -49,7 +52,7 @@ public class MT19937 {
     public MT19937(final int seed) {
         MT[0] = seed;
         for (int i = 1; i < N; i++) {
-            MT[i] = F * (MT[i-1] ^ (MT[i-1] >> (W-2))) + i;
+            MT[i] = F * (MT[i-1] ^ (MT[i-1] >>> (W-2))) + i;
         }
     }
 
@@ -60,14 +63,13 @@ public class MT19937 {
     public int nextInt() {
         if (index >= N) {
             twist();
-            index = 0;
         }
 
-        long y = MT[index];
-        y = y ^ ((y >> U) & D);
+        int y = MT[index++];
+        y = y ^ ((y >>> U) & D);
         y = y ^ ((y << S) & B);
         y = y ^ ((y << T) & C);
-        y = y ^ (y >> L);
+        y = y ^ (y >>> L);
 
         return (int) y;
     }
@@ -78,15 +80,19 @@ public class MT19937 {
      * anymore
      */
     private void twist() {
-        for (int i = 0; i < N - 1; i++) {
+        for (int i = 0; i < N; i++) {
             int xku = (MT[i] & UMASK);
-            int xkl = (MT[i + 1] % N) & LMASK;
+            //index is i + 1 % N to protect against out of bounds
+            int xkl = (MT[(i + 1) % N]) & LMASK;
             int x = xku | xkl;
-            int xA = x >> 1;
+            int xA = x >>> 1;
             if ((x & 1) != 0) {
                 xA = xA ^ A;
             }
-            MT[i] = MT[(i + M) % N] ^ xA;
+            //index is, again, 1+M mod N to protect against out of bounds
+            int ii = (i + M) % N;
+            MT[i] = MT[ii] ^ xA;
         }
+        index = 0;
     }
 }
