@@ -61,6 +61,8 @@ public class MT19937_32 {
             twist();
         }
 
+        //fetch the next number from the array
+        // and do some "tempering" before returning
         int y = MT[index++];
         y = y ^ ((y >>> U) & D);
         y = y ^ ((y << S) & B);
@@ -72,8 +74,6 @@ public class MT19937_32 {
 
     /**
      * re-populates the state array with a new set of random numbers
-     * based on math that I once could understand but probably can't
-     * anymore
      */
     private void twist() {
         for (int i = 0; i < N; i++) {
