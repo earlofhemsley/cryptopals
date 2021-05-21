@@ -1,5 +1,7 @@
 package cryptopals.tool;
 
+import com.google.common.base.Preconditions;
+
 /**
  * an implementation of the mersenne twister prng for a 32-bit integer
  */
@@ -53,6 +55,14 @@ public class MT19937_32 {
     }
 
     /**
+     * overload the main constructor to take a long
+     * @param seed long value
+     */
+    public MT19937_32(final long seed) {
+        this((int) seed);
+    }
+
+    /**
      * extract_number ... gets the next number
      * @return the next psuedo-random int
      */
@@ -70,6 +80,20 @@ public class MT19937_32 {
         y = y ^ (y >>> L);
 
         return y;
+    }
+
+    /**
+     * get the next random number within a range of values
+     * @param lowerBound the lower bound (inclusive). must be positive
+     * @param upperBound the upper bound (exclusive). must be greater than lower bound
+     * @return next pseudorandom value between the bounds
+     */
+    public int nextIntBetween(final int lowerBound, final int upperBound) {
+        Preconditions.checkArgument(lowerBound < upperBound, "lower bound must be less than upper bound");
+
+        final int range = upperBound - lowerBound;
+        final int unShiftedResult = Math.abs(nextInt()) % range;
+        return unShiftedResult + lowerBound;
     }
 
     /**
