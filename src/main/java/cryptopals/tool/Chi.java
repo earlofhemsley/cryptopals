@@ -2,6 +2,7 @@ package cryptopals.tool;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * a tool to build chi-squared scores of a sample text against a histogram of the english language
@@ -40,30 +41,26 @@ public class Chi {
     }
 
     public double score(char[] input) {
-        Map<Character, Integer> countMap = new HashMap<>();
-        for (int cha = 'A'; cha <= 'Z'; cha++) { countMap.put((char) cha, 0); }
-        countMap.put(' ', 0);
-        countMap.put((char) 0, 0);
+        Map<Character, Double> observed = new HashMap<>();
 
         //group letters by bucket
         for (char c : input) {
             char cUp = Character.toUpperCase(c);
-            if (cUp != ' ' && (cUp < 'A' || cUp > 'Z')) {
+            if (!ENGLISH_HISTOGRAM.containsKey(cUp)) {
                 cUp = (char) 0;
             }
-            countMap.put(cUp, countMap.get(cUp) + 1);
+            double currentCount = Optional.ofNullable(observed.get(cUp)).orElse(0D);
+            observed.put(cUp, currentCount + 1D);
         }
 
         //divide number per bucket by total number of chars in string to get a % like the histogram
-        Map<Character, Double> percentageMap = new HashMap<>();
-        for (Map.Entry<Character, Integer> entry : countMap.entrySet()) {
-            percentageMap.put(entry.getKey(), (double) entry.getValue() / (double) input.length);
-        }
+        // converting from counts to percents
+        observed.forEach((key, value) -> observed.put(key, (value / input.length * 100)));
 
         //(observed - histogram) ^2 / histogram for every letter
         double totalScore = 0D;
         for (Map.Entry<Character, Double> histoEntry : ENGLISH_HISTOGRAM.entrySet()) {
-            double o = percentageMap.get(histoEntry.getKey());
+            double o = Optional.ofNullable(observed.get(histoEntry.getKey())).orElse(0D);
             double e = histoEntry.getValue();
             double singleScore = Math.pow((o-e), 2) / e;
             totalScore = totalScore + singleScore;
