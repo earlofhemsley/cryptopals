@@ -41,8 +41,6 @@ public class C22 {
     void challenge22TenTimes(int time) {
         log.info("attempt {}", time);
 
-        //simulate passage of time ... by writing a comment
-        // ... time has passed
         final var mysteryRng = getRngToBeCracked();
         final var mysteryValue = mysteryRng.nextInt();
 
