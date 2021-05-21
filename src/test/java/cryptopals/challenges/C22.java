@@ -43,7 +43,8 @@ public class C22 {
 
         //simulate passage of time ... by writing a comment
         // ... time has passed
-        final var rngOutput = getRngToBeCracked().nextInt();
+        final var mysteryRng = getRngToBeCracked();
+        final var mysteryValue = mysteryRng.nextInt();
 
         //since we don't know exactly when the seed was spawned, but we know it was time-based
         // get now + 1 million millis (the upper bound) and iteratively go back through
@@ -53,8 +54,13 @@ public class C22 {
         for (long i = 0; i < 1500000L; i++) {
             final long candidateSeed = now - i;
             final var newRNG = new MT19937_32(candidateSeed);
-            if (newRNG.nextInt() == rngOutput) {
+            if (newRNG.nextInt() == mysteryValue) {
                 log.info("Found it. The seed was {}", candidateSeed);
+                for (int j = 0; j < 10000000; j++) {
+                    //verify that every entry over the next million random numbers is the same
+                    assertEquals(newRNG.nextInt(), mysteryRng.nextInt());
+                }
+                log.info("successfully predicted 1M successive entries. Test succeeded.");
                 return;
             }
         }
@@ -65,8 +71,9 @@ public class C22 {
         //get now
         final long now = System.currentTimeMillis();
 
-        //add a random number of seconds between 40 and 1000
-        // try to make it more random by using a fresh rng and seeding it with the system time
+        //simulate passage of time ...
+        // add a random number of seconds between 40 and 1000
+        // try to make it less predictable by using a fresh rng and seeding it with the system time
         final int lower = 40 * 1000;
         final int upper = 1000 * 1000;
         final int millis = new MT19937_32(System.currentTimeMillis()).nextIntBetween(lower, upper);
@@ -80,7 +87,7 @@ public class C22 {
 
 
     static IntStream supply() {
-        return IntStream.range(1, 11);
+        return IntStream.range(1, 6);
     }
 
 
