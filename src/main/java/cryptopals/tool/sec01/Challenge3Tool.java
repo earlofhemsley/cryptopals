@@ -21,7 +21,7 @@ public class Challenge3Tool {
         String reigningChampion = null;
         double lowScore = Double.MAX_VALUE;
 
-        for(int key = 0; key < 256; key++ ) {
+        for(int key = Byte.MIN_VALUE; key <= Byte.MAX_VALUE; key++ ) {
             char[] decrypted = new XOR().singleKeyXOR(decodedInput, key);
             double candidateScore = new Chi().score(decrypted);
             if (candidateScore < lowScore) {

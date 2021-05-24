@@ -26,7 +26,6 @@ public class C03 {
     @Test
     public void threeTest() throws DecoderException {
         String value = Challenge3Tool.decrypt(Hex.decodeHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"));
-        assertNotNull(value);
         assertEquals("Cooking MC's like a pound of bacon", value);
     }
 }
