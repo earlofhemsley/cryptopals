@@ -1,4 +1,4 @@
-package cryptopals.challenges;
+package cryptopals.challenges.sec03;
 
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.sec03.Challenge17Tool;

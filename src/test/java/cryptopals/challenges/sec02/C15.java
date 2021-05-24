@@ -1,4 +1,4 @@
-package cryptopals.challenges;
+package cryptopals.challenges.sec02;
 
 import static cryptopals.utils.PKCS7Util.stripPadding;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
