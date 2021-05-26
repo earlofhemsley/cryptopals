@@ -1,5 +1,13 @@
 package cryptopals.challenges.sec03;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import cryptopals.exceptions.CryptopalsException;
+import cryptopals.tool.MT19937_32;
+import cryptopals.tool.MT19937_32_Splicer;
+import org.junit.jupiter.api.Test;
+
 /**
  * Clone an MT19937 RNG from its output
  * The internal state of MT19937 consists of 624 32 bit integers.
@@ -24,6 +32,25 @@ package cryptopals.challenges.sec03;
  * The new "spliced" generator should predict the values of the original.
  */
 public class C23 {
-    //TODO: write the test to assert that the splicer works
+
+    //this value comes from the test requirement and the MT spec
+    private static final int N = 624;
+
+    @Test
+    void challenge23() {
+
+        final var original = new MT19937_32(1776);
+        final int[] samples = new int[N];
+        for (int i = 0; i < samples.length; i++) {
+            samples[i] = original.nextInt();
+        }
+
+        final var clone = new MT19937_32_Splicer().splice(samples);
+
+        //verify that the clone returns the same next million values as the original
+        for (int i = 0; i < 1000000; i++) {
+            assertEquals(clone.nextInt(), original.nextInt());
+        }
+    }
 
 }

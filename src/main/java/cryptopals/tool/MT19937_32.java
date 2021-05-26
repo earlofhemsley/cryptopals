@@ -1,8 +1,5 @@
 package cryptopals.tool;
 
-import static cryptopals.utils.BitMaskUtil.convertIntToLeftEndMask;
-import static cryptopals.utils.BitMaskUtil.convertIntToRightEndMask;
-
 import com.google.common.base.Preconditions;
 
 /**
@@ -38,10 +35,11 @@ public class MT19937_32 {
     private static final int B = 0x9D2C5680;
     private static final int C = 0xEFC60000;
 
+    //a mask I include so as to have 0 effect
+    private static final int FULL_MASK = 0xFFFFFFFF;
 
     private int index = N;
     private final int[] MT = new int[N];
-    private final Temper temper = new Temper();
 
     public MT19937_32() {
         this(5489);
@@ -78,11 +76,28 @@ public class MT19937_32 {
         //fetch the next number from the array
         // and do some "tempering" before returning
         int y = MT[index++];
-        y = temper.first(y);
-        y = temper.second(y);
-        y = temper.third(y);
-        y = temper.fourth(y);
+        return temper(y);
+    }
+
+    /**
+     * temper a value
+     * @param untempered the value to be tempered
+     * @return the tempered value
+     */
+    int temper(int untempered) {
+        int y = temperRightShift(untempered, U, D);
+        y = temperLeftShift(y, S, B);
+        y = temperLeftShift(y, T, C);
+        y = temperRightShift(y, L, FULL_MASK);
         return y;
+    }
+
+    private int temperRightShift(final int y, final int shift, final int mask) {
+        return y ^ ((y >>> shift) & mask);
+    }
+
+    private int temperLeftShift(final int y, final int shift, final int mask) {
+        return y ^ ((y << shift) & mask);
     }
 
     /**
@@ -117,71 +132,4 @@ public class MT19937_32 {
         index = 0;
     }
 
-    /**
-     * a class for tempering AND un-tempering integers
-     * according to the MT19337 32-bit specification
-     */
-    public static class Temper {
-        //a full mask
-        private static final int FULL_MASK = 0xFFFFFFFF;
-
-        public int first(final int y) {
-            return temperRightShift(y, U, D);
-        }
-
-        public int undoFirst(final int z) {
-            return unTemperRightShift(z, U, D);
-        }
-
-        public int second(final int y) {
-            return temperLeftShift(y, S, B);
-        }
-
-        public int undoSecond(final int z) {
-            return unTemperLeftShift(z, S, B);
-        }
-
-        public int third(final int y) {
-            return temperLeftShift(y, T, C);
-        }
-
-        public int undoThird(final int z) {
-            return unTemperLeftShift(z, T, C);
-        }
-
-        public int fourth(final int y) {
-            return temperRightShift(y, L, FULL_MASK);
-        }
-
-        public int undoFourth(final int z) {
-            return unTemperRightShift(z, L, FULL_MASK);
-        }
-
-        private int temperRightShift(final int y, final int shift, final int mask) {
-            return y ^ ((y >>> shift) & mask);
-        }
-
-        private int unTemperRightShift(final int z, final int shift, final int maskConst) {
-            final int blockMask = convertIntToLeftEndMask(shift);
-            int zp = z;
-            for (int blockMaskShift = 0; blockMaskShift < (W - shift); blockMaskShift += shift) {
-                zp = zp ^ (((zp & (blockMask >>> blockMaskShift)) >>> shift) & maskConst);
-            }
-            return zp;
-        }
-
-        private int temperLeftShift(final int y, final int shift, final int mask) {
-            return y ^ ((y << shift) & mask);
-        }
-
-        private int unTemperLeftShift(final int z, final int shift, final int maskConst) {
-            final int blockMask = convertIntToRightEndMask(shift);
-            int zp = z;
-            for (int blockMaskShift = 0; blockMaskShift < (W - shift); blockMaskShift += shift) {
-                zp = zp ^ (((zp & (blockMask << blockMaskShift)) << shift) & maskConst);
-            }
-            return zp;
-        }
-
-    }
 }
