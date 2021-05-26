@@ -1,10 +1,12 @@
-package cryptopals.challenges;
+package cryptopals.challenges.sec03;
 
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.sec03.Challenge17Tool;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.tool.XOR;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
 
@@ -65,15 +67,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class C17 {
 
-    @Test
-    public void multipleTimes() {
-        for(int i = 0; i<10; i++) {
-            challenge17();
-            System.out.println(String.format("Test %d successful", i));
-        }
-    }
-
-    private void challenge17() {
+    @ParameterizedTest
+    @ValueSource(ints = {1,2,3,4,5,6,7,8,9,10})
+    void challenge17(final int time) {
         var oracle = new Challenge17Tool();
         var set = oracle.getAllIvecsAndStrings();
         final XOR xor = new XOR();
@@ -104,6 +100,7 @@ public class C17 {
 
             assertTrue(oracle.decryptionIsPresentInOriginalPlainTexts(plainText));
         }
+        System.out.printf("Test %d successful%n", time);
     }
 
     private void findIByte(byte[] intermediate, byte[] realCipherBlock, int blockSize, int position, Challenge17Tool oracle) {

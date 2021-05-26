@@ -28,13 +28,15 @@ public class MT19937_32 {
     private static final int T = 15;
     private static final int L = 18;
 
-    //masks
+    //masks defined in the spec document
     private static final int LMASK = Integer.MAX_VALUE; //0x7fffffff
     private static final int UMASK = Integer.MIN_VALUE; //0x80000000
     private static final int D = 0xFFFFFFFF;
     private static final int B = 0x9D2C5680;
     private static final int C = 0xEFC60000;
 
+    //a mask I include so as to have 0 effect
+    private static final int FULL_MASK = 0xFFFFFFFF;
 
     private int index = N;
     private final int[] MT = new int[N];
@@ -74,12 +76,28 @@ public class MT19937_32 {
         //fetch the next number from the array
         // and do some "tempering" before returning
         int y = MT[index++];
-        y = y ^ ((y >>> U) & D);
-        y = y ^ ((y << S) & B);
-        y = y ^ ((y << T) & C);
-        y = y ^ (y >>> L);
+        return temper(y);
+    }
 
+    /**
+     * temper a value
+     * @param untempered the value to be tempered
+     * @return the tempered value
+     */
+    int temper(int untempered) {
+        int y = temperRightShift(untempered, U, D);
+        y = temperLeftShift(y, S, B);
+        y = temperLeftShift(y, T, C);
+        y = temperRightShift(y, L, FULL_MASK);
         return y;
+    }
+
+    private int temperRightShift(final int y, final int shift, final int mask) {
+        return y ^ ((y >>> shift) & mask);
+    }
+
+    private int temperLeftShift(final int y, final int shift, final int mask) {
+        return y ^ ((y << shift) & mask);
     }
 
     /**
@@ -113,4 +131,5 @@ public class MT19937_32 {
         }
         index = 0;
     }
+
 }
