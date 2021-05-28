@@ -57,11 +57,19 @@ public class MT19937_32 {
     }
 
     /**
-     * overload the main constructor to take a long
+     * overload the main constructor to take a long (64 bits)
      * @param seed long value
      */
     public MT19937_32(final long seed) {
         this((int) seed);
+    }
+
+    /**
+     * overload the main constructor to take a short (16 bits)
+     * @param seed short value
+     */
+    public MT19937_32(final short seed) {
+        this ((int) seed);
     }
 
     /**
