@@ -45,9 +45,9 @@ public class C24_PrngCtrBreaker {
      * @return indicator of whether or not it was created with the current timestamp
      */
     public boolean keyIsCurrentTime(final String token, final String requestBody) {
-        //brute force again ... assume it's within the last five seconds
+        //brute force again ... assume it's within the last second
         final long ts = System.currentTimeMillis();
-        for (long t = ts-60000L; t <= ts; t++) {
+        for (long t = ts-1000L; t <= ts; t++) {
             final var prng = new PRNG_CTR((short) t);
             if(StringUtils.equals(token, prng.generatePasswordResetToken(requestBody))) {
                 return true;

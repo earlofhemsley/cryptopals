@@ -84,9 +84,9 @@ public class C24 {
     }
 
     static Stream<Arguments> supplySeeds() {
-        final Random r = new Random(System.currentTimeMillis());
+        final long sysTime = System.currentTimeMillis();
         return Stream.of(
-                arguments(r.nextLong(), false),
+                arguments(sysTime + 11111L, false),
                 arguments(System.currentTimeMillis(), true)
         );
     }
