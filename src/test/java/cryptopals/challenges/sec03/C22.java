@@ -14,7 +14,8 @@ import java.util.stream.IntStream;
 
 /**
  * Crack an MT19937 seed
- * Make sure your MT19937 accepts an integer seed value. Test it (verify that you're getting the same sequence of outputs given a seed).
+ * Make sure your MT19937 accepts an integer seed value.
+ * Test it (verify that you're getting the same sequence of outputs given a seed).
  *
  * Write a routine that performs the following operation:
  *
@@ -22,7 +23,8 @@ import java.util.stream.IntStream;
  * Seeds the RNG with the current Unix timestamp
  * Waits a random number of seconds again.
  * Returns the first 32 bit output of the RNG.
- * You get the idea. Go get coffee while it runs. Or just simulate the passage of time, although you're missing some of the fun of this exercise if you do that.
+ * You get the idea. Go get coffee while it runs. Or just simulate the passage of time,
+ * although you're missing some of the fun of this exercise if you do that.
  *
  * From the 32 bit RNG output, discover the seed.
  */
