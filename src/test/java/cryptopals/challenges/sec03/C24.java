@@ -1,6 +1,7 @@
 package cryptopals.challenges.sec03;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import cryptopals.tool.MT19937_32;
 import cryptopals.tool.PRNG_CTR;
@@ -8,7 +9,12 @@ import cryptopals.tool.sec03.C24_PrngCtrBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.Random;
+import java.util.stream.Stream;
 
 /**
  * Create the MT19937 stream cipher and break it
@@ -63,5 +69,25 @@ public class C24 {
 
         assertEquals(key, breaker.bruteForcePRNGCTRKey(encrypted, knownPlainText));
         log.info("attempt {} successful", time);
+    }
+
+    @ParameterizedTest
+    @MethodSource("supplySeeds")
+    void isThisRandomPwTokenSeededWithCurrentTime(final long seed, final boolean expectedToBeFound) {
+        final var breaker = new C24_PrngCtrBreaker();
+        //need two samples. One that is not, and one that is
+        final String requestBody = "https://cryptopals.com";
+        final var gen = new PRNG_CTR((short) seed);
+        String token = gen.generatePasswordResetToken(requestBody);
+        log.info("the token {} was generated with the seed {}", token, seed);
+        assertEquals(expectedToBeFound, breaker.keyIsCurrentTime(token, requestBody));
+    }
+
+    static Stream<Arguments> supplySeeds() {
+        final Random r = new Random(System.currentTimeMillis());
+        return Stream.of(
+                arguments(r.nextLong(), false),
+                arguments(System.currentTimeMillis(), true)
+        );
     }
 }

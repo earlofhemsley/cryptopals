@@ -1,6 +1,7 @@
 package cryptopals.tool;
 
 import cryptopals.utils.ByteArrayUtil;
+import cryptopals.utils.CharacterUtil;
 
 import java.nio.charset.StandardCharsets;
 
@@ -18,6 +19,22 @@ public class PRNG_CTR {
 
     public PRNG_CTR(final short key) {
         this.key = key;
+    }
+
+    /**
+     * given a request body, will encrypt, convert to a string of alphanumerics
+     * and return
+     *
+     * @param requestBody could be a url, a json payload, anything really
+     * @return the password reset token
+     */
+    public String generatePasswordResetToken(final String requestBody) {
+        final var enc = encrypt(requestBody);
+        final var sb = new StringBuilder();
+        for (byte b : enc) {
+            sb.append(CharacterUtil.byteToAlphaNumericCharacter(b));
+        }
+        return sb.toString();
     }
 
     /**
