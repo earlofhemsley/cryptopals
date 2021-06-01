@@ -68,7 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class C17 {
 
     @ParameterizedTest
-    @ValueSource(ints = {1,2,3,4,5,6,7,8,9,10})
+    @ValueSource(ints = {1,2,3})
     void challenge17(final int time) {
         var oracle = new Challenge17Tool();
         var set = oracle.getAllIvecsAndStrings();
