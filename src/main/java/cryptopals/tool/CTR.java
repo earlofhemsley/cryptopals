@@ -27,22 +27,47 @@ public class CTR {
         return new String(whateverCrypt(cipherText));
     }
 
+    public byte[] edit(final byte[] cipherText, final int offset, final String newText) throws ECBException {
+        // get keystream of length offset plus newText.length rounded up to block size
+        final LittleEndianNonce nonce = new LittleEndianNonce();
+        final int blockLength = nonce.get().length;
+        final int newLength = ((newText.length() + offset) / blockLength) * blockLength + blockLength;
+        final int numOfBlocks = newLength / blockLength;
+        final byte[] keystream = new byte[newLength];
+        for (int block = 0; block < numOfBlocks; block++) {
+            var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
+            System.arraycopy(encryptedNonce, 0, keystream, block * encryptedNonce.length, encryptedNonce.length);
+            nonce.increment();
+        }
+
+        //get the portion of the keystream we actually care about
+        final byte[] ktext = new byte[newText.length()];
+        System.arraycopy(keystream, offset, ktext, 0, newText.length());
+
+        // overwrite the ciphertext
+        var newTextBytes = newText.getBytes();
+        var sub = xor.multiByteXOR(newTextBytes, ktext);
+        System.arraycopy(sub, 0, cipherText, offset, sub.length);
+
+        return cipherText;
+    }
+
     private byte[] whateverCrypt(final byte[] text) {
         //get a new text whose length is a multiple of the nonce length
         final LittleEndianNonce nonce = new LittleEndianNonce();
         final int chunkLength = nonce.get().length;
         //the intricacies of int math in code will make this the next multiple of the nonce length
         final int newLength = (text.length / chunkLength) * chunkLength + chunkLength;
-        final byte[] newText = new byte[newLength];
+        final byte[] tempText = new byte[newLength];
 
-        System.arraycopy(text, 0, newText, 0, text.length);
+        System.arraycopy(text, 0, tempText, 0, text.length);
 
         final byte[] tempResult = new byte[newLength];
         try {
             final int numOfChunks = newLength / chunkLength;
             for (int chunkNum = 0; chunkNum < numOfChunks; chunkNum++) {
                 //get the first chunk of text
-                byte[] chunkOfText = ByteArrayUtil.sliceByteArray(newText, chunkLength * chunkNum, chunkLength);
+                byte[] chunkOfText = ByteArrayUtil.sliceByteArray(tempText, chunkLength * chunkNum, chunkLength);
 
                 //encrypt the nonce
                 var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
