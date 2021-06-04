@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ import java.util.Base64;
  */
 public class C07 {
     @Test
-    public void sevenTest() throws IOException, ECBException {
+    public void sevenTest() {
         String cipherKey = "YELLOW SUBMARINE";
         assertEquals(16, cipherKey.length());
 

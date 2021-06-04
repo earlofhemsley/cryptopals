@@ -14,12 +14,12 @@ public class Challenge14Tool {
     private final ECB ecb = new ECB(ByteArrayUtil.randomBytes(16));
     private final byte[] randomPrefix = ByteArrayUtil.randomBytes(new Random().nextInt(100));
 
-    private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) throws ECBException {
+    private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) {
         byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, hackerInput);
         return ecb.AESWithConcatenation(prefixPlusInput, unknownInput);
     }
 
-    public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) throws ECBException {
+    public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) {
         byte[] cipherKey = ByteArrayUtil.randomBytes(16);
 
         // look for the first byte that changes between no hacker input and a single character of hacker input

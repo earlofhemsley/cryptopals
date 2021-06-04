@@ -8,7 +8,6 @@ import cryptopals.tool.CBC;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Base64;
 
 /**
@@ -36,7 +35,7 @@ import java.util.Base64;
  */
 public class C10 {
     @Test
-    public void testChallenge10() throws IOException {
+    public void testChallenge10() {
         String lorem = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s";
         String key = "YELLOW SUBMARINE";
         final CBC cbc = new CBC(key.getBytes());

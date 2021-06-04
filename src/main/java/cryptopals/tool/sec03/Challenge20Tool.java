@@ -1,13 +1,10 @@
 package cryptopals.tool.sec03;
 
 import cryptopals.tool.AbstractFrequencyAnalyzingCTRKeyDeterminer;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Challenge20Tool extends AbstractFrequencyAnalyzingCTRKeyDeterminer {
     @Override

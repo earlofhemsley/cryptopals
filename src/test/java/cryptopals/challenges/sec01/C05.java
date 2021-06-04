@@ -27,7 +27,7 @@ import java.io.IOException;
  */
 public class C05 {
     @Test
-    public void fiveTest() throws IOException, DecoderException {
+    public void fiveTest() throws DecoderException {
         Challenge5Tool tool = new Challenge5Tool("ICE".getBytes());
         String toEncrypt = "Burning 'em, if you ain't quick and nimble\n" +
                 "I go crazy when I hear a cymbal";

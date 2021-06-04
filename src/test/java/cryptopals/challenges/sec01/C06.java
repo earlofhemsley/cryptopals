@@ -7,8 +7,6 @@ import cryptopals.tool.sec01.Challenge6Tool;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 /**
  * Break repeating-key XOR
  *
@@ -57,7 +55,7 @@ import java.io.IOException;
  */
 public class C06 {
     @Test
-    public void sixTest() throws IOException {
+    public void sixTest() {
         String first = "this is a test";
         String second = "wokka wokka!!!";
         int hamming = Challenge6Tool.calculateHammingDistance(first.getBytes(), second.getBytes());

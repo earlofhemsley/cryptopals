@@ -2,7 +2,6 @@ package cryptopals.challenges.sec02;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.tool.sec02.Challenge11Tool;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.Test;
  */
 public class C11 {
     @Test
-    public void testChallenge11() throws ECBException {
+    public void testChallenge11() {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
             var result = new Challenge11Tool().encryptionOracleUnknownMode(myHackerInput.getBytes());

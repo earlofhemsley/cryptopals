@@ -1,8 +1,5 @@
 package cryptopals.tool;
 
-import cryptopals.tool.Chi;
-import cryptopals.tool.XOR;
-
 import java.util.Arrays;
 
 public abstract class AbstractFrequencyAnalyzingCTRKeyDeterminer {

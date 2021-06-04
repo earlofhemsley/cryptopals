@@ -7,7 +7,6 @@ import cryptopals.utils.FileUtil;
 import org.apache.commons.codec.DecoderException;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -20,7 +19,7 @@ import java.util.List;
  */
 public class C04 {
     @Test
-    public void fourTest() throws DecoderException, IOException {
+    public void fourTest() throws DecoderException {
         String filePath = "src/test/resources/4.txt";
         List<String> contents = FileUtil.readFileAsListOfLines(filePath);
         String value = new Challenge4Tool().seekAndDestroy(contents);
