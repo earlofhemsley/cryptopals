@@ -3,7 +3,6 @@ package cryptopals.challenges.sec04;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.CTR;
 import cryptopals.tool.ECB;
 import cryptopals.tool.XOR;
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Base64;
 
 /**
@@ -35,8 +33,8 @@ public class C25 {
     private static final byte[] KEY = ByteArrayUtil.randomBytes(16);
     private final CTR ctr = new CTR(KEY);
 
-    private static final byte[] CBC_KEY = "YELLOW SUBMARINE".getBytes();
-    private final ECB ecb = new ECB(CBC_KEY);
+    private static final byte[] ECB_KEY = "YELLOW SUBMARINE".getBytes();
+    private final ECB ecb = new ECB(ECB_KEY);
 
     private final XOR xor = new XOR();
 
