@@ -1,14 +1,16 @@
 package cryptopals.challenges.sec04;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import cryptopals.exceptions.ECBException;
-import cryptopals.tool.CBC;
+import cryptopals.enums.CipherMode;
+import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.CTR;
+import cryptopals.tool.ECB;
+import cryptopals.tool.XOR;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.FileUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -34,22 +36,63 @@ public class C25 {
     private final CTR ctr = new CTR(KEY);
 
     private static final byte[] CBC_KEY = "YELLOW SUBMARINE".getBytes();
-    private final CBC cbc = new CBC(CBC_KEY);
+    private final ECB ecb = new ECB(CBC_KEY);
 
+    private final XOR xor = new XOR();
+
+    /**
+     * test the edit function before we complete the challenge
+     */
     @Test
-    void testEditing() throws IOException, ECBException {
+    void testEditing() {
         //encrypt the plaintext
-        var b64 = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/10.txt"));
-        var decoded = Base64.getDecoder().decode(b64);
-        var plaintext = cbc.decryptAsString(decoded, new byte[CBC_KEY.length]);
+        final String plaintext = getPlainTextFromFile();
         var ciphertext = ctr.encrypt(plaintext);
         /* ------------------------------------- */
 
         //edit the plaintext
         final String monkey = "monkey";
-        final var edited = ctr.edit(ciphertext, 6, monkey);
+        ctr.edit(ciphertext, 6, monkey);
 
-        var decrypted = ctr.decrypt(edited);
+        var decrypted = ctr.decrypt(ciphertext);
         assertEquals("monkey", decrypted.substring(6, 6 + monkey.length()));
     }
+
+    /**
+     * complete the challenge
+     */
+    @Test
+    void recoverThePlainText() {
+        final String plaintext = getPlainTextFromFile();
+        final byte[] cipherText = ctr.encrypt(plaintext);
+        /*------------------------------------------*/
+
+        //we can get the keystream out of the edit function by
+        // passing in all 0s
+        final String breakerString = new String(new byte[cipherText.length]);
+
+        //copy the cipherText so we retain original
+        final byte[] keystream = ArrayUtils.clone(cipherText);
+
+        //edit the copy with the breaker string to get the keystream
+        ctr.edit(keystream, 0, breakerString);
+
+        //once we have the keystream, we can simply xor it against the cipherText to recover the plaintext
+        final String broken = new String(xor.multiByteXOR(cipherText, keystream));
+
+        assertEquals(plaintext, broken);
+    }
+
+    /**
+     * read the file out as a single string and decrypting using ecb
+     * the string join portion is a candidate for movement into the file util if repeatedly needed
+     * @return plain text
+     */
+    private String getPlainTextFromFile() {
+        final String b64 = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/25.txt"));
+        var decoded = Base64.getDecoder().decode(b64);
+        return new String(ecb.AES(decoded, CipherMode.DECRYPT));
+    }
+
+
 }

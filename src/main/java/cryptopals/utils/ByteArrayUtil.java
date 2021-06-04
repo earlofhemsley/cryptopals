@@ -88,5 +88,4 @@ public class ByteArrayUtil {
         }
         return transposed;
     }
-
 }

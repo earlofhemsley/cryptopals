@@ -1,8 +1,6 @@
 package cryptopals.tool;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.CryptopalsException;
-import cryptopals.exceptions.ECBException;
 import cryptopals.utils.ByteArrayUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -27,7 +25,7 @@ public class CTR {
         return new String(whateverCrypt(cipherText));
     }
 
-    public byte[] edit(final byte[] cipherText, final int offset, final String newText) throws ECBException {
+    public void edit(final byte[] cipherText, final int offset, final String newText) {
         // get keystream of length offset plus newText.length rounded up to block size
         final LittleEndianNonce nonce = new LittleEndianNonce();
         final int blockLength = nonce.get().length;
@@ -48,8 +46,6 @@ public class CTR {
         var newTextBytes = newText.getBytes();
         var sub = xor.multiByteXOR(newTextBytes, ktext);
         System.arraycopy(sub, 0, cipherText, offset, sub.length);
-
-        return cipherText;
     }
 
     private byte[] whateverCrypt(final byte[] text) {
@@ -63,26 +59,22 @@ public class CTR {
         System.arraycopy(text, 0, tempText, 0, text.length);
 
         final byte[] tempResult = new byte[newLength];
-        try {
-            final int numOfChunks = newLength / chunkLength;
-            for (int chunkNum = 0; chunkNum < numOfChunks; chunkNum++) {
-                //get the first chunk of text
-                byte[] chunkOfText = ByteArrayUtil.sliceByteArray(tempText, chunkLength * chunkNum, chunkLength);
+        final int numOfChunks = newLength / chunkLength;
+        for (int chunkNum = 0; chunkNum < numOfChunks; chunkNum++) {
+            //get the first chunk of text
+            byte[] chunkOfText = ByteArrayUtil.sliceByteArray(tempText, chunkLength * chunkNum, chunkLength);
 
-                //encrypt the nonce
-                var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
+            //encrypt the nonce
+            var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
 
-                //xor against chunkOfText
-                var operatedBlock = xor.multiByteXOR(chunkOfText, encryptedNonce);
+            //xor against chunkOfText
+            var operatedBlock = xor.multiByteXOR(chunkOfText, encryptedNonce);
 
-                //copy to result
-                System.arraycopy(operatedBlock, 0, tempResult, operatedBlock.length * chunkNum, operatedBlock.length);
+            //copy to result
+            System.arraycopy(operatedBlock, 0, tempResult, operatedBlock.length * chunkNum, operatedBlock.length);
 
-                //increment nonce
-                nonce.increment();
-            }
-        } catch (ECBException e) {
-            throw new CryptopalsException("Could not perform operation", e);
+            //increment nonce
+            nonce.increment();
         }
         var result = new byte[text.length];
         System.arraycopy(tempResult, 0, result, 0, result.length);
