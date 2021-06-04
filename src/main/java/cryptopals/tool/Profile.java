@@ -38,14 +38,9 @@ public class Profile {
      * assume the encryption was never broken
      * decrypt and parse the encrypted profile
      * and set all the values in the property map as such
-     * @param encryptedProfileArray
-     * @throws InvalidKeyException
-     * @throws BadPaddingException
-     * @throws NoSuchAlgorithmException
-     * @throws IllegalBlockSizeException
-     * @throws NoSuchPaddingException
+     * @param encryptedProfileArray the encrypted profile array
      */
-    public Profile(byte[] encryptedProfileArray) throws ECBException {
+    public Profile(byte[] encryptedProfileArray) {
         propertyMap.putAll(keyValueParsing(new String(ecb.AESWithPadding(encryptedProfileArray, CipherMode.DECRYPT))));
     }
 
@@ -53,7 +48,7 @@ public class Profile {
         return propertyMap.get(key);
     }
 
-    public byte[] encryptProfile() throws ECBException {
+    public byte[] encryptProfile() {
         return ecb.AESWithPadding(this.profileFor().getBytes(), CipherMode.ENCRYPT);
     }
 

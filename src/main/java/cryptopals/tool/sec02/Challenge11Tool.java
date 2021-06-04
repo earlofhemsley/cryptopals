@@ -8,16 +8,11 @@ import cryptopals.utils.ByteArrayUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Random;
 
 public class Challenge11Tool {
-    public Pair<Boolean, byte[]> encryptionOracleUnknownMode(byte[] myInput) throws ECBException {
+    public Pair<Boolean, byte[]> encryptionOracleUnknownMode(byte[] myInput) {
         //prepend 5-10 bytes
         Random r = new Random();
         Iterator<Integer> interator = r.ints(5, 11).iterator();

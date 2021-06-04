@@ -2,7 +2,6 @@ package cryptopals.challenges.sec02;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cryptopals.exceptions.ECBException;
 import cryptopals.tool.Profile;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
@@ -49,7 +48,7 @@ import org.junit.jupiter.api.Test;
  */
 public class C13 {
     @Test
-    public void testChallenge13() throws ECBException {
+    public void testChallenge13() {
         //test kv parsing method
         var kvString = "foo=bar&baz=qux&zap=zazzle";
         var objectMap = Profile.keyValueParsing(kvString);

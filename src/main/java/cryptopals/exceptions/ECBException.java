@@ -1,6 +1,6 @@
 package cryptopals.exceptions;
 
-public class ECBException extends Exception {
+public class ECBException extends RuntimeException {
     public ECBException() {}
 
     public ECBException(final String message) {

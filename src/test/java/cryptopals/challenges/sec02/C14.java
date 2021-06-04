@@ -2,7 +2,6 @@ package cryptopals.challenges.sec02;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-import cryptopals.exceptions.ECBException;
 import cryptopals.tool.sec02.Challenge14Tool;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +23,7 @@ import java.util.Base64;
  */
 public class C14 {
     @Test
-    public void testChallenge14() throws ECBException {
+    public void testChallenge14() {
         String unknownInput = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg" +
                 "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq" +
                 "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg" +

@@ -31,7 +31,7 @@ public class ECB {
      * @return true if found, false otherwise
      * @throws ECBException if a problem with ECB operation surfaces
      */
-    public boolean detectInCipherBytes(byte[] cipherBytes) throws ECBException {
+    public boolean detectInCipherBytes(byte[] cipherBytes) {
         if (cipherBytes.length % cipherKeyBytes.length != 0) {
             throw new ECBException("message length must be a multiple of the cipher key length, which is " + cipherKeyBytes.length);
         }
@@ -66,7 +66,7 @@ public class ECB {
      * @return a string of the decrypted bytes
      * @throws ECBException if a problem with the operation surfaces
      */
-    public byte[] AES(byte[] cipherTextBytes, CipherMode cipherMode) throws ECBException {
+    public byte[] AES(byte[] cipherTextBytes, CipherMode cipherMode) {
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
@@ -77,7 +77,7 @@ public class ECB {
         }
     }
 
-    public byte[] AESWithPadding(byte[] cipherTextBytes, CipherMode cipherMode) throws ECBException {
+    public byte[] AESWithPadding(byte[] cipherTextBytes, CipherMode cipherMode) {
         //implement padding
         if (cipherMode == CipherMode.ENCRYPT) {
             cipherTextBytes = applyPadding(cipherTextBytes, cipherKeyBytes.length);
@@ -92,7 +92,7 @@ public class ECB {
         return theFinal;
     }
 
-    public byte[] AESWithConcatenation(byte[] myInput, byte[] unknownInput) throws ECBException {
+    public byte[] AESWithConcatenation(byte[] myInput, byte[] unknownInput) {
         byte[] concatenatedInput = ArrayUtils.addAll(myInput, unknownInput);
         return AESWithPadding(concatenatedInput, CipherMode.ENCRYPT);
     }

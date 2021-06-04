@@ -9,7 +9,6 @@ import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -37,7 +36,7 @@ public class C20 {
     private final XOR xor = new XOR();
 
     @Test
-    public void findTheKeyStream() throws IOException {
+    public void findTheKeyStream() {
         final String[] plainTexts = readFileIntoPlainTexts();
         final byte[][] cipherTexts = Arrays.stream(plainTexts).map(ctr::encrypt).toArray(byte[][]::new);
         final byte[] keyStream = new Challenge20Tool().findTheKeyStream(cipherTexts);
@@ -49,7 +48,7 @@ public class C20 {
         }
     }
 
-    private String[] readFileIntoPlainTexts() throws IOException {
+    private String[] readFileIntoPlainTexts() {
         return FileUtil.readFileAsListOfLines("src/test/resources/20.txt").stream()
                 .map(s -> Base64.getDecoder().decode(s))
                 .map(String::new)

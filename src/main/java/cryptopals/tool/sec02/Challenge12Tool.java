@@ -3,13 +3,7 @@ package cryptopals.tool.sec02;
 import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
-import org.apache.commons.codec.DecoderException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +12,7 @@ public class Challenge12Tool {
 
     private final ECB ecb = new ECB(ByteArrayUtil.randomBytes(16));
 
-    public byte[] breakECBEncryption(byte[] unknownInput) throws ECBException {
+    public byte[] breakECBEncryption(byte[] unknownInput) {
 
         //discover the block size of the cipher
         Integer blockSize = null;
