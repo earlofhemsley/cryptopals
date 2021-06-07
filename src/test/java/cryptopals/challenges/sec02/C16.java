@@ -55,7 +55,7 @@ public class C16 {
         var key = ByteArrayUtil.randomBytes(16);
         var iv = ByteArrayUtil.randomBytes(16);
         var oracle = new Challenge16Tool(key, iv);
-        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|:admin<true:A<AA|;comment2=...
+        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|;admin=true;A=AA|;comment2=...
         String knownInput = "7admin9true7A9AA";
         String desired = ";admin=true;A=AA";
         assertEquals(16, knownInput.length());

@@ -1,15 +1,14 @@
 package cryptopals.tool.sec02;
 
+import cryptopals.tool.AbstractAdminRightsOracle;
 import cryptopals.tool.CBC;
-import cryptopals.tool.Profile;
 
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This tool aids in the accomplishment of challenge 16
  */
-public class Challenge16Tool {
+public class Challenge16Tool extends AbstractAdminRightsOracle {
 
     private final CBC cbc;
     private final byte[] iv;
@@ -19,31 +18,14 @@ public class Challenge16Tool {
         this.iv = iv;
     }
 
-    public byte[] padAndEncrypt(String inputString) throws Exception {
-        //strip out any semicolons and equal signs to protect against hacks and encode
-        var sanitizedInput = inputString.replace(";", "");
-        sanitizedInput  = inputString.replace("=", "");
-        sanitizedInput = URLEncoder.encode(sanitizedInput, Charset.defaultCharset());
-        var sb = new StringBuilder();
-        sb.append("comment1=cooking%20MCs;userdata=");
-        sb.append(sanitizedInput);
-        sb.append(";comment2=%20like%20a%20pound%20of%20bacon");
-        try {
-            return cbc.encryptToByteArray(sb.toString().getBytes(), iv);
-        } catch (Exception e) {
-            throw new Exception("could not encrypt", e);
-        }
+    @Override
+    protected byte[] encrypt(String input) {
+        return cbc.encryptToByteArray(input.getBytes(StandardCharsets.UTF_8), iv);
     }
 
-    public boolean findAdminInCipherText(byte[] cipherText) throws Exception {
-        String decrypted;
-        try {
-            decrypted = cbc.decryptAsString(cipherText, iv);
-            System.out.println(decrypted);
-        } catch (Exception e) {
-            throw new Exception("could not decrypt", e);
-        }
-        var mapped = Profile.keyValueParsing(decrypted, ';');
-        return mapped.get("admin") != null && Boolean.parseBoolean( (String) mapped.get("admin"));
+    @Override
+    protected String decrypt(byte[] input) {
+        return cbc.decryptAsString(input, iv);
     }
+
 }
