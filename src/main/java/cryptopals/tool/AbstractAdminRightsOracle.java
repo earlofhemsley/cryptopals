@@ -8,7 +8,7 @@ public abstract class AbstractAdminRightsOracle {
     protected abstract byte[] encrypt(final String input);
     protected abstract String decrypt(final byte[] input);
 
-    public byte[] padAndEncrypt(String inputString) throws Exception {
+    public byte[] padAndEncrypt(String inputString) {
         //strip out any semicolons and equal signs to protect against hacks and encode
         var sanitizedInput = inputString.replace(";", "");
         sanitizedInput  = inputString.replace("=", "");
@@ -20,7 +20,7 @@ public abstract class AbstractAdminRightsOracle {
         return encrypt(sb.toString());
     }
 
-    public boolean findAdminInCipherText(byte[] cipherText) throws Exception {
+    public boolean findAdminInCipherText(byte[] cipherText) {
         String decrypted = decrypt(cipherText);
         var mapped = Profile.keyValueParsing(decrypted, ';');
         return mapped.get("admin") != null && Boolean.parseBoolean( (String) mapped.get("admin"));
