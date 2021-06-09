@@ -13,11 +13,10 @@ public abstract class AbstractAdminRightsOracle {
         var sanitizedInput = inputString.replace(";", "");
         sanitizedInput  = inputString.replace("=", "");
         sanitizedInput = URLEncoder.encode(sanitizedInput, Charset.defaultCharset());
-        var sb = new StringBuilder();
-        sb.append("comment1=cooking%20MCs;userdata=");
-        sb.append(sanitizedInput);
-        sb.append(";comment2=%20like%20a%20pound%20of%20bacon");
-        return encrypt(sb.toString());
+        String sb = "comment1=cooking%20MCs;userdata=" +
+                sanitizedInput +
+                ";comment2=%20like%20a%20pound%20of%20bacon";
+        return encrypt(sb);
     }
 
     public boolean findAdminInCipherText(byte[] cipherText) {
