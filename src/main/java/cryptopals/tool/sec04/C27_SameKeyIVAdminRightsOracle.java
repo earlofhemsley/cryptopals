@@ -1,5 +1,6 @@
 package cryptopals.tool.sec04;
 
+import cryptopals.exceptions.InvalidPlaintextByteException;
 import cryptopals.tool.AbstractAdminRightsOracle;
 import cryptopals.tool.CBC;
 
@@ -22,6 +23,8 @@ public class C27_SameKeyIVAdminRightsOracle extends AbstractAdminRightsOracle {
 
     @Override
     protected String decrypt(byte[] input) {
-        return cbc.decryptAsString(input, iv);
+        final byte[] decrypted =  cbc.decryptAsByteArray(input, iv);
+        InvalidPlaintextByteException.throwIfContainsInvalidCharacter(decrypted);
+        return new String(decrypted);
     }
 }
