@@ -63,12 +63,13 @@ public class C27 {
      *
      * this specifically takes advantage of the decryption algorithm.
      *
-     * in order to recover the key, (since the key and the iv are the same), you need to XOR an
-     * encrypted first block against a plaintext first block
+     * remember: XOR is reversible. When CBC encrypts, it takes the IV and xor's it against a block of plaintext, p,
+     * before subjecting the result to ECB-AES. Let's call the result z.
      *
-     * getting the plaintext first block is easy. decrypt normally.
-     * getting the encrypted first block is less obvious. to get the encrypted first block, you
-     * need to take advantage of the cbc algorithm.
+     * in order to recover the key, (since the key and the iv are the same), you need to XOR z against p.
+     *
+     * getting p is easy. decrypt normally.
+     * getting z is less obvious. to get z, you need to take advantage of the cbc algorithm.
      *
      * cbc, when decrypting, will take an encrypted block and xor it against the next block after that next
      * block has been ecb decrypted to reveal the plaintext.
@@ -77,7 +78,7 @@ public class C27 {
      * ciphertext with the first block of ciphertext, the algorithm will ecb decrypt that third block (which is really
      * the first block) and then xor it against all 0s, which leaves that ecb decrypted third block unaltered
      * (since an xor against 0 does nothing). And voila! You've got your two components: the ecb decrypted first
-     * block, and your plaintext first block.
+     * block (z), and your plaintext first block (p).
      *
      * When you xor these two, you get the IV, which in this challenge, is also the key.
      */
