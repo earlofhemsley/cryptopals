@@ -8,7 +8,7 @@ import java.util.Arrays;
  */
 public class InvalidPlaintextByteException extends RuntimeException {
 
-    public InvalidPlaintextByteException(String message, byte[] plainTextBytes) {
+    public InvalidPlaintextByteException(String message) {
         super(message);
     }
 
@@ -27,7 +27,7 @@ public class InvalidPlaintextByteException extends RuntimeException {
         for (byte c : subject) {
             if (c < LOWER_BOUND || c > UPPER_BOUND) {
                 throw new InvalidPlaintextByteException(String.format("%s contains an invalid character: %s",
-                        Arrays.toString(subject), c), subject);
+                        Arrays.toString(subject), c));
             }
         }
     }
