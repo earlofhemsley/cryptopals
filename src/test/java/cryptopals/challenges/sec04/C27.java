@@ -9,10 +9,9 @@ import cryptopals.tool.XOR;
 import cryptopals.tool.sec04.C27_SameKeyIVAdminRightsOracle;
 import cryptopals.utils.ByteArrayUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.regex.Pattern;
 
 /**
@@ -97,13 +96,11 @@ public class C27 {
         try {
             oracle.findAdminInCipherText(enc);
         } catch (InvalidPlaintextByteException ex) {
-            final Pattern p = Pattern.compile("^\\[([\\d, -]+)] contains an invalid character: [\\d-]+$");
+            final Pattern p = Pattern.compile("^([\\d\\w/+]+) contains an invalid character: [\\d-]+$");
             var m = p.matcher(ex.getMessage());
             if (m.find()) {
-                var splits = m.group(1).split(", ");
-
                 //pp = p prime, or plaintaxt prime
-                var pp = ArrayUtils.toPrimitive(Arrays.stream(splits).map(Byte::parseByte).toArray(Byte[]::new));
+                var pp = Base64.getDecoder().decode(m.group(1));
 
                 //block one (plaintext fully decrypted)
                 final byte[] pp1 = ByteArrayUtil.sliceByteArray(pp, 0, BLOCK_LENGTH);
