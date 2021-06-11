@@ -12,6 +12,13 @@ public class ByteArrayUtil {
         throw new AssertionError("Cannot instantiate");
     }
 
+    public static final byte[] concatenate(byte[] o1, byte[] o2) {
+        final byte[] result = new byte[o1.length + o2.length];
+        System.arraycopy(o1, 0, result, 0, o1.length);
+        System.arraycopy(o2, 0, result, o1.length, o2.length);
+        return result;
+    }
+
     public static byte[] sliceByteArray(byte[] original, int start, int length) {
         byte[] slice = new byte[length];
         //don't use array copy to be length safe
