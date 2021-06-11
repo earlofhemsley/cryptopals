@@ -52,6 +52,9 @@ public class C28 {
         );
     }
 
+    /**
+     * test that the same message hashed twice gives the same mac
+     */
     @Test
     void verifyHashingIsDeterministic() {
         final SHA1 sha1 = new SHA1();
@@ -61,6 +64,9 @@ public class C28 {
         assertEquals(hash, hash2);
     }
 
+    /**
+     * test that a message can be authenticated when you know the private key
+     */
     @Test
     void verifyMessageHashAgainstItself() {
         final SHA1 sha1 = new SHA1();
@@ -70,6 +76,9 @@ public class C28 {
         assertTrue(sha1.authenticateMessage(key, myMessage, hash));
     }
 
+    /**
+     * test that changing the message will make it impossible to authenticate a mac
+     */
     @Test
     void verifyChangeInMessageIsChangeInMac() {
         final SHA1 sha1 = new SHA1();
@@ -79,6 +88,9 @@ public class C28 {
         assertFalse(sha1.authenticateMessage(key, "hello", hash));
     }
 
+    /**
+     * test that not knowing the key will make it impossible to authenticate a mac
+     */
     @Test
     void verifyNotKnowingTheKeyWillBork() {
         final SHA1 sha1 = new SHA1();
