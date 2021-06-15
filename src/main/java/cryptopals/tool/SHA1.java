@@ -27,12 +27,12 @@ public class SHA1 {
      * @param mac the mac to check
      * @return true if authenticated
      */
-    public boolean authenticateMessage(final byte[] key, final String message, final String mac) {
+    public boolean authenticateMessage(final String message, final String mac) {
         Preconditions.checkArgument(StringUtils.isNotBlank(message), "message cannot be blank");
         Preconditions.checkArgument(StringUtils.isNotBlank(mac), "mac cannot be blank");
         Preconditions.checkArgument(mac.length() == 40, "mac must be a 40-character string");
 
-        return mac.equals(getMAC(key, message));
+        return mac.equals(getMAC(privateKey, message));
     }
 
     /**
@@ -52,7 +52,7 @@ public class SHA1 {
      * @return the mac
      */
     private String getMAC(final byte[] key, final String message) {
-        final byte[] input = ByteArrayUtil.concatenate(key, message.getBytes(StandardCharsets.UTF_8));
+        final byte[] input = ByteArrayUtil.concatenate(key, message.getBytes(StandardCharsets.US_ASCII));
         var d = new SHA1Digest();
         var out = new byte[d.getDigestSize()];
         d.update(input, 0, input.length);
