@@ -1,6 +1,6 @@
 package cryptopals.challenges.sec04;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,18 +34,14 @@ public class C28 {
     @ParameterizedTest
     @MethodSource("supplyIllegalArgs")
     void illegalArgumentsTests(final String message, final String mac, final String expectedBadParam) {
-        var ex = assertThrows(IllegalArgumentException.class, () -> sha1.authenticateMessage(message, mac));
+        var ex = assertThrows(IllegalArgumentException.class, () -> sha1.authenticateMessage(message.getBytes(), mac.getBytes()));
         assertTrue(ex.getMessage().contains(expectedBadParam));
     }
 
     static Stream<Arguments> supplyIllegalArgs() {
         return Stream.of(
-                arguments(null, "1234567890123456789012345678901234567890", "message"),
                 arguments("", "1234567890123456789012345678901234567890", "message"),
-                arguments(" ", "1234567890123456789012345678901234567890", "message"),
-                arguments("hey", null, "mac"),
                 arguments("hey", "", "mac"),
-                arguments("hey", " ", "mac"),
                 arguments("hey", "123456789012345678901234567890123456789", "mac")
         );
     }
@@ -55,10 +51,10 @@ public class C28 {
      */
     @Test
     void verifyHashingIsDeterministic() {
-        final String myMessage = "Hello World!";
-        final String hash = sha1.getMAC(myMessage);
-        final String hash2 = sha1.getMAC(myMessage);
-        assertEquals(hash, hash2);
+        final byte[] myMessage = "Hello World!".getBytes();
+        final byte[] hash = sha1.getMAC(myMessage);
+        final byte[] hash2 = sha1.getMAC(myMessage);
+        assertArrayEquals(hash, hash2);
     }
 
     /**
@@ -66,8 +62,8 @@ public class C28 {
      */
     @Test
     void verifyMessageHashAgainstItself() {
-        final String myMessage = "Hello World!";
-        final String hash = sha1.getMAC(myMessage);
+        final byte[] myMessage = "Hello World!".getBytes();
+        final byte[] hash = sha1.getMAC(myMessage);
         assertTrue(sha1.authenticateMessage(myMessage, hash));
     }
 
@@ -76,8 +72,8 @@ public class C28 {
      */
     @Test
     void verifyChangeInMessageIsChangeInMac() {
-        final String myMessage = "Hello";
-        final String hash = sha1.getMAC(myMessage);
-        assertFalse(sha1.authenticateMessage("hello", hash));
+        final byte[] myMessage = "Hello".getBytes();
+        final byte[] hash = sha1.getMAC(myMessage);
+        assertFalse(sha1.authenticateMessage("hello".getBytes(), hash));
     }
 }
