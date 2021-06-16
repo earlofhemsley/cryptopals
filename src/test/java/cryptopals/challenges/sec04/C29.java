@@ -1,15 +1,16 @@
 package cryptopals.challenges.sec04;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import cryptopals.tool.SHA1;
 import cryptopals.tool.sec04.C29_Sha1Breaker;
+import cryptopals.utils.ByteArrayUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ import java.util.stream.Stream;
  * that you're generating the same padding that your SHA-1 implementation is using. This should take you 5-10 minutes.
  *
  * Now, take the SHA-1 secret-prefix MAC of the message you want to forge --- this is just a SHA-1 hash ---
- * and break it into 32 bit SHA-1 registers (SHA-1 calls them "a", "b", "c", &c).
+ * and break it into 32 bit SHA-1 registers (SHA-1 calls them "a", "b", "c", etc).
  *
  * Modify your SHA-1 implementation so that callers can pass in new values for "a", "b", "c" &c
  * (they normally start at magic numbers). With the registers "fixated", hash the additional data you want to forge.
@@ -61,19 +62,21 @@ public class C29 {
 
     @ParameterizedTest
     @MethodSource("supplyPaddingArgs")
-    void buildMDPadding(final String msg, final int expectedPadLength) {
+    void buildMDPadding(final byte[] msg, final int expectedPadLength) {
         final byte[] padding = breaker.buildMDPadding(msg);
+        assertEquals(expectedPadLength, padding.length);
         assertEquals(Byte.MIN_VALUE, padding[0]);
-        assertEquals(msg.length() * 8L, unpackCharCount(padding));
+        //multiply by 8 because bit length, not byte length
+        assertEquals(msg.length * 8L, unpackCharCount(padding));
     }
 
     static Stream<Arguments> supplyPaddingArgs() {
         return Stream.of(
-                arguments("1234567890", 54),
-                arguments("1234567890123456789012345678901234567890123456789012345", 72),
-                arguments("123456789012345678901234567890123456789012345678901234567890123", 65),
-                arguments("1234567890123456789012345678901234567890123456789012345678901234", 64),
-                arguments("12345678901234567890123456789012345678901234567890123456789012345", 63)
+                arguments("1234567890".getBytes(), 54),
+                arguments("1234567890123456789012345678901234567890123456789012345".getBytes(), 73),
+                arguments("123456789012345678901234567890123456789012345678901234567890123".getBytes(), 65),
+                arguments("1234567890123456789012345678901234567890123456789012345678901234".getBytes(), 64),
+                arguments("12345678901234567890123456789012345678901234567890123456789012345".getBytes(), 63)
         );
     }
 
@@ -85,5 +88,32 @@ public class C29 {
             count |= (padding[padding.length - 1 - i] & (long) 0xff) << (i * 8);
         }
         return count;
+    }
+
+    @Test
+    void completeTheChallenge() {
+        final byte[] subject = "comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon".getBytes();
+        final byte[] appendix = ";admin = true".getBytes();
+        //get the hash for this string
+
+        final byte[] hash = sha1.getMAC(subject);
+
+        //this hash is actually a hash of another string. We need to get the padding for the subject prefixed with a
+        // string of a certain length
+        final byte[] padding = breaker.buildMDPadding(ByteArrayUtil.concatenate("12345678901".getBytes(), subject));
+
+        //now that we have the padding, we should be able to reset the state without knowing the private key
+        // to key || message || padding
+        // and then continue to process the appended thing, and we should be able to
+        // authenticate that the hash we get is valid for message || padding || new
+
+        final int byteCountOverride = subject.length + padding.length + 11;
+        breaker.overrideState(hash, byteCountOverride);
+        final byte[] forcedHash = breaker.forceHash(appendix);
+
+        final byte[] forgedMessage = ByteArrayUtil.concatenate(subject,
+                ByteArrayUtil.concatenate(padding, appendix));
+
+        assertTrue(sha1.authenticateMessage(forgedMessage, forcedHash));
     }
 }
