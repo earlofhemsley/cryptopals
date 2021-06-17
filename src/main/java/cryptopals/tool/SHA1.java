@@ -1,38 +1,39 @@
 package cryptopals.tool;
 
-import com.google.common.base.Preconditions;
-import cryptopals.utils.ByteArrayUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.util.encoders.Hex;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import java.nio.charset.StandardCharsets;
+import cryptopals.utils.ByteArrayUtil;
+import org.bouncycastle.crypto.digests.SHA1Digest;
+
+import java.util.Arrays;
+import java.util.Random;
 
 /**
- * a wrapping class for basic features of SHA-1
+ * a wrapping class for basic features of SHA-1, as implemented in the bouncycastle library
+ * @see SHA1Digest
  */
 public class SHA1 {
 
     /**
      * a private key that is different for every instance of the sha
      */
-    private final byte[] privateKey = ByteArrayUtil.randomBytes(11);
+    private final int keyLength = new Random(System.currentTimeMillis()).nextInt(17) + 3;
+    private final byte[] privateKey = ByteArrayUtil.randomBytes(keyLength);
+    final SHA1Digest d = new SHA1Digest();
 
     /**
      * given a key, a message and a mac, verify that the digest the comes from concatenating the key and the message
      * is equal to the submitted mac. Without knowing both they key and the message, you shouldn't be able to
      * authenticate the mac.
-     * @param key a private key candidate
      * @param message a message
      * @param mac the mac to check
      * @return true if authenticated
      */
-    public boolean authenticateMessage(final byte[] key, final String message, final String mac) {
-        Preconditions.checkArgument(StringUtils.isNotBlank(message), "message cannot be blank");
-        Preconditions.checkArgument(StringUtils.isNotBlank(mac), "mac cannot be blank");
-        Preconditions.checkArgument(mac.length() == 40, "mac must be a 40-character string");
-
-        return mac.equals(getMAC(key, message));
+    public boolean authenticateMessage(final byte[] message, final byte[] mac) {
+        checkArgument(message.length > 0, "message length must be greater than 0");
+        checkArgument(mac.length == 20, "mac must be a 20-element byte array");
+        final byte[] freshMac = getMAC(message);
+        return Arrays.equals(mac, freshMac);
     }
 
     /**
@@ -40,7 +41,7 @@ public class SHA1 {
      * @param message the message
      * @return the mac
      */
-    public String getMAC(String message) {
+    public byte[] getMAC(byte[] message) {
         return getMAC(privateKey, message);
     }
 
@@ -51,12 +52,12 @@ public class SHA1 {
      * @param message the message
      * @return the mac
      */
-    private String getMAC(final byte[] key, final String message) {
-        final byte[] input = ByteArrayUtil.concatenate(key, message.getBytes(StandardCharsets.UTF_8));
-        var d = new SHA1Digest();
+    private byte[] getMAC(final byte[] key, final byte[] message) {
+        final byte[] input = ByteArrayUtil.concatenate(key, message);
         var out = new byte[d.getDigestSize()];
         d.update(input, 0, input.length);
         d.doFinal(out, 0);
-        return Hex.toHexString(out);
+        return out;
     }
+
 }
