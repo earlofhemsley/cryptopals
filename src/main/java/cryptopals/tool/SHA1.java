@@ -6,6 +6,7 @@ import cryptopals.utils.ByteArrayUtil;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * a wrapping class for basic features of SHA-1, as implemented in the bouncycastle library
@@ -16,7 +17,8 @@ public class SHA1 {
     /**
      * a private key that is different for every instance of the sha
      */
-    private final byte[] privateKey = ByteArrayUtil.randomBytes(11);
+    private final int keyLength = new Random(System.currentTimeMillis()).nextInt(17) + 3;
+    private final byte[] privateKey = ByteArrayUtil.randomBytes(keyLength);
     final SHA1Digest d = new SHA1Digest();
 
     /**

@@ -73,11 +73,25 @@ public class C29_Sha1Breaker {
     }
 
     /**
+     * given a hash, a byte count, and a new message meant to be appended to the message that resulted in
+     * the hash, force override the state of the sha1 digest and get the new hash for the message with the
+     * appendix appended to that message
+     * @param previousHash the hash from the previous message
+     * @param newByteCount the byte count wrapped into the hash
+     * @param appendix what to append to the message that resulted in the previous hash
+     * @return the new hash
+     */
+    public byte[] crackTheSha(final byte[] previousHash, final int newByteCount, final byte[] appendix) {
+        overrideState(previousHash, newByteCount);
+        return forceUpdate(appendix);
+    }
+
+    /**
      * given a hash and a byte count, will override the state of the digest using reflection
      * @param hash the hash
      * @param byteCount the byte count
      */
-    public void overrideState(final byte[] hash, final int byteCount) {
+    private void overrideState(final byte[] hash, final int byteCount) {
         //break the hash into 5 32-bit registers
         // the hash is a 40-char hex string, this is 20 bytes, which is 5 ints
         final int[] registers = new int[hash.length/4];
@@ -95,7 +109,7 @@ public class C29_Sha1Breaker {
     }
 
     @SneakyThrows
-    public byte[] forceHash(final byte[] message) {
+    private byte[] forceUpdate(final byte[] message) {
         final Method m = sha1.getClass().getDeclaredMethod("getMAC", byte[].class, byte[].class);
         m.setAccessible(true);
         return (byte[]) m.invoke(sha1, new byte[0], message);

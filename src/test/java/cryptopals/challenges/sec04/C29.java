@@ -2,16 +2,19 @@ package cryptopals.challenges.sec04;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import cryptopals.tool.SHA1;
 import cryptopals.tool.sec04.C29_Sha1Breaker;
 import cryptopals.utils.ByteArrayUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
@@ -54,6 +57,7 @@ import java.util.stream.Stream;
  * This is a very useful attack.
  * For instance: Thai Duong and Juliano Rizzo, who got to this attack before we did, used it to break the Flickr API.
  */
+@Slf4j
 public class C29 {
 
     private final SHA1 sha1 = new SHA1();
@@ -92,28 +96,37 @@ public class C29 {
 
     @Test
     void completeTheChallenge() {
+        //we don't know how long the key is
+        //start at one character and stop at 20
         final byte[] subject = "comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon".getBytes();
-        final byte[] appendix = ";admin = true".getBytes();
-        //get the hash for this string
+        final byte[] appendix = ";admin=true".getBytes();
 
+        //get the hash for this string
         final byte[] hash = sha1.getMAC(subject);
 
-        //this hash is actually a hash of another string. We need to get the padding for the subject prefixed with a
-        // string of a certain length
-        final byte[] padding = breaker.buildMDPadding(ByteArrayUtil.concatenate("12345678901".getBytes(), subject));
+        for (int keyLength = 1; keyLength <= 20; keyLength++) {
+            final byte[] fakeKey = new byte[keyLength];
+            Arrays.fill(fakeKey, (byte) 'A');
 
-        //now that we have the padding, we should be able to reset the state without knowing the private key
-        // to key || message || padding
-        // and then continue to process the appended thing, and we should be able to
-        // authenticate that the hash we get is valid for message || padding || new
+            //this hash is actually a hash of another string. We need to get the padding for the subject prefixed with a
+            // string of a certain length
+            final byte[] padding = breaker.buildMDPadding(ByteArrayUtil.concatenate(fakeKey, subject));
 
-        final int byteCountOverride = subject.length + padding.length + 11;
-        breaker.overrideState(hash, byteCountOverride);
-        final byte[] forcedHash = breaker.forceHash(appendix);
+            //now that we have the padding, we should be able to reset the state without knowing the private key
+            // to key || message || padding and then continue to process the appended thing,
+            final int byteCountOverride = fakeKey.length + subject.length + padding.length;
+            final byte[] newHash = breaker.crackTheSha(hash, byteCountOverride, appendix);
 
-        final byte[] forgedMessage = ByteArrayUtil.concatenate(subject,
-                ByteArrayUtil.concatenate(padding, appendix));
+            // and we should be able to
+            // authenticate that the hash we get is valid for message || padding || new
+            final byte[] forgedMessage = ByteArrayUtil.concatenate(subject,
+                    ByteArrayUtil.concatenate(padding, appendix));
 
-        assertTrue(sha1.authenticateMessage(forgedMessage, forcedHash));
+            if (sha1.authenticateMessage(forgedMessage, newHash)) {
+                log.info("Forgery was successful. The key length was {}", keyLength);
+                return;
+            }
+        }
+        fail("Message authentication failed for all key lengths 1 to 20");
     }
 }
