@@ -1,7 +1,6 @@
 package cryptopals.challenges.sec04;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -67,7 +66,7 @@ public class C29 {
     @ParameterizedTest
     @MethodSource("supplyPaddingArgs")
     void buildMDPadding(final byte[] msg, final int expectedPadLength) {
-        final byte[] padding = breaker.buildMDPadding(msg);
+        final byte[] padding = breaker.buildGluePadding(msg);
         assertEquals(expectedPadLength, padding.length);
         assertEquals(Byte.MIN_VALUE, padding[0]);
         //multiply by 8 because bit length, not byte length
@@ -110,12 +109,12 @@ public class C29 {
 
             //this hash is actually a hash of another string. We need to get the padding for the subject prefixed with a
             // string of a certain length
-            final byte[] padding = breaker.buildMDPadding(ByteArrayUtil.concatenate(fakeKey, subject));
+            final byte[] padding = breaker.buildGluePadding(ByteArrayUtil.concatenate(fakeKey, subject));
 
             //now that we have the padding, we should be able to reset the state without knowing the private key
             // to key || message || padding and then continue to process the appended thing,
             final int byteCountOverride = fakeKey.length + subject.length + padding.length;
-            final byte[] newHash = breaker.crackTheSha(hash, byteCountOverride, appendix);
+            final byte[] newHash = breaker.breakIt(hash, byteCountOverride, appendix);
 
             // and we should be able to
             // authenticate that the hash we get is valid for message || padding || new
