@@ -2,14 +2,13 @@ package cryptopals.tool.sec04;
 
 import cryptopals.utils.ByteArrayUtil;
 import lombok.SneakyThrows;
-import org.bouncycastle.crypto.digests.SHA1Digest;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public abstract class AbstractBreaker {
     private static final int BLOCK_SIZE = 64;
-    private static final int BIT_COUNT_SPACE = 8;
+    protected static final int BIT_COUNT_SPACE = 8;
 
     /**
      * given a message, build the MD padding as close to the same
@@ -51,10 +50,8 @@ public abstract class AbstractBreaker {
         }
 
         //get the number of bits in the message
-        final long messageBitLength = (long) message.length << 3;
-        for (int i = 0; i < BIT_COUNT_SPACE; i++) {
-            block[block.length - 1 - i] = (byte) (messageBitLength >>> (i*8));
-        }
+        final long messageBitCount = (long) message.length << 3;
+        packTheBitCount(block, messageBitCount);
 
         final int padLength = block.length - subMsg.length;
         final byte[] returnValue = new byte[padLength];
@@ -62,6 +59,8 @@ public abstract class AbstractBreaker {
 
         return returnValue;
     }
+
+    protected abstract void packTheBitCount(byte[] block, final long messageBitCount);
 
     /**
      * given a hash, a byte count, and a new message meant to be appended to the message that resulted in

@@ -31,11 +31,6 @@ public class C30 {
         final byte[] appendix = ";admin=true".getBytes();
         final byte[] hash = md4.getMAC(subject);
 
-        //right now this is failing. i've got to
-        // - verify that the padding looks correct
-        // - verify that the state is reset properly
-        // - verify that the bitcount is being reset like it should
-        // - find where the gap is
         for (int keyLength = 1; keyLength <= 20; keyLength++) {
             final byte[] fakeKey = new byte[keyLength];
             Arrays.fill(fakeKey, (byte) 'A');

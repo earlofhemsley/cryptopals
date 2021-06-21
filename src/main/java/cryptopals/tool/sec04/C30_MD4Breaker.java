@@ -2,7 +2,6 @@ package cryptopals.tool.sec04;
 
 import cryptopals.tool.MD4;
 import lombok.RequiredArgsConstructor;
-import org.bouncycastle.util.Pack;
 
 /**
  * a class dedicated to spoiling {@link cryptopals.tool.MD4}
@@ -12,6 +11,20 @@ public class C30_MD4Breaker extends AbstractBreaker {
 
     private final MD4 md4;
 
+    /**
+     * md4 does this little endian style
+     * @param block the block to pack
+     * @param messageBitCount the bit count
+     */
+    @Override
+    protected void packTheBitCount(byte[] block, long messageBitCount) {
+        final int startPos = block.length - 1 - BIT_COUNT_SPACE;
+
+        for (int i = startPos; i < block.length; i++) {
+            block[i] = (byte) (messageBitCount >>> (i*8));
+        }
+    }
+
     @Override
     protected void overrideState(byte[] previousHash, int newByteCount) {
         //break the hash into 5 32-bit registers
@@ -20,7 +33,7 @@ public class C30_MD4Breaker extends AbstractBreaker {
         assert registers.length >= 4;
 
         for (int i = 0; i < registers.length; i++) {
-            registers[i] = Pack.bigEndianToInt(previousHash, i*4);
+            registers[i] = packWord(previousHash, i*4);
         }
 
         setPrivateField(md4, "H1", registers[0], false);
@@ -29,6 +42,14 @@ public class C30_MD4Breaker extends AbstractBreaker {
         setPrivateField(md4, "H4", registers[3], false);
 
         setPrivateField(md4, "byteCount", newByteCount, true);
+    }
+
+    private int packWord(final byte[] hash, final int hashOffset) {
+        int word = 0;
+        for (int o = 0; o < 4; o++) {
+            word |= (hash[hashOffset + o] & 0xff) << (o * 8);
+        }
+        return word;
     }
 
     @Override

@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import cryptopals.utils.ByteArrayUtil;
 import org.bouncycastle.crypto.digests.GeneralDigest;
-import org.bouncycastle.crypto.digests.SHA1Digest;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -30,6 +29,8 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
      */
     public boolean authenticateMessage(final byte[] message, final byte[] mac) {
         checkArgument(message.length > 0, "message length must be greater than 0");
+        checkArgument(mac.length == getDigest().getDigestSize(),
+                String.format("mac length must be equal to %d", getDigest().getDigestSize()));
         final byte[] freshMac = getMAC(message);
         return Arrays.equals(mac, freshMac);
     }

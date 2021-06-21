@@ -12,6 +12,13 @@ public class C29_Sha1Breaker extends AbstractBreaker {
 
     private final SHA1 sha1;
 
+    @Override
+    protected void packTheBitCount(byte[] block, long messageBitCount) {
+        for (int i = 0; i < BIT_COUNT_SPACE; i++) {
+            block[block.length - 1 - i] = (byte) (messageBitCount >>> (i*8));
+        }
+    }
+
     /**
      * given a hash and a byte count, will override the state of the digest using reflection
      * @param hash the hash
