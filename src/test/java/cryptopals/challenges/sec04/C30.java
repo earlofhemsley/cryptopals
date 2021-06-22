@@ -31,7 +31,7 @@ public class C30 {
         final byte[] appendix = ";admin=true".getBytes();
         final byte[] hash = md4.getMAC(subject);
 
-        for (int keyLength = 1; keyLength <= 20; keyLength++) {
+        for (int keyLength = 1; keyLength <= 128; keyLength++) {
             final byte[] fakeKey = new byte[keyLength];
             Arrays.fill(fakeKey, (byte) 'A');
 

@@ -68,7 +68,7 @@ public class Challenge6Tool {
                 int bestKeyInt = -1;
                 double lowSingleScore = Double.MAX_VALUE;
                 for (int c = 0; c < 256; c++) {
-                    char[] decrypted = xor.singleKeyXOR(transposed[block], c);
+                    char[] decrypted = xor.singleKeyXORToCharArray(transposed[block], c);
                     double chiScore = chi.score(decrypted);
                     if (chiScore < lowSingleScore) {
                         lowSingleScore = chiScore;

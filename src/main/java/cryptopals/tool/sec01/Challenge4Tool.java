@@ -32,7 +32,7 @@ public class Challenge4Tool {
         for (String candidate : candidates) {
             byte[] decodedCandidate = Hex.decodeHex(candidate);
             for (int key = 0; key <= 256; key++) {
-                char[] decrypted = xor.singleKeyXOR(decodedCandidate, key);
+                char[] decrypted = xor.singleKeyXORToCharArray(decodedCandidate, key);
                 double chiScore = chi.score(decrypted);
                 if (chiScore < lowestScore) {
                     reigningChampion = String.valueOf(decrypted);

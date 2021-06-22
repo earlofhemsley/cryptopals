@@ -3,6 +3,8 @@ package cryptopals.tool;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * A tool relating to XOR operations for encryption/decryption
  */
@@ -38,14 +40,22 @@ public class XOR {
      * @param key
      * @return
      */
-    public char[] singleKeyXOR(byte[] input, int key) {
-        char[] decrypted = new char[input.length];
+    public byte[] singleKeyXOR(byte[] input, int key) {
+        byte[] decrypted = new byte[input.length];
         for(int i = 0; i < decrypted.length; i++) {
-            decrypted[i] = (char) ((int) input[i] ^ key);
+            decrypted[i] = (byte) ((int) input[i] ^ key);
         }
         return decrypted;
     }
 
+    public char[] singleKeyXORToCharArray(byte[] input, int key) {
+        final byte[] result = singleKeyXOR(input, key);
+        final char[] returnValue = new char[result.length];
+        for (int i = 0; i < result.length; i++) {
+            returnValue[i] = (char) result[i];
+        }
+        return returnValue;
+    }
 
     /**
      * xor's each successive byte of one byte array against each successive byte

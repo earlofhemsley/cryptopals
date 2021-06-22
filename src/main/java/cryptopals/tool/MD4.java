@@ -13,4 +13,9 @@ public class MD4 extends AbstractDigestWrapper<MD4Digest> {
     protected MD4Digest getDigest() {
         return d;
     }
+
+    @Override
+    protected int getBlockSize() {
+        return 64;
+    }
 }
