@@ -3,9 +3,13 @@ package cryptopals.challenges.sec04;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import cryptopals.tool.SHA1;
+import lombok.SneakyThrows;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.macs.HMac;
+import org.bouncycastle.crypto.params.KeyParameter;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
 
 /**
  * Implement and break HMAC-SHA1 with an artificial timing leak
@@ -41,18 +45,31 @@ public class C31 {
     private final HMac hmac = new HMac(new SHA1Digest());
 
     /**
-     * test that the HMAC function is, at bare minimum, deterministic.
-     * there's no independent way to test
+     * the best way to verify that the way that _I_ implemented the HMAC
+     * is correct is to verify it it against an independent source.
+     *
+     * Since we've got the bouncycastle library, might as well use it as guard rails
+     *
+     * assert that there is no difference between a bouncy castle HMAC and the one I implemented
+     * with my little SHA1 class
      */
     @Test
     void HMACisDeterministic() {
         final byte[] msg = "Chancellor on brink of second bailout for Banks".getBytes();
-        final byte[] otherOut = new byte[hmac.getMacSize()];
+        final byte[] bcHMAC = new byte[hmac.getMacSize()];
+        final var pk = extractPrivateKey(sha1);
+        final var kp = new KeyParameter(pk);
+        hmac.init(kp);
         hmac.update(msg, 0, msg.length);
-        hmac.doFinal(otherOut, 0);
+        hmac.doFinal(bcHMAC, 0);
+        assertArrayEquals(bcHMAC, sha1.getHMAC(msg));
+    }
 
-        final var hmac1 = sha1.getHMAC(msg);
-        assertArrayEquals(otherOut, hmac1);
+    @SneakyThrows
+    private byte[] extractPrivateKey(final Object target) {
+        final Field f = target.getClass().getSuperclass().getDeclaredField("privateKey");
+        f.setAccessible(true);
+        return (byte[]) f.get(target);
     }
 
 }
