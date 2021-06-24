@@ -19,4 +19,8 @@ public class SHA1 extends AbstractDigestWrapper<SHA1Digest> {
     protected int getBlockSize() {
         return 64;
     }
+
+    public int getHashLength() {
+        return d.getDigestSize();
+    }
 }
