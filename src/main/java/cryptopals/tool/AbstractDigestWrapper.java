@@ -16,8 +16,9 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
     /**
      * a private key that is different for every instance of the sha
      */
-    private final int keyLength = new Random(System.currentTimeMillis()).nextInt(17) + 3;
+    private final int keyLength = new Random(System.currentTimeMillis()).nextInt(127) + 1;
     private final byte[] privateKey = ByteArrayUtil.randomBytes(keyLength);
+    private final XOR xor = new XOR();
 
     /**
      * given a key, a message and a mac, verify that the digest the comes from concatenating the key and the message
@@ -45,6 +46,28 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
     }
 
     /**
+     * get a SHA1 HMAC
+     * @param message the message to hash
+     * @return the hash
+     */
+    public byte[] getHMAC(final byte[] message) {
+        final var localKey = new byte[getBlockSize()];
+        if (privateKey.length > getBlockSize()) {
+            final var keyHash = getMAC(new byte[0], privateKey);
+            System.arraycopy(keyHash, 0, localKey, 0, keyHash.length);
+        } else {
+            System.arraycopy(privateKey, 0, localKey, 0, privateKey.length);
+        }
+
+        final var oKeyPad = xor.singleKeyXOR(localKey, 0x5c);
+        final var iKeyPad = xor.singleKeyXOR(localKey, 0x36);
+
+        final var innerHash = getMAC(iKeyPad, message);
+
+        return getMAC(oKeyPad, innerHash);
+    }
+
+    /**
      * given a message and a key, generate a mac.
      *
      * @param key the key (usually the internal private key)
@@ -61,4 +84,5 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
     }
 
     protected abstract T getDigest();
+    protected abstract int getBlockSize();
 }

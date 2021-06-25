@@ -3,12 +3,20 @@
  */
 package cryptopals;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+
+@SpringBootApplication
+@ComponentScan(basePackages = "cryptopals.controllers")
 public class App {
-    public String getGreeting() {
-        return "Hello world.";
+    public String getWarning() {
+        return "This application is driven through its test packages. " +
+                "Run the gradle test task to test the cryptopals challenges.";
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        System.out.println(new App().getWarning());
+        SpringApplication.run(App.class);
     }
 }

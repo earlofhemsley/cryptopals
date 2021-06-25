@@ -1,5 +1,6 @@
 package cryptopals.tool;
 
+import cryptopals.utils.ByteArrayUtil;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 
 /**
@@ -12,5 +13,14 @@ public class SHA1 extends AbstractDigestWrapper<SHA1Digest> {
     @Override
     protected SHA1Digest getDigest() {
         return d;
+    }
+
+    @Override
+    protected int getBlockSize() {
+        return 64;
+    }
+
+    public int getHashLength() {
+        return d.getDigestSize();
     }
 }

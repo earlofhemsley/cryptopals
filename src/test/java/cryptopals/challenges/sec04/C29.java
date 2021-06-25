@@ -103,7 +103,7 @@ public class C29 {
         //get the hash for this string
         final byte[] hash = sha1.getMAC(subject);
 
-        for (int keyLength = 1; keyLength <= 20; keyLength++) {
+        for (int keyLength = 1; keyLength <= 128; keyLength++) {
             final byte[] fakeKey = new byte[keyLength];
             Arrays.fill(fakeKey, (byte) 'A');
 

@@ -50,7 +50,7 @@ public abstract class AbstractFrequencyAnalyzingCTRKeyDeterminer {
         double lowestChiScore = Double.MAX_VALUE;
         Integer winner = null;
         for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-            char[] xordFirstLetters = xor.singleKeyXOR(byteColumn, i);
+            char[] xordFirstLetters = xor.singleKeyXORToCharArray(byteColumn, i);
             double localChi = chi.score(xordFirstLetters);
             if (localChi < lowestChiScore) {
                 lowestChiScore = localChi;
