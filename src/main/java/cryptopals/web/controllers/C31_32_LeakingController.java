@@ -1,10 +1,10 @@
-package cryptopals.controllers;
+package cryptopals.web.controllers;
 
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.ok;
 
-import cryptopals.config.properties.LeakingProperties;
+import cryptopals.web.config.properties.LeakingProperties;
 import cryptopals.tool.SHA1;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/leak")
 @Slf4j
 @RequiredArgsConstructor
-public class C31_LeakingController {
+public class C31_32_LeakingController {
 
     private final SHA1 sha1 = new SHA1();
     private final LeakingProperties leakingProps;

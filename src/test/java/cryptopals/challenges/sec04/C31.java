@@ -2,8 +2,6 @@ package cryptopals.challenges.sec04;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import cryptopals.tool.SHA1;
 import cryptopals.tool.sec04.C31_32_TimingLeakExploiter;
@@ -20,10 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.lang.reflect.Field;
@@ -108,7 +104,7 @@ public class C31 {
     @ParameterizedTest
     @ValueSource(strings = {"", "xyz", "b4ec586117154dacd4"})
     void badRequests(final String signature) {
-        final URI uri = URI.create(String.format("http://localhost:%s/c31/test/%s?signature=%s",
+        final URI uri = URI.create(String.format("http://localhost:%s/leak/test/%s?signature=%s",
                 port,
                 "foo",
                 signature
