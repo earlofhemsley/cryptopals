@@ -51,6 +51,18 @@ public class C31_LeakingController {
         return insecureCompare(hmac, sigMac) ? ok().body("Success") : internalServerError().body("Failure");
     }
 
+    /**
+     * given that actually doing the full challenge blows build times substantially,
+     * let's surrender all but the first three bytes of a hash
+     * @return response entity
+     */
+    @GetMapping("/cheat/{file}")
+    public ResponseEntity<String> cheat(@PathVariable String file) {
+        final var hmac = sha1.getHMAC(file.getBytes());
+        final String hexified = Hex.toHexString(hmac);
+        return ok().body("000000" + hexified.substring(6));
+    }
+
     @SneakyThrows
     private boolean insecureCompare(byte[] hmac, byte[] signature) {
         for (int i = 0; i < hmac.length; i++) {

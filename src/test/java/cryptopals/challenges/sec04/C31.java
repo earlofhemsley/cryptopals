@@ -56,6 +56,7 @@ import java.net.URI;
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class C31 {
+    private static final String FILE = "bucko";
 
     private final SHA1 sha1 = new SHA1();
     private final HMac hmac = new HMac(new SHA1Digest());
@@ -113,16 +114,20 @@ public class C31 {
     /**
      * the key to this is that you can time request response to verify that
      * you've made progress. Once you know what a byte is, you don't have to check it again
-     * this reduces the complexity of the attack to 256*20.
+     * this reduces the complexity of the attack to 256*20, which means you can finish it in less than
+     * an hour. Build times will vary widely based on how close each byte is to the starting point
+     * because after successfully finding a byte, each subsequent request will be delayed by an
+     * additional 50 ms.
+     *
+     * simply to avoid the build time inflation while still keeping the spirit of the challenge,
+     * i've added an endpoint that will give the last 17 bytes of the hmac up. The challenge then is
+     * to find the first three bytes according to the method of the challenge
      */
     @Test
     void completeTheChallenge() {
-
-        //start with all zeros
-        byte[] forgedHash = new byte[20];
-
-        //make a request to wake the server up
-        makeRequest(forgedHash);
+        //make a request to get the last 17 bytes
+        //start with that cheat hash
+        byte[] forgedHash = getCheatBytes();
 
         //define a threshold. if a request takes longer than this, count it as valid
         long threshold = 25L;
@@ -147,19 +152,31 @@ public class C31 {
 
             log.info("found a byte. now the hash is {}", Hex.toHexString(forgedHash));
 
-            //add fifty to the threshold
-            threshold += 50;
+            if (HttpStatus.OK == makeRequest(forgedHash)) {
+                log.info("the hash was {}", Hex.toHexString(forgedHash));
+                break;
+            } else {
+                //add fifty to the threshold
+                threshold += 50;
+            }
         }
-        log.info("the hash was {}", Hex.toHexString(forgedHash));
         assertEquals(HttpStatus.OK, makeRequest(forgedHash));
     }
 
+    private byte[] getCheatBytes() {
+        final URI uri = URI.create(String.format("http://localhost:%s/c31/cheat/%s",
+                port,
+                FILE
+        ));
+        final var hexCheat = restTemplate.getForObject(uri, String.class);
+        return Hex.decode(hexCheat);
+    }
+
     private HttpStatus makeRequest(final byte[] forgedHash) {
-        final String file = "bucko";
         final String signature = Hex.toHexString(forgedHash);
         final URI uri = URI.create(String.format("http://localhost:%s/c31/test/%s?signature=%s",
                 port,
-                file,
+                FILE,
                 signature
         ));
         final ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
