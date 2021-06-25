@@ -49,6 +49,7 @@ dependencies {
     //spring boot web
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     // Use JUnit Jupiter API for testing.
     // the api is a transitive dependency of the params package

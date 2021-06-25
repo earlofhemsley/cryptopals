@@ -4,7 +4,9 @@ import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.ok;
 
+import cryptopals.config.properties.LeakingProperties;
 import cryptopals.tool.SHA1;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,11 +20,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/c31")
+@RequestMapping("/leak")
 @Slf4j
+@RequiredArgsConstructor
 public class C31_LeakingController {
 
     private final SHA1 sha1 = new SHA1();
+    private final LeakingProperties leakingProps;
 
     @GetMapping("/test/{file}")
     public ResponseEntity<String> auth(@PathVariable String file, @RequestParam String signature) {
@@ -67,7 +71,7 @@ public class C31_LeakingController {
     private boolean insecureCompare(byte[] hmac, byte[] signature) {
         for (int i = 0; i < hmac.length; i++) {
             if (hmac[i] == signature[i]) {
-                Thread.sleep(50);
+                Thread.sleep(leakingProps.getDelay());
             } else {
                 return false;
             }

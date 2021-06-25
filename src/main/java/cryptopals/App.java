@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "cryptopals.controllers")
+@ComponentScan(basePackages = {"cryptopals.controllers", "cryptopals.config"})
 public class App {
     public String getWarning() {
         return "This application is driven through its test packages. " +
