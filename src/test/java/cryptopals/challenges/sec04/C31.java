@@ -24,6 +24,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Implement and break HMAC-SHA1 with an artificial timing leak
@@ -127,7 +128,7 @@ public class C31 {
      * to find the first three bytes according to the method of the challenge
      */
     @Test
-    void completeTheChallenge() {
+    void completeTheChallenge() throws ExecutionException, InterruptedException {
         final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate());
         //make a request to get the last 17 bytes
         //start with that cheat hash
@@ -136,7 +137,7 @@ public class C31 {
         //define a threshold. if a request takes longer than this, count it as valid
         exploiter.exploitLeak(forgedHash, 25L, 50L);
 
-        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash));
+        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash, 0L).get().getKey());
     }
 
     private byte[] getCheatBytes() {

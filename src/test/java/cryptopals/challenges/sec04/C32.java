@@ -11,6 +11,8 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Break HMAC-SHA1 with a slightly less artificial timing leak
  * Reduce the sleep in your "insecure_compare" until your previous solution breaks. (Try 5ms to start.)
@@ -32,18 +34,18 @@ public class C32 {
      * this is the same challenge as 31, but with a shorter leaking delay
      */
     @Test
-    void completeTheChallenge() {
+    void completeTheChallenge() throws ExecutionException, InterruptedException {
         final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate());
 
         //start with an empty hash
         byte[] forgedHash = new byte[20];
 
         //make a request to wake the system up
-        exploiter.makeRequest(forgedHash);
+        exploiter.makeRequest(forgedHash, 0L);
 
         //define a threshold. if a request takes longer than this, count it as valid
         exploiter.exploitLeak(forgedHash, 3L, 5L);
 
-        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash));
+        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash, 0L).get().getKey());
     }
 }

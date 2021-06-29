@@ -27,6 +27,7 @@ public class C31_32_LeakingController {
 
     private final SHA1 sha1 = new SHA1();
     private final LeakingProperties leakingProps;
+    private final Object lockingObj = new Object();
 
     @GetMapping("/test/{file}")
     public ResponseEntity<String> auth(@PathVariable String file, @RequestParam String signature) {
@@ -50,7 +51,10 @@ public class C31_32_LeakingController {
         }
 
         //build the hmac for the submitted message
-        final var hmac = sha1.getHMAC(file.getBytes());
+        final byte[] hmac;
+        synchronized (lockingObj) {
+            hmac = sha1.getHMAC(file.getBytes());
+        }
 
         return insecureCompare(hmac, sigMac) ? ok().body("Success") : internalServerError().body("Failure");
     }
@@ -62,8 +66,13 @@ public class C31_32_LeakingController {
      */
     @GetMapping("/cheat/{file}")
     public ResponseEntity<String> cheat(@PathVariable String file) {
-        final var hmac = sha1.getHMAC(file.getBytes());
+
+        final byte[] hmac;
+        synchronized (lockingObj) {
+            hmac = sha1.getHMAC(file.getBytes());
+        }
         final String hexified = Hex.toHexString(hmac);
+        log.info("the hash is {}", hexified);
         return ok().body("000000" + hexified.substring(6));
     }
 
