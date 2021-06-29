@@ -3,6 +3,7 @@ package cryptopals.challenges.sec04;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cryptopals.tool.sec04.C31_32_TimingLeakExploiter;
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,7 +12,9 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
+import java.net.URI;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 /**
  * Break HMAC-SHA1 with a slightly less artificial timing leak
@@ -35,17 +38,27 @@ public class C32 {
      */
     @Test
     void completeTheChallenge() throws ExecutionException, InterruptedException {
-        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate());
+        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), Executors.newFixedThreadPool(7));
 
-        //start with an empty hash
-        byte[] forgedHash = new byte[20];
+        //start with a cheat set
+        byte[] forgedHash = getCheatBytes();
 
         //make a request to wake the system up
-        exploiter.makeRequest(forgedHash, 0L);
+        exploiter.makeRequest(forgedHash);
 
         //define a threshold. if a request takes longer than this, count it as valid
-        exploiter.exploitLeak(forgedHash, 3L, 5L);
+        exploiter.exploitLeak(forgedHash);
 
-        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash, 0L).get().getKey());
+        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash).get().getKey());
+    }
+
+    private byte[] getCheatBytes() {
+        final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s/%d",
+                port,
+                FILE,
+                12
+        ));
+        final var hexCheat = restTemplate.getForObject(uri, String.class);
+        return Hex.decode(hexCheat);
     }
 }

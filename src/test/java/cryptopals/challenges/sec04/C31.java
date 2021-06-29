@@ -25,6 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 /**
  * Implement and break HMAC-SHA1 with an artificial timing leak
@@ -129,21 +130,22 @@ public class C31 {
      */
     @Test
     void completeTheChallenge() throws ExecutionException, InterruptedException {
-        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate());
+        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), Executors.newFixedThreadPool(33));
         //make a request to get the last 17 bytes
         //start with that cheat hash
         byte[] forgedHash = getCheatBytes();
 
         //define a threshold. if a request takes longer than this, count it as valid
-        exploiter.exploitLeak(forgedHash, 25L, 50L);
+        exploiter.exploitLeak(forgedHash);
 
-        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash, 0L).get().getKey());
+        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash).get().getKey());
     }
 
     private byte[] getCheatBytes() {
-        final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s",
+        final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s/%d",
                 port,
-                FILE
+                FILE,
+                6
         ));
         final var hexCheat = restTemplate.getForObject(uri, String.class);
         return Hex.decode(hexCheat);

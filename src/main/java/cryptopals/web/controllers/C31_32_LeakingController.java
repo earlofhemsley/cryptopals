@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+
 @RestController
 @RequestMapping("/leak")
 @Slf4j
@@ -64,8 +66,8 @@ public class C31_32_LeakingController {
      * let's surrender all but the first three bytes of a hash
      * @return response entity
      */
-    @GetMapping("/cheat/{file}")
-    public ResponseEntity<String> cheat(@PathVariable String file) {
+    @GetMapping("/cheat/{file}/{numMaskedChars}")
+    public ResponseEntity<String> cheat(@PathVariable String file, @PathVariable Integer numMaskedChars) {
 
         final byte[] hmac;
         synchronized (lockingObj) {
@@ -73,7 +75,9 @@ public class C31_32_LeakingController {
         }
         final String hexified = Hex.toHexString(hmac);
         log.info("the hash is {}", hexified);
-        return ok().body("000000" + hexified.substring(6));
+        final var mask = new char[numMaskedChars];
+        Arrays.fill(mask, '0');
+        return ok().body(String.valueOf(mask) + hexified.substring(numMaskedChars));
     }
 
     @SneakyThrows
