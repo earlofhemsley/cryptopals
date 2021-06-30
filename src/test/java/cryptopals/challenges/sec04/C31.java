@@ -130,7 +130,7 @@ public class C31 {
      */
     @Test
     void completeTheChallenge() throws ExecutionException, InterruptedException {
-        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), Executors.newFixedThreadPool(33));
+        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 33);
         //make a request to get the last 17 bytes
         //start with that cheat hash
         byte[] forgedHash = getCheatBytes();
