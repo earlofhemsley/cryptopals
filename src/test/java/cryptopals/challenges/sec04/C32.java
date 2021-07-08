@@ -42,9 +42,6 @@ public class C32 {
         //start with a cheat set
         byte[] forgedHash = getCheatBytes();
 
-        //make a request to wake the system up
-        exploiter.makeRequest(forgedHash);
-
         //define a threshold. if a request takes longer than this, count it as valid
         exploiter.exploitLeak(forgedHash);
 
