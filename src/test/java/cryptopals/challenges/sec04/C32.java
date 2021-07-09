@@ -37,7 +37,7 @@ public class C32 {
      */
     @Test
     void completeTheChallenge() throws ExecutionException, InterruptedException {
-        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 4);
+        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 5);
 
         //start with a cheat set
         byte[] forgedHash = getCheatBytes();
