@@ -2,10 +2,9 @@ package cryptopals.challenges.sec04;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import cryptopals.tool.SHA1;
+import cryptopals.tool.sec04.C31_32_TimingLeakExploiter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.crypto.digests.SHA1Digest;
@@ -21,9 +20,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 /**
  * Implement and break HMAC-SHA1 with an artificial timing leak
@@ -55,6 +57,9 @@ import java.net.URI;
  */
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// this nifty annotation allows us to set the leak in the controller
+// without having to set up alternate profiles
+@TestPropertySource(properties = "leaking.delay=50")
 public class C31 {
     private static final String FILE = "bucko";
 
@@ -101,7 +106,7 @@ public class C31 {
     @ParameterizedTest
     @ValueSource(strings = {"", "xyz", "b4ec586117154dacd4"})
     void badRequests(final String signature) {
-        final URI uri = URI.create(String.format("http://localhost:%s/c31/test/%s?signature=%s",
+        final URI uri = URI.create(String.format("http://localhost:%s/leak/test/%s?signature=%s",
                 port,
                 "foo",
                 signature
@@ -124,64 +129,25 @@ public class C31 {
      * to find the first three bytes according to the method of the challenge
      */
     @Test
-    void completeTheChallenge() {
+    void completeTheChallenge() throws ExecutionException, InterruptedException {
+        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 33);
         //make a request to get the last 17 bytes
         //start with that cheat hash
         byte[] forgedHash = getCheatBytes();
 
         //define a threshold. if a request takes longer than this, count it as valid
-        long threshold = 25L;
-        long responseTime;
-        boolean found;
+        exploiter.exploitLeak(forgedHash);
 
-        for (int i = 0; i < forgedHash.length; i++) {
-            int j = Byte.MIN_VALUE;
-            do {
-                forgedHash[i] = (byte) j;
-                final long startTime = System.currentTimeMillis();
-                makeRequest(forgedHash);
-                responseTime = System.currentTimeMillis() - startTime;
-                j++;
-                found = responseTime > threshold;
-            } while (!found && j <= Byte.MAX_VALUE);
-
-            if (!found) {
-                fail(String.format("failed to detect the byte using timing leak. result before failure: %s",
-                        Hex.toHexString(forgedHash)));
-            }
-
-            log.info("found a byte. now the hash is {}", Hex.toHexString(forgedHash));
-
-            if (HttpStatus.OK == makeRequest(forgedHash)) {
-                log.info("the hash was {}", Hex.toHexString(forgedHash));
-                break;
-            } else {
-                //add fifty to the threshold
-                threshold += 50;
-            }
-        }
-        assertEquals(HttpStatus.OK, makeRequest(forgedHash));
+        assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash).get().getKey());
     }
 
     private byte[] getCheatBytes() {
-        final URI uri = URI.create(String.format("http://localhost:%s/c31/cheat/%s",
+        final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s/%d",
                 port,
-                FILE
+                FILE,
+                4
         ));
         final var hexCheat = restTemplate.getForObject(uri, String.class);
         return Hex.decode(hexCheat);
     }
-
-    private HttpStatus makeRequest(final byte[] forgedHash) {
-        final String signature = Hex.toHexString(forgedHash);
-        final URI uri = URI.create(String.format("http://localhost:%s/c31/test/%s?signature=%s",
-                port,
-                FILE,
-                signature
-        ));
-        final ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-        assertNotEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        return response.getStatusCode();
-    }
-
 }

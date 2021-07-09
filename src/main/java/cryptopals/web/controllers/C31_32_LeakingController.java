@@ -1,10 +1,12 @@
-package cryptopals.controllers;
+package cryptopals.web.controllers;
 
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.internalServerError;
 import static org.springframework.http.ResponseEntity.ok;
 
+import cryptopals.web.config.properties.LeakingProperties;
 import cryptopals.tool.SHA1;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,12 +19,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+
 @RestController
-@RequestMapping("/c31")
+@RequestMapping("/leak")
 @Slf4j
-public class C31_LeakingController {
+@RequiredArgsConstructor
+public class C31_32_LeakingController {
 
     private final SHA1 sha1 = new SHA1();
+    private final LeakingProperties leakingProps;
+    private final Object lockingObj = new Object();
 
     @GetMapping("/test/{file}")
     public ResponseEntity<String> auth(@PathVariable String file, @RequestParam String signature) {
@@ -46,7 +53,10 @@ public class C31_LeakingController {
         }
 
         //build the hmac for the submitted message
-        final var hmac = sha1.getHMAC(file.getBytes());
+        final byte[] hmac;
+        synchronized (lockingObj) {
+            hmac = sha1.getHMAC(file.getBytes());
+        }
 
         return insecureCompare(hmac, sigMac) ? ok().body("Success") : internalServerError().body("Failure");
     }
@@ -56,18 +66,25 @@ public class C31_LeakingController {
      * let's surrender all but the first three bytes of a hash
      * @return response entity
      */
-    @GetMapping("/cheat/{file}")
-    public ResponseEntity<String> cheat(@PathVariable String file) {
-        final var hmac = sha1.getHMAC(file.getBytes());
+    @GetMapping("/cheat/{file}/{numMaskedChars}")
+    public ResponseEntity<String> cheat(@PathVariable String file, @PathVariable Integer numMaskedChars) {
+
+        final byte[] hmac;
+        synchronized (lockingObj) {
+            hmac = sha1.getHMAC(file.getBytes());
+        }
         final String hexified = Hex.toHexString(hmac);
-        return ok().body("000000" + hexified.substring(6));
+        log.info("the hash is {}", hexified);
+        final var mask = new char[numMaskedChars];
+        Arrays.fill(mask, '0');
+        return ok().body(String.valueOf(mask) + hexified.substring(numMaskedChars));
     }
 
     @SneakyThrows
     private boolean insecureCompare(byte[] hmac, byte[] signature) {
         for (int i = 0; i < hmac.length; i++) {
             if (hmac[i] == signature[i]) {
-                Thread.sleep(50);
+                Thread.sleep(leakingProps.getDelay());
             } else {
                 return false;
             }

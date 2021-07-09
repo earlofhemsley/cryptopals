@@ -68,6 +68,14 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
     }
 
     /**
+     * get the length of the underlying digest
+     * @return the length of the underlying digest
+     */
+    public int getHashLength() {
+        return getDigest().getDigestSize();
+    }
+
+    /**
      * given a message and a key, generate a mac.
      *
      * @param key the key (usually the internal private key)
