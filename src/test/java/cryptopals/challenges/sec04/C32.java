@@ -37,7 +37,7 @@ public class C32 {
      */
     @Test
     void completeTheChallenge() throws ExecutionException, InterruptedException {
-        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 2);
+        final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 3);
 
         //start with a cheat set
         byte[] forgedHash = getCheatBytes();
@@ -52,7 +52,7 @@ public class C32 {
         final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s/%d",
                 port,
                 FILE,
-                6
+                8
         ));
         final var hexCheat = restTemplate.getForObject(uri, String.class);
         return Hex.decode(hexCheat);
