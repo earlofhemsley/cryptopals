@@ -145,7 +145,7 @@ public class C31 {
         final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s/%d",
                 port,
                 FILE,
-                6
+                4
         ));
         final var hexCheat = restTemplate.getForObject(uri, String.class);
         return Hex.decode(hexCheat);
