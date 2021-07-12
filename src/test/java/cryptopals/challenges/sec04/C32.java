@@ -3,7 +3,7 @@ package cryptopals.challenges.sec04;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cryptopals.tool.sec04.C31_32_TimingLeakExploiter;
-import org.bouncycastle.util.encoders.Hex;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +12,6 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
-import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -36,25 +35,16 @@ public class C32 {
      * this is the same challenge as 31, but with a shorter leaking delay
      */
     @Test
+    @Tag("longRunning")
     void completeTheChallenge() throws ExecutionException, InterruptedException {
         final C31_32_TimingLeakExploiter exploiter = new C31_32_TimingLeakExploiter(FILE, port, restTemplate.getRestTemplate(), 4);
 
         //start with a cheat set
-        byte[] forgedHash = getCheatBytes();
+        byte[] forgedHash = new byte[20];
 
         //define a threshold. if a request takes longer than this, count it as valid
         exploiter.exploitLeak(forgedHash);
 
         assertEquals(HttpStatus.OK, exploiter.makeRequest(forgedHash).get().getKey());
-    }
-
-    private byte[] getCheatBytes() {
-        final URI uri = URI.create(String.format("http://localhost:%s/leak/cheat/%s/%d",
-                port,
-                FILE,
-                8
-        ));
-        final var hexCheat = restTemplate.getForObject(uri, String.class);
-        return Hex.decode(hexCheat);
     }
 }
