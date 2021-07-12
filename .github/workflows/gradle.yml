@@ -24,7 +24,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew compileJava allTest
     - name: Upload Test Results
       if: ${{ always() }}
       uses: actions/upload-artifact@v2.2.4
