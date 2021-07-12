@@ -70,5 +70,14 @@ application {
 
 test {
     // Use junit platform for unit tests
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags 'longRunning'
+    }
+}
+
+task('allTest', type: Test) {
+    dependsOn test
+    useJUnitPlatform {
+        includeTags 'longRunning'
+    }
 }
