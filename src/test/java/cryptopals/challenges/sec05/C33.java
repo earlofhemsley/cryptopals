@@ -2,6 +2,7 @@ package cryptopals.challenges.sec05;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cryptopals.tool.sec05.DiffieHellmanParty;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.bouncycastle.util.encoders.Hex;
@@ -75,18 +76,19 @@ public class C33 {
     @ParameterizedTest
     @MethodSource("supplySecrets")
     void completeTheChallenge(final BigInteger a, final BigInteger b, final BigInteger g, final BigInteger p) {
-        //secret supplied ... a
+        final DiffieHellmanParty alice = new DiffieHellmanParty(g, p, a);
+        final DiffieHellmanParty bob = new DiffieHellmanParty(g, p, b);
+
         //alice public
-        final BigInteger A = g.modPow(a, p);
+        final BigInteger A = alice.getPublicKey();
 
-        //secret supplied ... b
         //bob public
-        final BigInteger B = g.modPow(b, p);
+        final BigInteger B = bob.getPublicKey();
 
-        //shared, from alice
-        final BigInteger s1 = B.modPow(a, p);
+        //alice's shared
+        final BigInteger s1 = alice.getSharedKey(B);
         //shared, from bob
-        final BigInteger s2 = A.modPow(b, p);
+        final BigInteger s2 = bob.getSharedKey(A);
 
         assertEquals(s1, s2);
 
