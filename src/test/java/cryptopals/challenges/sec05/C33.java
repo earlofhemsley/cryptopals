@@ -76,8 +76,8 @@ public class C33 {
     @ParameterizedTest
     @MethodSource("supplySecrets")
     void completeTheChallenge(final BigInteger a, final BigInteger b, final BigInteger g, final BigInteger p) {
-        final DiffieHellmanParty alice = new DiffieHellmanParty(g, p, a);
-        final DiffieHellmanParty bob = new DiffieHellmanParty(g, p, b);
+        final DiffieHellmanParty alice = new DiffieHellmanParty(g, p, "Alice", a);
+        final DiffieHellmanParty bob = new DiffieHellmanParty(g, p, "Bob", b);
 
         //alice public
         final BigInteger A = alice.getPublicKey();
@@ -86,9 +86,9 @@ public class C33 {
         final BigInteger B = bob.getPublicKey();
 
         //alice's shared
-        final BigInteger s1 = alice.getSharedKey(B);
+        final BigInteger s1 = alice.getSharedKey(p, B);
         //shared, from bob
-        final BigInteger s2 = bob.getSharedKey(A);
+        final BigInteger s2 = bob.getSharedKey(p, A);
 
         assertEquals(s1, s2);
 
