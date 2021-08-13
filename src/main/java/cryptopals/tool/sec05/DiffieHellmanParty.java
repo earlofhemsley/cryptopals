@@ -4,6 +4,7 @@ import cryptopals.tool.CBC;
 import cryptopals.tool.MT19937_32;
 import cryptopals.tool.sec05.c34.NetworkRouter;
 import cryptopals.utils.ByteArrayUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -19,6 +20,7 @@ import java.util.Optional;
  * we allow it to be set for use in parameterized tests across a wide set of secret keys
  * however, there is no getter on that secret key, so it is not publicly available
  */
+@Slf4j
 public class DiffieHellmanParty {
     private BigInteger g = BigInteger.valueOf(2);
     private BigInteger p = new BigInteger(1, Hex.decode(
@@ -114,34 +116,48 @@ public class DiffieHellmanParty {
         knownSharedKeys.put(destination, getSharedKey(p, destinationPublicKey));
     }
 
-    public void sendEncryptedMessage(final String destination, final String message) {
+    public boolean sendEncryptedMessage(final String destination, final String message) {
         //derive the encryption key from the shared key hash for this destination
-        final byte[] sharedKey = Optional.ofNullable(knownSharedKeys.get(destination))
-                .map(BigInteger::toByteArray)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("no shared key available for %s", destination)));
-        final byte[] encKeyHash = new byte[sha1.getDigestSize()];
-        sha1.update(sharedKey, 0, sharedKey.length);
-        sha1.doFinal(encKeyHash, 0);
-
-        //encrypt the message using the shared key and a random init vector
-        final CBC cbc = new CBC(Arrays.copyOfRange(encKeyHash, 0, 16));
+        final CBC cbc = retrieveCBCForNamedKey(destination);
         final byte[] iv = ByteArrayUtil.randomBytes(16);
         final byte[] encryptedMessage = cbc.encryptToByteArray(message.getBytes(), iv);
 
         final byte[] fullMessage = ByteArrayUtil.concatenate(encryptedMessage, iv);
 
         //send the message through the router and get a response
-        final byte[] response = router.routeMessage(fullMessage, destination);
+        final byte[] response = router.routeMessage(fullMessage, this.name, destination);
 
-        assert Arrays.equals(fullMessage, response);
+        return Arrays.equals(fullMessage, response);
     }
 
     //echo bot
-    public byte[] receiveEncryptedMessage(final byte[] message) {
-        //TODO:
+    public byte[] receiveEncryptedMessage(final String source, final byte[] message) {
         // decrypt the message
-        // re-encrypt it using the shared key and supplied iv and return it
-        return message;
+        final CBC cbc = retrieveCBCForNamedKey(source);
+
+        //get the iv and the msg itself out of the parameter
+        final int splitPoint = message.length - 16;
+        final byte[] iv = ByteArrayUtil.sliceByteArray(message, splitPoint, 16);
+        final byte[] toDecrypt = ByteArrayUtil.sliceByteArray(message, 0, message.length - 16);
+
+        //decrypt
+        final byte[] decrypted = cbc.decryptAsByteArray(toDecrypt, iv);
+        log.info("message decrypted: {}", new String(decrypted));
+
+        //re-encrypt and return the message
+        final byte[] reEncrypted = cbc.encryptToByteArray(decrypted, iv);
+
+        return ByteArrayUtil.concatenate(reEncrypted, iv);
     }
 
+    //derive the encryption key from the shared key hash for this destination
+    private CBC retrieveCBCForNamedKey(final String keyName) {
+        byte[] sharedKey = Optional.ofNullable(knownSharedKeys.get(keyName))
+                .map(BigInteger::toByteArray)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("no shared key available for %s", keyName)));
+        final byte[] encKeyHash = new byte[sha1.getDigestSize()];
+        sha1.update(sharedKey, 0, sharedKey.length);
+        sha1.doFinal(encKeyHash, 0);
+        return new CBC(ByteArrayUtil.sliceByteArray(encKeyHash, 0, 16));
+    }
 }

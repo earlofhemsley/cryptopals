@@ -12,5 +12,5 @@ public interface NetworkRouter {
 
     BigInteger initDHKeyExchange(DiffieHellmanParty source, String destination);
 
-    byte[] routeMessage(byte[] message, String destination);
+    byte[] routeMessage(byte[] message, String source, String destination);
 }

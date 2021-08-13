@@ -1,5 +1,7 @@
 package cryptopals.challenges.sec05;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import cryptopals.tool.sec05.DiffieHellmanParty;
 import cryptopals.tool.sec05.c34.GoodNetwork;
 import cryptopals.tool.sec05.c34.NetworkRouter;
@@ -65,12 +67,18 @@ public class C34 {
     ));
 
     @Test
-    void dhKeyExchange() {
+    void noManInTheMiddle() {
         final NetworkRouter router = new GoodNetwork();
         final var alice = new DiffieHellmanParty("alice", router);
         new DiffieHellmanParty("bob", router);
 
         alice.sendKeyExchangeRequest("bob");
-        alice.sendEncryptedMessage("bob", "Inflation is a tax on savings");
+        final boolean success = alice.sendEncryptedMessage("bob", "Inflation is a tax on savings");
+        assertTrue(success, "the message sent was not tampered with");
+    }
+
+    @Test
+    void thereIsAManInTheMiddle() {
+
     }
 }

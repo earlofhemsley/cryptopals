@@ -30,9 +30,9 @@ public class GoodNetwork implements NetworkRouter {
     }
 
     @Override
-    public byte[] routeMessage(byte[] message, String destination) {
+    public byte[] routeMessage(byte[] message, String source, String destination) {
         final var d = Optional.ofNullable(registry.get(destination))
                 .orElseThrow(() -> new IllegalArgumentException(destination + " is not a known destination"));
-        return d.receiveEncryptedMessage(message);
+        return d.receiveEncryptedMessage(source, message);
     }
 }
