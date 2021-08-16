@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.tool.sec05.DiffieHellmanParty;
 import cryptopals.tool.sec05.c34.GoodNetwork;
+import cryptopals.tool.sec05.c34.ManInTheMiddle;
 import cryptopals.tool.sec05.c34.NetworkRouter;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
@@ -74,11 +75,17 @@ public class C34 {
 
         alice.sendKeyExchangeRequest("bob");
         final boolean success = alice.sendEncryptedMessage("bob", "Inflation is a tax on savings");
-        assertTrue(success, "the message sent was not tampered with");
+        assertTrue(success, "the message sent appears to have been tampered with");
     }
 
     @Test
     void thereIsAManInTheMiddle() {
+        final NetworkRouter mitm = new ManInTheMiddle();
+        final var alice = new DiffieHellmanParty("alice", mitm);
+        new DiffieHellmanParty("bob", mitm);
 
+        alice.sendKeyExchangeRequest("bob");
+        final boolean success = alice.sendEncryptedMessage("bob", "Inflation is a tax on savings");
+        assertTrue(success, "the message sent appears to have been tampered with");
     }
 }

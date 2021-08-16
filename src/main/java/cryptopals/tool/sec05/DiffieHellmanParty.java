@@ -42,15 +42,9 @@ public class DiffieHellmanParty {
     private final BigInteger secretKey;
     private final NetworkRouter router;
 
-    public DiffieHellmanParty(String name) {
-        this.name = name;
-        this.secretKey = BigInteger.valueOf(new MT19937_32(System.currentTimeMillis()).nextInt());
-        this.router = null;
-    }
-
     public DiffieHellmanParty(String name, NetworkRouter router) {
         this.name = name;
-        secretKey = BigInteger.valueOf(new MT19937_32(System.currentTimeMillis()).nextInt());
+        secretKey = BigInteger.valueOf(Math.abs(new MT19937_32(System.currentTimeMillis()).nextInt()));
         this.router = router;
         router.register(this);
     }
