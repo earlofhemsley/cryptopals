@@ -13,7 +13,7 @@ public abstract class NetworkRouter {
         registry.put(party.getName(), party);
     }
 
-    public abstract BigInteger initDHKeyExchange(DiffieHellmanParty source, String destination);
+    public abstract BigInteger initDHKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey, String source, String destination);
 
     public abstract byte[] routeMessage(byte[] message, String source, String destination);
 }

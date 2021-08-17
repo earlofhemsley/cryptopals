@@ -1,39 +1,40 @@
 package cryptopals.tool.sec05.c34;
 
+import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.CBC;
-import cryptopals.tool.sec05.DiffieHellmanParty;
 import cryptopals.utils.ByteArrayUtil;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 
 import java.math.BigInteger;
 
 @Slf4j
+@Setter
 public class ManInTheMiddle extends NetworkRouter {
 
+    private String expectedMessage;
     private final SHA1Digest sha1 = new SHA1Digest();
 
     @Override
-    public BigInteger initDHKeyExchange(DiffieHellmanParty source, String destination) {
+    public BigInteger initDHKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey, String source, String destination) {
         if (!registry.containsKey(destination)) {
             throw new IllegalArgumentException(destination + " is not a known destination");
         }
 
-        if(!registry.containsKey(source.getName())) {
-            register(source);
+        if(!registry.containsKey(source)) {
+            throw new IllegalArgumentException(source + " is not a known network node");
         }
 
         final var dest = registry.get(destination);
 
         //man in the middle time
-        // the source's p is the public key we are going to send to both parties
-        final BigInteger zPublicKey = source.getP();
-
         // send the fake public key to the destination
-        dest.receiveKeyExchangeRequest(source.getG(), source.getP(), source.getName(), zPublicKey);
+        dest.receiveKeyExchangeRequest(g, p, source, p);
 
         // send the fake public key to the source as well
-        return zPublicKey;
+        return p;
     }
 
     @Override
@@ -53,7 +54,14 @@ public class ManInTheMiddle extends NetworkRouter {
         final byte[] iv = ByteArrayUtil.sliceByteArray(message, cutpoint, 16);
         final byte[] actualMsg = ByteArrayUtil.sliceByteArray(message, 0, cutpoint);
         final byte[] decrypted = cbc.decryptAsByteArray(actualMsg, iv);
-        log.info("man in the middle slice! {}", new String(decrypted));
+
+        final var decryptedString = new String(decrypted);
+        log.info("man in the middle slice! {}", decryptedString);
+
+        if (!StringUtils.equals(decryptedString, this.expectedMessage)) {
+            throw new CryptopalsException(String.format("Expected message '%s' did not match actual message '%s'",
+                    this.expectedMessage, decryptedString));
+        }
 
         final var dest = registry.get(destination);
         return dest.receiveEncryptedMessage(source, message);

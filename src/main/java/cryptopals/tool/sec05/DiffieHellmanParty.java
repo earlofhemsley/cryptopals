@@ -22,8 +22,8 @@ import java.util.Optional;
  */
 @Slf4j
 public class DiffieHellmanParty {
-    private BigInteger g = BigInteger.valueOf(2);
-    private BigInteger p = new BigInteger(1, Hex.decode(
+    private static final BigInteger G = BigInteger.valueOf(2);
+    private static final BigInteger P = new BigInteger(1, Hex.decode(
             "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024" +
                     "e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd" +
                     "3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec" +
@@ -49,28 +49,10 @@ public class DiffieHellmanParty {
         router.register(this);
     }
 
-    public DiffieHellmanParty(BigInteger g, BigInteger p, String name, BigInteger secretKey) {
-        this.g = g;
-        this.p = p;
+    public DiffieHellmanParty(String name, BigInteger secretKey) {
         this.name = name;
         this.secretKey = secretKey;
         router = null;
-    }
-
-    public BigInteger getG() {
-        return g;
-    }
-
-    public void setG(BigInteger g) {
-        this.g = g;
-    }
-
-    public BigInteger getP() {
-        return p;
-    }
-
-    public void setP(BigInteger p) {
-        this.p = p;
     }
 
     public String getName() {
@@ -81,7 +63,7 @@ public class DiffieHellmanParty {
      * build a public key using modpow for other parties to use
      * @return the public key
      */
-    public BigInteger getPublicKey() {
+    public BigInteger getPublicKey(final BigInteger g, final BigInteger p) {
         return g.modPow(secretKey, p);
     }
 
@@ -96,18 +78,16 @@ public class DiffieHellmanParty {
     }
 
     public BigInteger receiveKeyExchangeRequest(BigInteger g, BigInteger p, String name, BigInteger publicKey) {
-        this.g = g;
-        this.p = p;
         knownSharedKeys.put(name, getSharedKey(p, publicKey));
-        return getPublicKey();
+        return getPublicKey(g, p);
     }
 
     public void sendKeyExchangeRequest(final String destination) {
         if (this.router == null) {
             throw new IllegalStateException("Unable to send. This has no network");
         }
-        final BigInteger destinationPublicKey = router.initDHKeyExchange(this, destination);
-        knownSharedKeys.put(destination, getSharedKey(p, destinationPublicKey));
+        final BigInteger destinationPublicKey = router.initDHKeyExchange(G, P, getPublicKey(G, P), this.name, destination);
+        knownSharedKeys.put(destination, getSharedKey(P, destinationPublicKey));
     }
 
     public boolean sendEncryptedMessage(final String destination, final String message) {
