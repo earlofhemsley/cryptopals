@@ -77,11 +77,23 @@ public class DiffieHellmanParty {
         return otherPartyPublic.modPow(secretKey, p);
     }
 
+    /**
+     * handle an incoming key exchange request from another party
+     * @param g supplied g from source
+     * @param p supplied p from source
+     * @param name name of source
+     * @param publicKey source's public key
+     * @return this party's public key
+     */
     public BigInteger receiveKeyExchangeRequest(BigInteger g, BigInteger p, String name, BigInteger publicKey) {
         knownSharedKeys.put(name, getSharedKey(p, publicKey));
         return getPublicKey(g, p);
     }
 
+    /**
+     * send a dh key exchange request to another party on the network
+     * @param destination the desired destination party
+     */
     public void sendKeyExchangeRequest(final String destination) {
         if (this.router == null) {
             throw new IllegalStateException("Unable to send. This has no network");
@@ -90,6 +102,12 @@ public class DiffieHellmanParty {
         knownSharedKeys.put(destination, getSharedKey(P, destinationPublicKey));
     }
 
+    /**
+     * encrypt and send a message to a desired destination, expecting the message to be echoed back unaltered
+     * @param destination where the message is going to be sent
+     * @param message the message to be sent
+     * @return flag. true means the message that came back unaltered
+     */
     public boolean sendEncryptedMessage(final String destination, final String message) {
         //derive the encryption key from the shared key hash for this destination
         final CBC cbc = retrieveCBCForNamedKey(destination);
@@ -104,7 +122,13 @@ public class DiffieHellmanParty {
         return Arrays.equals(fullMessage, response);
     }
 
-    //echo bot
+    /**
+     * receive an encrypted message from a known source, decrypt it, log it, re-encrypt it, and return it.
+     * if source not known, then an illegal argument * exception is thrown.
+     * @param source known source of message
+     * @param message the message
+     * @return the re-encrypted message
+     */
     public byte[] receiveEncryptedMessage(final String source, final byte[] message) {
         // decrypt the message
         final CBC cbc = retrieveCBCForNamedKey(source);
@@ -124,11 +148,16 @@ public class DiffieHellmanParty {
         return ByteArrayUtil.concatenate(reEncrypted, iv);
     }
 
-    //derive the encryption key from the shared key hash for this destination
-    private CBC retrieveCBCForNamedKey(final String keyName) {
-        byte[] sharedKey = Optional.ofNullable(knownSharedKeys.get(keyName))
+    /**
+     * given a source name, build a CBC encryption object using the shared key
+     * associated with that source
+     * @param source the source
+     * @return CBC encrypting object
+     */
+    private CBC retrieveCBCForNamedKey(final String source) {
+        byte[] sharedKey = Optional.ofNullable(knownSharedKeys.get(source))
                 .map(BigInteger::toByteArray)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("no shared key available for %s", keyName)));
+                .orElseThrow(() -> new IllegalArgumentException(String.format("no shared key available for %s", source)));
         final byte[] encKeyHash = new byte[sha1.getDigestSize()];
         sha1.update(sharedKey, 0, sharedKey.length);
         sha1.doFinal(encKeyHash, 0);
