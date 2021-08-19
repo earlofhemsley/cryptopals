@@ -48,9 +48,9 @@ public abstract class AbstractManInTheMiddle extends NetworkRouter {
 
 
     protected Pair<byte[], byte[]> splitIntoMsgAndIv(byte[] message) {
-        final int cutpoint = message.length - 16;
-        final byte[] iv = ByteArrayUtil.sliceByteArray(message, cutpoint, 16);
-        final byte[] actualMsg = ByteArrayUtil.sliceByteArray(message, 0, cutpoint);
+        final int cutPoint = message.length - 16;
+        final byte[] iv = ByteArrayUtil.sliceByteArray(message, cutPoint, 16);
+        final byte[] actualMsg = ByteArrayUtil.sliceByteArray(message, 0, cutPoint);
         return Pair.of(actualMsg, iv);
     }
 }
