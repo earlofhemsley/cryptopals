@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 /**
  * this man in the middle router manipulates g
@@ -16,7 +17,7 @@ import java.util.Random;
 @Slf4j
 @Setter
 public class ManInTheMiddle extends AbstractManInTheMiddle {
-    private BigInteger forcedG;
+    private Function<BigInteger, BigInteger> gCallback;
 
     private final BigInteger myPrivateKey = BigInteger.valueOf(Math.abs(new Random(System.currentTimeMillis()).nextInt()));
     final Map<String, BigInteger> sharedKeyMap = new HashMap<>();
@@ -38,7 +39,7 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         final var dest = registry.get(destination);
 
         //part of this challenge is to toy with G
-        final BigInteger destG = forcedG == null ? g : forcedG;
+        final BigInteger destG = gCallback == null ? g : gCallback.apply(p);
 
         //man in the middle time
         // send my own parameters to the destination,
@@ -46,7 +47,7 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         final var publicKeyForD = createPublicKey(destG, p);
         final var publicKeyOfD = dest.receiveKeyExchangeRequest(destG, p, source, publicKeyForD);
         final var sharedKeyWithD = createSharedKey(publicKeyOfD, p);
-        log.info("G was {}, the public key sent to d was {} and the shared key was {}", destG, publicKeyForD, sharedKeyWithD);
+        log.info("\nThe public key sent to d was {}\nthe shared key was {}\n(P - G) = {}\nG was {}", publicKeyForD, sharedKeyWithD, p.subtract(destG), destG);
         sharedKeyMap.put(destination, sharedKeyWithD);
 
         //now for the source

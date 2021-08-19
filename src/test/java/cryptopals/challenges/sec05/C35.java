@@ -1,12 +1,18 @@
 package cryptopals.challenges.sec05;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import cryptopals.tool.sec05.DiffieHellmanParty;
 import cryptopals.tool.sec05.c35.ManInTheMiddle;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 
 import java.math.BigInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Implement DH with negotiated groups, and break with malicious "g" parameters
@@ -43,12 +49,14 @@ import java.math.BigInteger;
  */
 public class C35 {
 
-    @Test
-    void thereIsANewManInTheMiddle() {
+    @ParameterizedTest
+    @MethodSource("supplyManipulatingCallbacks")
+    @NullSource
+    void thereIsANewManInTheMiddle(Function<BigInteger, BigInteger> callback) {
         final var mitm = new ManInTheMiddle();
         final String message = "Afghanistan is where empires go to die";
         mitm.setExpectedMessage(message);
-        mitm.setForcedG(BigInteger.ONE);
+        mitm.setGCallback(callback);
 
         final var alice = new DiffieHellmanParty("alice", mitm);
         new DiffieHellmanParty("bob", mitm);
@@ -56,5 +64,13 @@ public class C35 {
         alice.sendKeyExchangeRequest("bob");
         final boolean success = alice.sendEncryptedMessage("bob", message);
         assertTrue(success, "the message sent appears to have been tampered with");
+    }
+
+    static Stream<Arguments> supplyManipulatingCallbacks() {
+        return Stream.of(
+                arguments((Function<BigInteger, BigInteger>) (p) -> BigInteger.ONE),
+                arguments((Function<BigInteger, BigInteger>) (p) -> p),
+                arguments((Function<BigInteger, BigInteger>) (p) -> p.subtract(BigInteger.ONE))
+        );
     }
 }
