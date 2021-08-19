@@ -2,6 +2,7 @@ package cryptopals.tool.sec05.c35;
 
 import cryptopals.tool.sec05.AbstractManInTheMiddle;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Random;
  * this man in the middle router manipulates g
  * and administers the attack in a more common way
  */
+@Slf4j
 @Setter
 public class ManInTheMiddle extends AbstractManInTheMiddle {
     private BigInteger forcedG;
@@ -43,7 +45,9 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         // and use the public key that I get back to create a shared key with that party
         final var publicKeyForD = createPublicKey(destG, p);
         final var publicKeyOfD = dest.receiveKeyExchangeRequest(destG, p, source, publicKeyForD);
-        sharedKeyMap.put(destination, createSharedKey(publicKeyOfD, p));
+        final var sharedKeyWithD = createSharedKey(publicKeyOfD, p);
+        log.info("G was {}, the public key sent to d was {} and the shared key was {}", destG, publicKeyForD, sharedKeyWithD);
+        sharedKeyMap.put(destination, sharedKeyWithD);
 
         //now for the source
         // they gave me their public key, so I can just derive a shared key with them
