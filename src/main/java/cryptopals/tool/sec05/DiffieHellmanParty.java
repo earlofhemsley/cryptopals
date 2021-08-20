@@ -2,7 +2,6 @@ package cryptopals.tool.sec05;
 
 import cryptopals.tool.CBC;
 import cryptopals.tool.MT19937_32;
-import cryptopals.tool.sec05.c34.NetworkRouter;
 import cryptopals.utils.ByteArrayUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.crypto.digests.SHA1Digest;

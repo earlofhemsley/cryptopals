@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cryptopals.tool.sec05.DiffieHellmanParty;
 import cryptopals.tool.sec05.c34.GoodNetwork;
 import cryptopals.tool.sec05.c34.ManInTheMiddle;
-import cryptopals.tool.sec05.c34.NetworkRouter;
+import cryptopals.tool.sec05.NetworkRouter;
 import org.junit.jupiter.api.Test;
 
 /**

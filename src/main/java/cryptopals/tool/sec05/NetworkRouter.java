@@ -1,6 +1,4 @@
-package cryptopals.tool.sec05.c34;
-
-import cryptopals.tool.sec05.DiffieHellmanParty;
+package cryptopals.tool.sec05;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -16,4 +14,10 @@ public abstract class NetworkRouter {
     public abstract BigInteger initDHKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey, String source, String destination);
 
     public abstract byte[] routeMessage(byte[] message, String source, String destination);
+
+    protected void validatePartyRegistry(final String partyName) {
+        if (!registry.containsKey(partyName)) {
+            throw new IllegalArgumentException(partyName + " is not a known party");
+        }
+    }
 }
