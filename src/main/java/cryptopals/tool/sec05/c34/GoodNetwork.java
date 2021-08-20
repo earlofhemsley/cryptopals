@@ -1,5 +1,7 @@
 package cryptopals.tool.sec05.c34;
 
+import cryptopals.tool.sec05.NetworkRouter;
+
 import java.math.BigInteger;
 import java.util.Optional;
 
