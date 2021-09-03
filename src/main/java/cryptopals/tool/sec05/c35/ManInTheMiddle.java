@@ -30,11 +30,8 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         return g.modPow(myPrivateKey, p);
     }
 
-    @Override
-    public BigInteger initDHKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey,
-                                        String source, String destination) {
-        validatePartyRegistry(destination);
-        validatePartyRegistry(source);
+    protected Packet interceptKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey,
+                                          String source, String destination) {
 
         final var dest = registry.get(destination);
 
@@ -45,10 +42,17 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         // send my own parameters to the destination,
         // and use the public key that I get back to create a shared key with that party
         final var publicKeyForD = createPublicKey(destG, p);
-        final var publicKeyOfD = dest.receiveKeyExchangeRequest(destG, p, source, publicKeyForD);
-        final var sharedKeyWithD = createSharedKey(publicKeyOfD, p);
-        log.info("\nThe public key sent to d was {}\nthe shared key was {}\n(P - G) = {}\nG was {}", publicKeyForD, sharedKeyWithD, p.subtract(destG), destG);
-        sharedKeyMap.put(destination, sharedKeyWithD);
+        final KeyExchange kxForD = new KeyExchange(destG, p, publicKeyForD);
+        final Packet forDest = new Packet(source, destination, kxForD);
+        final var responsePacket = dest.receivePacket(forDest);
+        final var responsePayload = responsePacket.getPayload();
+
+        final KeyExchange kxFromD = validateAndReturnPayloadByType(responsePayload, KeyExchange.class);
+
+        final var sharedKeyWithD = createSharedKey(kxFromD.getPublicKey(), p);
+        log.info("\nThe public key sent to d was {}\nthe shared key was {}\n(P - G) = {}\nG was {}",
+                publicKeyForD, sharedKeyWithD, p.subtract(destG), destG);
+        sharedKeyMap.put(dest.getName(), sharedKeyWithD);
 
         //now for the source
         // they gave me their public key, so I can just derive a shared key with them
@@ -56,11 +60,15 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         sharedKeyMap.put(source, sourceSharedKey);
 
         //return a public key to the source
-        return createPublicKey(g, p);
+        final KeyExchange kxForSource = new KeyExchange(g, p, createPublicKey(g, p));
+        return new Packet(responsePacket.getSource(), responsePacket.getDestination(), kxForSource);
     }
 
-    @Override
-    public byte[] routeMessage(byte[] message, String source, String destination) {
+    protected Packet interceptMessage(Packet packet) {
+        final String source = packet.getSource();
+        final String destination = packet.getDestination();
+        final byte[] message = (byte[]) packet.getPayload();
+
         final var sMsgIv = splitIntoMsgAndIv(message);
 
         //decrypt the message coming from source
@@ -74,15 +82,20 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
         final var dSharedKey = sharedKeyMap.get(destination);
         final byte[] reEncrypted = encrypt(dSharedKey, sDecrypted, sMsgIv.getRight());
 
+        //build a packet for the destination
+        final Packet destPacket = new Packet(source, destination, reEncrypted);
+
         //send to destination and get response
         final var d = registry.get(destination);
-        final var response = d.receiveEncryptedMessage(source, reEncrypted);
+        final var response = d.receivePacket(destPacket);
+        byte[] rMsg = validateAndReturnPayloadByType(response.getPayload(), byte[].class);
 
         //do the same in reverse
-        final var dMsgIv = splitIntoMsgAndIv(response);
+        final var dMsgIv = splitIntoMsgAndIv(rMsg);
         final byte[] dDecrypted = decrypt(dSharedKey, dMsgIv.getLeft(), dMsgIv.getRight());
         validateExpectedMessage(new String(dDecrypted));
 
-        return encrypt(sSharedKey, dDecrypted, dMsgIv.getRight());
+        return new Packet(response.getSource(), response.getDestination(),
+                encrypt(sSharedKey, dDecrypted, dMsgIv.getRight()));
     }
 }

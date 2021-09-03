@@ -22,6 +22,33 @@ public abstract class AbstractManInTheMiddle extends NetworkRouter {
     private final SHA1Digest sha1 = new SHA1Digest();
     private String expectedMessage;
 
+    protected abstract Packet interceptKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey,
+                                                   String source, String destination);
+
+    protected abstract Packet interceptMessage(Packet packet);
+
+    @Override
+    public Packet route(Packet packet) {
+        validatePartyRegistry(packet.getDestination());
+        validatePartyRegistry(packet.getSource());
+
+        Packet response = null;
+        if (packet.getPayload() instanceof KeyExchange) {
+            final KeyExchange kx = (KeyExchange) packet.getPayload();
+            response = interceptKeyExchange(kx.getG(), kx.getP(), kx.getPublicKey(),
+                    packet.getSource(), packet.getDestination());
+        } else if (packet.getPayload() instanceof byte[]) {
+            response = interceptMessage(packet);
+        }
+
+        if (response == null) {
+            return registry.get(packet.getSource()).receivePacket(packet);
+        } else {
+            return response;
+        }
+    }
+
+
     /**
      * given a shared key, a message and an iv, decrypt
      *
@@ -88,5 +115,16 @@ public abstract class AbstractManInTheMiddle extends NetworkRouter {
         final byte[] iv = ByteArrayUtil.sliceByteArray(message, cutPoint, 16);
         final byte[] actualMsg = ByteArrayUtil.sliceByteArray(message, 0, cutPoint);
         return Pair.of(actualMsg, iv);
+    }
+
+
+    protected <T> T validateAndReturnPayloadByType(final Object payload, final Class<T> type) {
+        if(!(type.isAssignableFrom(payload.getClass()))) {
+            throw new CryptopalsException(String.format("Expected a %s but instead got a %s",
+                    type.getSimpleName(), payload.getClass().getSimpleName()
+            ));
+        }
+        @SuppressWarnings("unchecked") T response =  (T) payload;
+        return response;
     }
 }

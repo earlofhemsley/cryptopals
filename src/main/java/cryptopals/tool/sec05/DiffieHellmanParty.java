@@ -4,6 +4,7 @@ import cryptopals.tool.CBC;
 import cryptopals.tool.MT19937_32;
 import cryptopals.utils.ByteArrayUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -76,6 +77,25 @@ public class DiffieHellmanParty {
         return otherPartyPublic.modPow(secretKey, p);
     }
 
+    public NetworkRouter.Packet receivePacket(final NetworkRouter.Packet incoming) {
+        if (!StringUtils.equals(incoming.getDestination(), this.getName())) {
+            throw new IllegalStateException(String.format("Received a packet meant for %s, but I am %s",
+                    incoming.getDestination(), this.getName()));
+        }
+
+        final Object responsePayload;
+        if (incoming.getPayload() instanceof NetworkRouter.KeyExchange) {
+            NetworkRouter.KeyExchange ipl = (NetworkRouter.KeyExchange) incoming.getPayload();
+            final BigInteger myPublicKey = receiveKeyExchangeRequest(ipl.getG(), ipl.getP(), incoming.getSource(), ipl.getPublicKey());
+            responsePayload = new NetworkRouter.KeyExchange(ipl.getG(), ipl.getP(), myPublicKey);
+        } else if (incoming.getPayload() instanceof byte[]) {
+            responsePayload = receiveEncryptedMessage(incoming.getSource(), (byte[]) incoming.getPayload());
+        } else {
+            throw new IllegalArgumentException("Unrecognized payload type: " + incoming.getPayload().getClass().getSimpleName());
+        }
+        return new NetworkRouter.Packet(this.getName(), incoming.getSource(), responsePayload);
+    }
+
     /**
      * handle an incoming key exchange request from another party
      * @param g supplied g from source
@@ -84,7 +104,7 @@ public class DiffieHellmanParty {
      * @param publicKey source's public key
      * @return this party's public key
      */
-    public BigInteger receiveKeyExchangeRequest(BigInteger g, BigInteger p, String name, BigInteger publicKey) {
+    private BigInteger receiveKeyExchangeRequest(BigInteger g, BigInteger p, String name, BigInteger publicKey) {
         knownSharedKeys.put(name, getSharedKey(p, publicKey));
         return getPublicKey(g, p);
     }
@@ -97,8 +117,12 @@ public class DiffieHellmanParty {
         if (this.router == null) {
             throw new IllegalStateException("Unable to send. This has no network");
         }
-        final BigInteger destinationPublicKey = router.initDHKeyExchange(G, P, getPublicKey(G, P), this.name, destination);
-        knownSharedKeys.put(destination, getSharedKey(P, destinationPublicKey));
+        final NetworkRouter.KeyExchange payload = new NetworkRouter.KeyExchange(G, P, getPublicKey(G, P));
+        final NetworkRouter.Packet response = router.route(new NetworkRouter.Packet(getName(), destination, payload));
+        if (!(response.getPayload() instanceof NetworkRouter.KeyExchange)) {
+            throw new IllegalArgumentException("did not receive a key exchange object in response: " + response.getPayload().toString());
+        }
+        knownSharedKeys.put(destination, getSharedKey(P, ((NetworkRouter.KeyExchange) response.getPayload()).getPublicKey()));
     }
 
     /**
@@ -116,9 +140,12 @@ public class DiffieHellmanParty {
         final byte[] fullMessage = ByteArrayUtil.concatenate(encryptedMessage, iv);
 
         //send the message through the router and get a response
-        final byte[] response = router.routeMessage(fullMessage, this.name, destination);
+        final var response = router.route(new NetworkRouter.Packet(getName(), destination, fullMessage));
+        if (!(response.getPayload() instanceof byte[])) {
+            throw new IllegalStateException("response was not a byte array: " + response.getPayload().toString());
+        }
 
-        return Arrays.equals(fullMessage, response);
+        return Arrays.equals(fullMessage, (byte[]) response.getPayload());
     }
 
     /**
@@ -128,7 +155,7 @@ public class DiffieHellmanParty {
      * @param message the message
      * @return the re-encrypted message
      */
-    public byte[] receiveEncryptedMessage(final String source, final byte[] message) {
+    private byte[] receiveEncryptedMessage(final String source, final byte[] message) {
         // decrypt the message
         final CBC cbc = retrieveCBCForNamedKey(source);
 
