@@ -21,7 +21,7 @@ import java.util.Optional;
  * however, there is no getter on that secret key, so it is not publicly available
  */
 @Slf4j
-public class DiffieHellmanParty {
+public class DiffieHellmanParty implements NetworkNode {
     private static final BigInteger G = BigInteger.valueOf(2);
     private static final BigInteger P = new BigInteger(1, Hex.decode(
             "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024" +

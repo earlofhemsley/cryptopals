@@ -1,6 +1,7 @@
 package cryptopals.tool.sec05.c34;
 
 import cryptopals.tool.sec05.AbstractManInTheMiddle;
+import cryptopals.tool.sec05.NetworkNode;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 

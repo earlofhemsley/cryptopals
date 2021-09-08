@@ -117,7 +117,15 @@ public abstract class AbstractManInTheMiddle extends NetworkRouter {
         return Pair.of(actualMsg, iv);
     }
 
-
+    /**
+     * checks to see if the payload is assignable as the submitted class
+     * if it is, it casts it and returns it as the stated class
+     *
+     * @param payload the payload
+     * @param type the class
+     * @param <T> generic type param
+     * @return payload casted as T
+     */
     protected <T> T validateAndReturnPayloadByType(final Object payload, final Class<T> type) {
         if(!(type.isAssignableFrom(payload.getClass()))) {
             throw new CryptopalsException(String.format("Expected a %s but instead got a %s",

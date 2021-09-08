@@ -1,5 +1,6 @@
 package cryptopals.tool.sec05;
 
+import cryptopals.exceptions.CryptopalsException;
 import lombok.Data;
 
 import java.math.BigInteger;
@@ -7,9 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class NetworkRouter {
-    protected final Map<String, DiffieHellmanParty> registry = new HashMap<>();
+    protected final Map<String, NetworkNode> registry = new HashMap<>();
 
-    public void register(DiffieHellmanParty party) {
+    public void register(NetworkNode party) {
         registry.put(party.getName(), party);
     }
 
@@ -36,7 +37,9 @@ public abstract class NetworkRouter {
     }
 
     @Data
-    public static final class EncryptedMessage {
-        private final byte[] message;
+    public static final class SRPReg {
+        private final String username;
+        private final int salt;
+        private final BigInteger v;
     }
 }
