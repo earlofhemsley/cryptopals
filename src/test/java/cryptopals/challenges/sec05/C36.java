@@ -8,7 +8,6 @@ import cryptopals.tool.sec05.c36.SRPServer;
 import org.apache.commons.codec.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 

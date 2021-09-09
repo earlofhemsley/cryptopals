@@ -7,6 +7,11 @@ import org.bouncycastle.crypto.macs.HMac;
 @UtilityClass
 public class HashUtil {
 
+    /**
+     * get a sha 256 hash of the input byte array
+     * @param input the input byte array
+     * @return the hash
+     */
     public byte[] getSha256Hash(final byte[] input) {
         final SHA256Digest d = new SHA256Digest();
         final byte[] output = new byte[d.getDigestSize()];
@@ -15,6 +20,11 @@ public class HashUtil {
         return output;
     }
 
+    /**
+     * get a sha 256 hmac of the input byte array
+     * @param input the input byte array
+     * @return the hmac
+     */
     public byte[] getSha256Hmac(final byte[] input) {
         final HMac hmac = new HMac(new SHA256Digest());
         final byte[] out = new byte[hmac.getMacSize()];
