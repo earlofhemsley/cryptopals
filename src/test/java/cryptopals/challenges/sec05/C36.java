@@ -1,9 +1,13 @@
 package cryptopals.challenges.sec05;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import cryptopals.tool.sec05.c34.GoodNetwork;
 import cryptopals.tool.sec05.c36.SRPClient;
 import cryptopals.tool.sec05.c36.SRPServer;
+import org.apache.commons.codec.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -65,12 +69,16 @@ public class C36 {
                     "fffffffffffff"
     ));
 
-    @Test
-    void theChallenge() {
+    @RepeatedTest(100)
+    void theChallenge() throws DecoderException {
         final GoodNetwork network = new GoodNetwork();
         final SRPClient carol = new SRPClient("carol", network, G, K, N);
         final SRPServer steve = new SRPServer("steve", network, G, K, N);
 
-        carol.register("carol", "my secret password", "steve");
+        final String pw = "vaccine so effective you need a mask " +
+                "mask so effective you need a vaccine";
+        carol.register(carol.getName(), pw, steve.getName());
+        final boolean successfulAuth = carol.authenticateSecurely(carol.getName(), pw, steve.getName());
+        assertTrue(successfulAuth);
     }
 }

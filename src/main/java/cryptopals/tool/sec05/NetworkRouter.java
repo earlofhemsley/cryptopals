@@ -39,7 +39,13 @@ public abstract class NetworkRouter {
     @Data
     public static final class SRPReg {
         private final String username;
-        private final int salt;
+        private final String salt;
         private final BigInteger v;
+    }
+
+    @Data
+    public static final class SRPKeyEx {
+        private final String text;
+        private final BigInteger publicKey;
     }
 }
