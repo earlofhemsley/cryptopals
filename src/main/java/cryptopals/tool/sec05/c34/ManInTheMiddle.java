@@ -1,6 +1,7 @@
 package cryptopals.tool.sec05.c34;
 
 import cryptopals.tool.sec05.AbstractManInTheMiddle;
+import cryptopals.tool.sec05.NetworkNode;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,31 +14,25 @@ import java.math.BigInteger;
 @Setter
 public class ManInTheMiddle extends AbstractManInTheMiddle {
 
-    private String expectedMessage;
-
-    @Override
-    public BigInteger initDHKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey, String source, String destination) {
-        if (!registry.containsKey(destination)) {
-            throw new IllegalArgumentException(destination + " is not a known destination");
-        }
-
-        if(!registry.containsKey(source)) {
-            throw new IllegalArgumentException(source + " is not a known network node");
-        }
-
+    protected Packet interceptKeyExchange(BigInteger g, BigInteger p, BigInteger sourcePublicKey,
+                                          String source, String destination) {
         final var dest = registry.get(destination);
 
         //man in the middle time
         // send the fake public key to the destination
-        dest.receiveKeyExchangeRequest(g, p, source, p);
+        final KeyExchange fakeKeyExchange = new KeyExchange(g, p, p);
+        final Packet responsePacket = dest.receivePacket(new Packet(source, destination, fakeKeyExchange));
 
         // send the fake public key to the source as well
-        return p;
+        return new Packet(responsePacket.getSource(), responsePacket.getDestination(), fakeKeyExchange);
     }
 
-    @Override
-    public byte[] routeMessage(byte[] message, String source, String destination) {
-        validatePartyRegistry(destination);
+
+    protected Packet interceptMessage(Packet packet) {
+        validatePartyRegistry(packet.getDestination());
+        final var dest = registry.get(packet.getDestination());
+
+        final byte[] message = validateAndReturnPayloadByType(packet.getPayload(), byte[].class);
 
         //if we did it right, the shared key is going to be ZERO, so use that to decrypt
         final var msgAndIv = splitIntoMsgAndIv(message);
@@ -45,7 +40,7 @@ public class ManInTheMiddle extends AbstractManInTheMiddle {
 
         validateExpectedMessage(new String(decrypted));
 
-        final var dest = registry.get(destination);
-        return dest.receiveEncryptedMessage(source, message);
+        return dest.receivePacket(packet);
     }
+
 }

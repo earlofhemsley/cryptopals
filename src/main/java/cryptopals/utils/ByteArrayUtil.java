@@ -83,6 +83,24 @@ public class ByteArrayUtil {
         return b;
     }
 
+    /**
+     * take a byte array and make an int out of it
+     * this method will take up to 4 bytes and interpret them in big-endian fashion,
+     * most significant bits first,
+     * meaning that only the last four bytes of the submitted array are retained
+     * any other bytes are ignored
+     *
+     * @param input byte array
+     * @return int
+     */
+    public static int byteArrayToInt(byte[] input) {
+        int i = 0;
+        for (int j = 0; j < input.length && j < 4; j++) {
+            i = i | ( ((int) input[input.length - 1 - j]) << (8 * j) );
+        }
+        return i;
+    }
+
     public static byte[][] transposeByteMatrix(final byte[][] matrix) {
         if (matrix.length == 0) {
             return new byte[0][0];
