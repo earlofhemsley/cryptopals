@@ -3,9 +3,19 @@
  */
 package cryptopals;
 
+import static cryptopals.CommonConstants.G;
+import static cryptopals.CommonConstants.K;
+import static cryptopals.CommonConstants.N;
+
+import cryptopals.repl.InteractiveSrpLogin;
+import cryptopals.tool.sec05.c34.GoodNetwork;
+import cryptopals.tool.sec05.c36.SRPServer;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+
+import java.util.Scanner;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"cryptopals.web"})
@@ -16,7 +26,23 @@ public class App {
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getWarning());
-        SpringApplication.run(App.class);
+        boolean printMessage = false;
+        if (args.length > 0) {
+            if (StringUtils.equals("spring", args[0])) {
+                SpringApplication.run(App.class);
+            } else if (StringUtils.equals("repl", args[0])) {
+                final SRPServer s = new SRPServer("steve", new GoodNetwork(), G, K, N);
+                final var login = new InteractiveSrpLogin(new Scanner(System.in), System.out, s);
+                login.startConsole();
+            } else {
+                printMessage = true;
+            }
+        } else {
+            printMessage = true;
+        }
+
+        if (printMessage) {
+            System.out.println(new App().getWarning());
+        }
     }
 }

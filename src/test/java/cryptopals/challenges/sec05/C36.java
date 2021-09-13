@@ -1,15 +1,17 @@
 package cryptopals.challenges.sec05;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static cryptopals.CommonConstants.G;
+import static cryptopals.CommonConstants.K;
+import static cryptopals.CommonConstants.N;
 
+import cryptopals.repl.InteractiveSrpLogin;
 import cryptopals.tool.sec05.c34.GoodNetwork;
-import cryptopals.tool.sec05.c36.SRPClient;
 import cryptopals.tool.sec05.c36.SRPServer;
-import org.apache.commons.codec.DecoderException;
-import org.bouncycastle.util.encoders.Hex;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Scanner;
 
 /**
  * Implement Secure Remote Password (SRP)
@@ -55,29 +57,21 @@ import java.math.BigInteger;
  * extra step to avoid storing an easily crackable password-equivalent.
  */
 public class C36 {
-    private static final BigInteger G = BigInteger.valueOf(2);
-    private static final BigInteger K = BigInteger.valueOf(3);
-    private static final BigInteger N = new BigInteger(1, Hex.decode(
-            "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024" +
-                    "e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd" +
-                    "3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec" +
-                    "6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f" +
-                    "24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361" +
-                    "c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552" +
-                    "bb9ed529077096966d670c354e4abc9804f1746c08ca237327fff" +
-                    "fffffffffffff"
-    ));
 
-    @RepeatedTest(100)
-    void theChallenge() throws DecoderException {
+    @Test
+    void theChallenge() {
+        final String commands = "register\n" +
+                "carol\n" +
+                "asdf\n" +
+                "login\n" +
+                "carol\n" +
+                "asdf\n" +
+                "exit";
+
         final GoodNetwork network = new GoodNetwork();
-        final SRPClient carol = new SRPClient("carol", network, G, K, N);
         final SRPServer steve = new SRPServer("steve", network, G, K, N);
-
-        final String pw = "vaccine so effective you need a mask " +
-                "mask so effective you need a vaccine";
-        carol.register(carol.getName(), pw, steve.getName());
-        final boolean successfulAuth = carol.authenticateSecurely(carol.getName(), pw, steve.getName());
-        assertTrue(successfulAuth);
+        final InputStream is = new ByteArrayInputStream(commands.getBytes());
+        final InteractiveSrpLogin login = new InteractiveSrpLogin(new Scanner(is), System.out, steve);
+        login.startConsole();
     }
 }
