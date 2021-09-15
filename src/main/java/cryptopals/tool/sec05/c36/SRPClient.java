@@ -107,11 +107,7 @@ public class SRPClient implements NetworkNode {
         final byte[] hmacKSalt = HashUtil.getSha256Hmac(ByteArrayUtil.concatenate(K, salt));
 
         //build packet for authentication
-        final Packet p = new Packet(this.name, serverName, hmacKSalt);
-        final Packet response = network.route(p);
-        validatePacket(response);
-
-        return validateAndReturnPayloadByType(response.getPayload(), Boolean.class);
+        return executeAuthRequest(hmacKSalt, serverName);
     }
 
     public boolean authenticateMaliciously(final String username, final BigInteger multiple, final String serverName)
@@ -128,18 +124,21 @@ public class SRPClient implements NetworkNode {
         );
 
         //build packet for authentication
-        final Packet p = new Packet(this.name, serverName, hmacKSalt);
-        final Packet response = network.route(p);
-        validatePacket(response);
-
-        return validateAndReturnPayloadByType(response.getPayload(), Boolean.class);
+        return executeAuthRequest(hmacKSalt, serverName);
     }
 
-    SRPKeyEx executeKeyExchange(final SRPKeyEx keyEx, final String serverName) {
+    private SRPKeyEx executeKeyExchange(final SRPKeyEx keyEx, final String serverName) {
         Packet p = new Packet(this.name, serverName, keyEx);
         Packet response = this.network.route(p);
         validatePacket(response);
         return validateAndReturnPayloadByType(response.getPayload(), SRPKeyEx.class);
+    }
+
+    private boolean executeAuthRequest(final byte[] hmacKS, final String serverName) {
+        final Packet p = new Packet(this.name, serverName, hmacKS);
+        final Packet response = network.route(p);
+        validatePacket(response);
+        return validateAndReturnPayloadByType(response.getPayload(), Boolean.class);
     }
 
     private BigInteger getLittleX(final byte[] salt, final String password) {
