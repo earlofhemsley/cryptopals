@@ -110,6 +110,15 @@ public class SRPClient implements NetworkNode {
         return executeAuthRequest(hmacKSalt, serverName);
     }
 
+    /**
+     * send a multiple of n as the private key. This will force the secret key to be 0, which makes the
+     * shared key K constant, which makes it super easy to break SRP.
+     * @param username the username
+     * @param multiple the multiple of n
+     * @param serverName the server being auth'd against
+     * @return boolean indicating successful login
+     * @throws DecoderException thrown when can't decode a salt
+     */
     public boolean authenticateMaliciously(final String username, final BigInteger multiple, final String serverName)
             throws DecoderException {
         Preconditions.checkNotNull(username, "username required");
