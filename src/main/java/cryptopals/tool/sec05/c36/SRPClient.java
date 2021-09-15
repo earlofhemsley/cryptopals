@@ -2,6 +2,7 @@ package cryptopals.tool.sec05.c36;
 
 import static java.math.BigInteger.ZERO;
 
+import com.google.common.base.Preconditions;
 import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.MT19937_32;
 import cryptopals.tool.sec05.NetworkNode;
@@ -76,6 +77,10 @@ public class SRPClient implements NetworkNode {
      */
     public boolean authenticateSecurely(final String username, final String password, final String serverName)
             throws DecoderException {
+        Preconditions.checkNotNull(username, "username required");
+        Preconditions.checkNotNull(password, "password required");
+        Preconditions.checkNotNull(serverName, "serverName required");
+
         //choose a one-time private key
         final BigInteger a = BigInteger.valueOf(Math.abs(new MT19937_32(System.currentTimeMillis()).nextInt()));
 
@@ -86,10 +91,8 @@ public class SRPClient implements NetworkNode {
         final SRPKeyEx keyEx = new SRPKeyEx(username, A);
 
         //route it
-        Packet p = new Packet(this.name, serverName, keyEx);
-        Packet response = this.network.route(p);
-        validatePacket(response);
-        final SRPKeyEx keyExS = validateAndReturnPayloadByType(response.getPayload(), SRPKeyEx.class);
+        final SRPKeyEx keyExS = executeKeyExchange(keyEx, serverName);
+
         final BigInteger B = keyExS.getPublicKey();
         final byte[] salt = Hex.decodeHex(keyExS.getText());
         final BigInteger x = getLittleX(salt, password);
@@ -104,10 +107,46 @@ public class SRPClient implements NetworkNode {
         final byte[] hmacKSalt = HashUtil.getSha256Hmac(ByteArrayUtil.concatenate(K, salt));
 
         //build packet for authentication
-        p = new Packet(this.name, serverName, hmacKSalt);
-        response = network.route(p);
-        validatePacket(response);
+        return executeAuthRequest(hmacKSalt, serverName);
+    }
 
+    /**
+     * send a multiple of n as the private key. This will force the secret key to be 0, which makes the
+     * shared key K constant, which makes it super easy to break SRP.
+     * @param username the username
+     * @param multiple the multiple of n
+     * @param serverName the server being auth'd against
+     * @return boolean indicating successful login
+     * @throws DecoderException thrown when can't decode a salt
+     */
+    public boolean authenticateMaliciously(final String username, final BigInteger multiple, final String serverName)
+            throws DecoderException {
+        Preconditions.checkNotNull(username, "username required");
+        Preconditions.checkNotNull(serverName, "serverName required");
+
+        final SRPKeyEx keyEx = new SRPKeyEx(username, n.multiply(multiple));
+        final SRPKeyEx keyExS = executeKeyExchange(keyEx, serverName);
+
+        final byte[] K = HashUtil.getSha256Hash(ZERO.toByteArray());
+        final byte[] hmacKSalt = HashUtil.getSha256Hmac(
+                ByteArrayUtil.concatenate(K, Hex.decodeHex(keyExS.getText()))
+        );
+
+        //build packet for authentication
+        return executeAuthRequest(hmacKSalt, serverName);
+    }
+
+    private SRPKeyEx executeKeyExchange(final SRPKeyEx keyEx, final String serverName) {
+        Packet p = new Packet(this.name, serverName, keyEx);
+        Packet response = this.network.route(p);
+        validatePacket(response);
+        return validateAndReturnPayloadByType(response.getPayload(), SRPKeyEx.class);
+    }
+
+    private boolean executeAuthRequest(final byte[] hmacKS, final String serverName) {
+        final Packet p = new Packet(this.name, serverName, hmacKS);
+        final Packet response = network.route(p);
+        validatePacket(response);
         return validateAndReturnPayloadByType(response.getPayload(), Boolean.class);
     }
 

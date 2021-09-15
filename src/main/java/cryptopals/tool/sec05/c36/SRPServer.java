@@ -87,7 +87,7 @@ public class SRPServer implements NetworkNode {
         validateRegistry(registry, source);
 
         //make one-time private key
-        final BigInteger b = BigInteger.valueOf(new MT19937_32(System.currentTimeMillis()).nextInt());
+        final BigInteger b = BigInteger.valueOf(Math.abs(new MT19937_32(System.currentTimeMillis()).nextInt()));
 
         //get the srp reg
         final var regInfo = registry.get(source);
@@ -130,7 +130,7 @@ public class SRPServer implements NetworkNode {
 
     private static void validateRegistry(Map<String, ?> map, final String key) {
         if (!map.containsKey(key)) {
-            throw new IllegalArgumentException(String.format("%s is not a known source. register first",
+            throw new IllegalArgumentException(String.format("%s is not a known user. register first",
                     key));
         }
     }

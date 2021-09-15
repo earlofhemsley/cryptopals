@@ -3,6 +3,8 @@ package cryptopals.challenges.sec05;
 import static cryptopals.CommonConstants.G;
 import static cryptopals.CommonConstants.K;
 import static cryptopals.CommonConstants.N;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.repl.InteractiveSrpLogin;
 import cryptopals.tool.sec05.c34.GoodNetwork;
@@ -10,7 +12,9 @@ import cryptopals.tool.sec05.c36.SRPServer;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Scanner;
 
 /**
@@ -71,7 +75,10 @@ public class C36 {
         final GoodNetwork network = new GoodNetwork();
         final SRPServer steve = new SRPServer("steve", network, G, K, N);
         final InputStream is = new ByteArrayInputStream(commands.getBytes());
-        final InteractiveSrpLogin login = new InteractiveSrpLogin(new Scanner(is), System.out, steve);
-        login.startConsole();
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        final InteractiveSrpLogin login = new InteractiveSrpLogin(new Scanner(is), new PrintStream(os, true), steve);
+
+        assertDoesNotThrow(login::startConsole);
+        assertTrue(os.toString().contains("Login successful. Welcome aboard"));
     }
 }
