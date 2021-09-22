@@ -58,4 +58,7 @@ public class C38 {
 
         assertTrue(client.authenticate(username, password, server.getName()));
     }
+
+    @Test
+    void offlineDictionaryAttack() {}
 }

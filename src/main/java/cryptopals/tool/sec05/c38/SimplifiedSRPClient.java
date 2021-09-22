@@ -76,7 +76,6 @@ public class SimplifiedSRPClient implements NetworkNode {
         final BigInteger u = skx.getU();
         final BigInteger B = skx.getPublicKey();
 
-
         //build S
         final BigInteger aux = a.add(u.multiply(x));
         final BigInteger S = B.modPow(aux, n);
