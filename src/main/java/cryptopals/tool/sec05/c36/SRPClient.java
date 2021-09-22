@@ -7,6 +7,7 @@ import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.MT19937_32;
 import cryptopals.tool.sec05.NetworkNode;
 import cryptopals.tool.sec05.NetworkRouter;
+import cryptopals.tool.sec05.NetworkRouter.Auth;
 import cryptopals.tool.sec05.NetworkRouter.Packet;
 import cryptopals.tool.sec05.NetworkRouter.SRPKeyEx;
 import cryptopals.utils.ByteArrayUtil;
@@ -107,7 +108,7 @@ public class SRPClient implements NetworkNode {
         final byte[] hmacKSalt = HashUtil.getSha256Hmac(ByteArrayUtil.concatenate(K, salt));
 
         //build packet for authentication
-        return executeAuthRequest(hmacKSalt, serverName);
+        return executeAuthRequest(username, hmacKSalt, serverName);
     }
 
     /**
@@ -115,7 +116,7 @@ public class SRPClient implements NetworkNode {
      * shared key K constant, which makes it super easy to break SRP.
      * @param username the username
      * @param multiple the multiple of n
-     * @param serverName the server being auth'd against
+     * @param serverName the server being authenticated against
      * @return boolean indicating successful login
      * @throws DecoderException thrown when can't decode a salt
      */
@@ -133,7 +134,7 @@ public class SRPClient implements NetworkNode {
         );
 
         //build packet for authentication
-        return executeAuthRequest(hmacKSalt, serverName);
+        return executeAuthRequest(username, hmacKSalt, serverName);
     }
 
     private SRPKeyEx executeKeyExchange(final SRPKeyEx keyEx, final String serverName) {
@@ -143,8 +144,9 @@ public class SRPClient implements NetworkNode {
         return validateAndReturnPayloadByType(response.getPayload(), SRPKeyEx.class);
     }
 
-    private boolean executeAuthRequest(final byte[] hmacKS, final String serverName) {
-        final Packet p = new Packet(this.name, serverName, hmacKS);
+    private boolean executeAuthRequest(final String username, final byte[] hmacKS, final String serverName) {
+        final Auth auth = new Auth(username, hmacKS);
+        final Packet p = new Packet(this.name, serverName, auth);
         final Packet response = network.route(p);
         validatePacket(response);
         return validateAndReturnPayloadByType(response.getPayload(), Boolean.class);

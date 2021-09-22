@@ -44,8 +44,21 @@ public abstract class NetworkRouter {
     }
 
     @Data
-    public static final class SRPKeyEx {
+    public static class SRPKeyEx {
         private final String text;
         private final BigInteger publicKey;
+    }
+
+    @Data
+    public static class SimplifiedSRPKeyEx {
+        private final String text;
+        private final BigInteger publicKey;
+        private final BigInteger u;
+    }
+
+    @Data
+    public static class Auth {
+        private final String username;
+        private final byte[] kSalt;
     }
 }
