@@ -25,18 +25,12 @@ import org.junit.jupiter.api.Test;
  *
  * Client
  * x = SHA256(salt|password)
- *     S = B**(a + ux) % n
- *     K = SHA256(S)
- *
- *     S = (g**b % n)**(a + ux) % n
+ * S = B**(a + ux) % n
+ * K = SHA256(S)
  *
  * Server
  * S = (A * v ** u)**b % n
- *      ((g**a % n) * (g**x % n)**u)**b % n
- *      ((g**a % n) * (g**ux % n)**b % n
- *      (g**(a + ux) % n)**b % n
- *      (g**b % n)**(a + ux) % n
- *     K = SHA256(S)
+ * K = SHA256(S)
  *
  * C->S Send HMAC-SHA256(K, salt)
  *
