@@ -9,9 +9,10 @@ import cryptopals.tool.sec05.NetworkRouter.SRPReg;
 import cryptopals.tool.sec05.NetworkRouter.SimplifiedSRPKeyEx;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.HashUtil;
+import lombok.Data;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -19,18 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SimplifiedSRPServer implements NetworkNode {
-    private final Map<String, SRPReg> srpRegMap = new HashMap<>();
-    private final Map<String, byte[]> kMap = new HashMap<>();
+    private final Map<String, UserCache> localCache = new HashMap<>();
 
     @Getter
     private final String name;
-    private final NetworkRouter network;
     private final BigInteger g;
     private final BigInteger n;
 
     public SimplifiedSRPServer(String name, NetworkRouter network, BigInteger g, BigInteger n) {
         this.name = name;
-        this.network = network;
         this.g = g;
         this.n = n;
 
@@ -57,7 +55,10 @@ public class SimplifiedSRPServer implements NetworkNode {
     }
 
     private boolean registration(final SRPReg srpReg) {
-        srpRegMap.put(srpReg.getUsername(), srpReg);
+        final UserCache c = localCache.getOrDefault(srpReg.getUsername(), new UserCache());
+        c.setSalt(srpReg.getSalt());
+        c.setV(srpReg.getV());
+        localCache.put(srpReg.getUsername(), c);
         return true;
     }
 
@@ -65,12 +66,12 @@ public class SimplifiedSRPServer implements NetworkNode {
     private SimplifiedSRPKeyEx keyExchange(SimplifiedSRPKeyEx cx) {
         //validate registry
         final String username = cx.getText();
-        validateRegistry(srpRegMap, username);
+        validateRegistry(localCache, username);
 
         //base var setup
-        final SRPReg reg = srpRegMap.get(username);
-        final BigInteger v = reg.getV();
-        final byte[] salt = Hex.decodeHex(reg.getSalt());
+        final UserCache user = localCache.get(username);
+        final BigInteger v = user.v;
+        final byte[] salt = Hex.decode(user.salt);
         final BigInteger u = new BigInteger(1, ByteArrayUtil.randomBytes(16, "my girl"));
 
         //build B
@@ -81,16 +82,19 @@ public class SimplifiedSRPServer implements NetworkNode {
         final BigInteger A = cx.getPublicKey();
         final BigInteger S = (A.multiply(v.modPow(u, n))).modPow(b, n);
         final byte[] K = HashUtil.getSha256Hash(S.toByteArray());
-        kMap.put(username, HashUtil.getSha256Hmac(ByteArrayUtil.concatenate(K, salt)));
+        user.kSalt = HashUtil.getSha256Hmac(ByteArrayUtil.concatenate(K, salt));
+
+        //persist to local cache
+        localCache.put(username, user);
 
         //return salt, B, u
-        return new SimplifiedSRPKeyEx(reg.getSalt(), B, u);
+        return new SimplifiedSRPKeyEx(user.getSalt(), B, u);
     }
 
     private boolean authentication(final Auth auth) {
-        validateRegistry(kMap, auth.getUsername());
-        final byte[] Ks = kMap.get(auth.getUsername());
-        return Arrays.equals(Ks, auth.getKSalt());
+        validateRegistry(localCache, auth.getUsername());
+        final UserCache crk = localCache.get(auth.getUsername());
+        return Arrays.equals(crk.kSalt, auth.getKSalt());
     }
 
 
@@ -99,5 +103,12 @@ public class SimplifiedSRPServer implements NetworkNode {
             throw new IllegalArgumentException(String.format("%s is not a known user. register first",
                     key));
         }
+    }
+
+    @Data
+    private static class UserCache {
+        private String salt;
+        private BigInteger v;
+        private byte[] kSalt;
     }
 }

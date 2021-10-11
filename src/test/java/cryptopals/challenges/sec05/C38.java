@@ -2,10 +2,12 @@ package cryptopals.challenges.sec05;
 
 import static cryptopals.CommonConstants.G;
 import static cryptopals.CommonConstants.N;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.tool.sec05.NetworkRouter;
 import cryptopals.tool.sec05.c34.GoodNetwork;
+import cryptopals.tool.sec05.c38.SRPMITM;
 import cryptopals.tool.sec05.c38.SimplifiedSRPClient;
 import cryptopals.tool.sec05.c38.SimplifiedSRPServer;
 import org.junit.jupiter.api.Test;
@@ -15,13 +17,13 @@ import org.junit.jupiter.api.Test;
  *
  * Server
  * x = SHA256(salt|password)
- *     v = g**x % n
+ * v = g**x % n
  *
  * C->S
  * I, A = g**a % n
  *
  * S->C
- * salt, B = g**b % n, u = 128 bit random number
+ * salt, B = g**b % n, u = 128-bit random number
  *
  * Client
  * x = SHA256(salt|password)
@@ -36,11 +38,13 @@ import org.junit.jupiter.api.Test;
  *
  * S->C Send "OK" if HMAC-SHA256(K, salt) validates
  *
- * Note that in this protocol, the server's "B" parameter doesn't depend on the password (it's just a Diffie Hellman public key).
+ * Note that in this protocol, the server's "B" parameter doesn't depend on the password
+ * (it's just a Diffie Hellman public key).
  *
  * Make sure the protocol works given a valid password.
  *
- * Now, run the protocol as a MITM attacker: pose as the server and use arbitrary values for b, B, u, and salt.
+ * Now, run the protocol as a MITM attacker: pose as the server
+ * and use arbitrary values for b, B, u, and salt.
  *
  * Crack the password from A's HMAC-SHA256(K, salt).
  */
@@ -49,16 +53,27 @@ public class C38 {
     @Test
     void worksWithValidPassword() {
         final NetworkRouter n = new GoodNetwork();
+
         final SimplifiedSRPClient client = new SimplifiedSRPClient("client", n, G, N);
         final SimplifiedSRPServer server = new SimplifiedSRPServer("server", n, G, N);
 
         final String username = "claire";
-        final String password = "cryptopals";
+        final String password = "jellybeans";
         client.register(username, password, server.getName());
 
         assertTrue(client.authenticate(username, password, server.getName()));
-    }
 
-    @Test
-    void offlineDictionaryAttack() {}
+        //reset the network
+        final SRPMITM mitm = new SRPMITM("/usr/share/dict/words", G, N);
+        mitm.register(server);
+        client.setNetwork(mitm);
+
+        //authenticate against a server the client isn't even registered with (mitm doesn't have v)
+        assertTrue(client.authenticate(username, password, server.getName()));
+
+        //crack the password
+        final var passAndServer = mitm.crackAPass(username);
+        assertEquals(password, passAndServer.getLeft());
+        assertEquals(server.getName(), passAndServer.getRight());
+    }
 }

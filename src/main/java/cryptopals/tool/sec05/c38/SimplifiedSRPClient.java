@@ -10,8 +10,9 @@ import cryptopals.tool.sec05.NetworkRouter.SimplifiedSRPKeyEx;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.HashUtil;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 
@@ -19,9 +20,11 @@ public class SimplifiedSRPClient implements NetworkNode {
 
     @Getter
     private final String name;
-    private final NetworkRouter network;
     private final BigInteger g;
     private final BigInteger n;
+
+    @Setter
+    private NetworkRouter network;
 
     public SimplifiedSRPClient(String name, NetworkRouter network, BigInteger g, BigInteger n) {
         this.name = name;
@@ -50,7 +53,7 @@ public class SimplifiedSRPClient implements NetworkNode {
         final byte[] salt = ByteArrayUtil.randomBytes(6, "pratt");
         final BigInteger x = getLittleX(salt, password);
         final BigInteger v = g.modPow(x, n);
-        final SRPReg reg = new SRPReg(username, Hex.encodeHexString(salt), v);
+        final SRPReg reg = new SRPReg(username, Hex.toHexString(salt), v);
         final Packet p = new Packet(this.name, serverName, reg);
         network.route(p);
     }
@@ -71,7 +74,7 @@ public class SimplifiedSRPClient implements NetworkNode {
         final SimplifiedSRPKeyEx skx = validateAndReturnPayloadByType(p.getPayload(), SimplifiedSRPKeyEx.class);
 
         //unpack needed variables
-        final byte[] salt = Hex.decodeHex(skx.getText());
+        final byte[] salt = Hex.decode(skx.getText());
         final BigInteger x = getLittleX(salt, password);
         final BigInteger u = skx.getU();
         final BigInteger B = skx.getPublicKey();
