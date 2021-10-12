@@ -63,8 +63,8 @@ public class C38 {
         final String username = "claire";
 
         //select a random password
-        final String filePath = "/usr/share/dict/words";
-        final int lineNumber = new Random(System.currentTimeMillis()).nextInt(50000);
+        final String filePath = "src/test/resources/american-english";
+        final int lineNumber = new Random(System.currentTimeMillis()).nextInt(100000);
         final String password = FileUtil.readLineNOfFile(filePath, lineNumber);
 
         //register
