@@ -50,7 +50,7 @@ public class SimplifiedSRPClient implements NetworkNode {
         Preconditions.checkNotNull(password, "password required");
         Preconditions.checkNotNull(serverName, "serverName required");
 
-        final byte[] salt = ByteArrayUtil.randomBytes(6, "pratt");
+        final byte[] salt = ByteArrayUtil.randomBytes(6);
         final BigInteger x = getLittleX(salt, password);
         final BigInteger v = g.modPow(x, n);
         final SRPReg reg = new SRPReg(username, Hex.toHexString(salt), v);
@@ -65,7 +65,7 @@ public class SimplifiedSRPClient implements NetworkNode {
         Preconditions.checkNotNull(serverName, "serverName required");
 
         //get keys
-        final BigInteger a = new BigInteger(1, ByteArrayUtil.randomBytes(4, "smith"));
+        final BigInteger a = new BigInteger(1, ByteArrayUtil.randomBytes(4));
         final BigInteger A = g.modPow(a, n);
 
         //start exchange

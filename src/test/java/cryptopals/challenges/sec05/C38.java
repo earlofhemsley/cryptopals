@@ -10,7 +10,10 @@ import cryptopals.tool.sec05.c34.GoodNetwork;
 import cryptopals.tool.sec05.c38.SRPMITM;
 import cryptopals.tool.sec05.c38.SimplifiedSRPClient;
 import cryptopals.tool.sec05.c38.SimplifiedSRPServer;
+import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
+
+import java.util.Random;
 
 /**
  * Offline dictionary attack on simplified SRP
@@ -58,13 +61,19 @@ public class C38 {
         final SimplifiedSRPServer server = new SimplifiedSRPServer("server", n, G, N);
 
         final String username = "claire";
-        final String password = "jellybeans";
-        client.register(username, password, server.getName());
 
+        //select a random password
+        final String filePath = "/usr/share/dict/words";
+        final int lineNumber = new Random(System.currentTimeMillis()).nextInt(50000);
+        final String password = FileUtil.readLineNOfFile(filePath, lineNumber);
+
+        //register
+        client.register(username, password, server.getName());
+        //authenticate
         assertTrue(client.authenticate(username, password, server.getName()));
 
         //reset the network
-        final SRPMITM mitm = new SRPMITM("/usr/share/dict/words", G, N);
+        final SRPMITM mitm = new SRPMITM(filePath, G, N);
         mitm.register(server);
         client.setNetwork(mitm);
 
@@ -75,5 +84,8 @@ public class C38 {
         final var passAndServer = mitm.crackAPass(username);
         assertEquals(password, passAndServer.getLeft());
         assertEquals(server.getName(), passAndServer.getRight());
+
+        //authenticate as the client
+        assertTrue(mitm.authenticateAsClient(username));
     }
 }

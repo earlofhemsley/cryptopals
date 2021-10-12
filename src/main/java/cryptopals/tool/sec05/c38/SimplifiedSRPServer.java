@@ -72,10 +72,10 @@ public class SimplifiedSRPServer implements NetworkNode {
         final UserCache user = localCache.get(username);
         final BigInteger v = user.v;
         final byte[] salt = Hex.decode(user.salt);
-        final BigInteger u = new BigInteger(1, ByteArrayUtil.randomBytes(16, "my girl"));
+        final BigInteger u = new BigInteger(1, ByteArrayUtil.randomBytes(16));
 
         //build B
-        final BigInteger b = new BigInteger(1, ByteArrayUtil.randomBytes(4, "seed"));
+        final BigInteger b = new BigInteger(1, ByteArrayUtil.randomBytes(4));
         final BigInteger B = g.modPow(b, n);
 
         //find and store K
