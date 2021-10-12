@@ -4,6 +4,7 @@ import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.MT19937_32;
 import cryptopals.tool.sec05.NetworkNode;
 import cryptopals.tool.sec05.NetworkRouter;
+import cryptopals.tool.sec05.NetworkRouter.Auth;
 import cryptopals.tool.sec05.NetworkRouter.Packet;
 import cryptopals.tool.sec05.NetworkRouter.SRPKeyEx;
 import cryptopals.tool.sec05.NetworkRouter.SRPReg;
@@ -52,9 +53,9 @@ public class SRPServer implements NetworkNode {
         if (packet.getPayload() instanceof SRPReg) {
             responsePayload = receiveRegRequest((SRPReg) packet.getPayload());
         } else if (packet.getPayload() instanceof SRPKeyEx) {
-            responsePayload = receiveExchangeRequest(packet.getSource(), (SRPKeyEx) packet.getPayload());
-        } else if (packet.getPayload() instanceof byte[]) {
-            responsePayload = receiveAuthRequest(packet.getSource(), (byte[]) packet.getPayload());
+            responsePayload = receiveExchangeRequest((SRPKeyEx) packet.getPayload());
+        } else if (packet.getPayload() instanceof Auth) {
+            responsePayload = receiveAuthRequest((Auth) packet.getPayload());
         } else {
             throw new CryptopalsException("Unable to handle incoming packet because it was of an " +
                     "unrecognized type: " + packet.getPayload().getClass().getSimpleName());
@@ -78,19 +79,19 @@ public class SRPServer implements NetworkNode {
      * build the public key B
      * determine the strong shared key K
      * store K
-     * @param source the party sending the exchange request
      * @param keyEx the incoming key exchange payload
      * @return an outgoing key exchange payload
      */
-    private SRPKeyEx receiveExchangeRequest(final String source, final SRPKeyEx keyEx) {
+    private SRPKeyEx receiveExchangeRequest(final SRPKeyEx keyEx) {
         //verify we know who the source is
-        validateRegistry(registry, source);
+        final String username = keyEx.getText();
+        validateRegistry(registry, username);
 
         //make one-time private key
         final BigInteger b = BigInteger.valueOf(Math.abs(new MT19937_32(System.currentTimeMillis()).nextInt()));
 
         //get the srp reg
-        final var regInfo = registry.get(source);
+        final var regInfo = registry.get(username);
         final BigInteger v = regInfo.getV();
         final byte[] salt;
         try {
@@ -109,7 +110,7 @@ public class SRPServer implements NetworkNode {
         final BigInteger S = (A.multiply(v.modPow(u, n))).modPow(b, n);
         final byte[] K = HashUtil.getSha256Hash(S.toByteArray());
         final byte[] hmacKSalt = HashUtil.getSha256Hmac(ByteArrayUtil.concatenate(K, salt));
-        sharedKeys.put(source, hmacKSalt);
+        sharedKeys.put(username, hmacKSalt);
 
         //return the public key and salt
         return new SRPKeyEx(regInfo.getSalt(), B);
@@ -118,14 +119,13 @@ public class SRPServer implements NetworkNode {
     /**
      * validates a strong session key Kc against the locally stored session key Ks
      *
-     * @param source the source of the request
-     * @param Kc the incoming session key from the client
+     * @param auth the auth payload from the client
      * @return boolean indicating successful authentication
      */
-    private boolean receiveAuthRequest(final String source, final byte[] Kc) {
-        validateRegistry(sharedKeys, source);
-        final byte[] Ks = sharedKeys.get(source);
-        return Arrays.equals(Ks, Kc);
+    private boolean receiveAuthRequest(final Auth auth) {
+        validateRegistry(sharedKeys, auth.getUsername());
+        final byte[] Ks = sharedKeys.get(auth.getUsername());
+        return Arrays.equals(Ks, auth.getKSalt());
     }
 
     private static void validateRegistry(Map<String, ?> map, final String key) {

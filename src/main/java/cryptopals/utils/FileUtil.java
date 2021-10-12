@@ -1,13 +1,17 @@
 package cryptopals.utils;
 
 import cryptopals.exceptions.CryptopalsException;
+import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * a util for reading files
@@ -43,5 +47,15 @@ public class FileUtil {
             throw new CryptopalsException("File IO problem", e);
         }
         return lines;
+    }
+
+    @SneakyThrows
+    public static String readLineNOfFile(final String filePath, final int n) {
+        try (Stream<String> lines = Files.lines(Paths.get(filePath))) {
+            return lines.skip(n)
+                    .findFirst()
+                    .orElseThrow(() -> new CryptopalsException("could not read line " + n))
+                    .trim();
+        }
     }
 }
