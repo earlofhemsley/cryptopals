@@ -1,6 +1,9 @@
 package cryptopals.utils;
 
 import lombok.experimental.UtilityClass;
+import org.bouncycastle.pqc.math.linearalgebra.BigEndianConversions;
+
+import java.math.BigInteger;
 
 @UtilityClass
 public class MathUtil {
@@ -13,29 +16,29 @@ public class MathUtil {
      * @param n the modulus
      * @return the result, which I am calling d
      */
-    public int invMod(final int e, final int n) {
-        int d = 0;
-        int nextD = 1;
-        int r = n;
-        int newr = e;
+    public BigInteger invMod(final BigInteger e, final BigInteger n) {
+        BigInteger d = BigInteger.ZERO;
+        BigInteger nextD = BigInteger.ONE;
+        BigInteger r = n;
+        BigInteger nextR = e;
 
-        while (newr != 0) {
-            int q = r / newr;
-            int tempD = d;
+        while (nextR.compareTo(BigInteger.ZERO) != 0) {
+            var q = r.divide(nextR);
+            var tempD = d;
             d = nextD;
-            nextD = tempD - q * nextD;
+            nextD = tempD.subtract(q.multiply(nextD));
 
-            int tempR = r;
-            r = newr;
-            newr = tempR - q * newr;
+            var tempR = r;
+            r = nextR;
+            nextR = tempR.subtract(q.multiply(nextR));
         }
 
-        if (r > 1) {
-            throw new ArithmeticException("a is not invertible");
+        if (r.compareTo(BigInteger.ONE) > 0) {
+            throw new ArithmeticException("e is not invertible");
         }
 
-        if (d < 0) {
-            d += n;
+        if (d.compareTo(BigInteger.ZERO) < 0) {
+            d = d.add(n);
         }
 
         return d;

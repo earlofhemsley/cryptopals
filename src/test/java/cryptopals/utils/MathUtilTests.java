@@ -18,12 +18,10 @@ public class MathUtilTests {
     @ParameterizedTest
     @CsvFileSource(files = "src/test/resources/primes-to-100k.txt")
     void invModTest(String prime) {
-        final int n = 100003; //the first prime number above
-        final BigInteger nn = BigInteger.valueOf(n);
+        final BigInteger n = BigInteger.valueOf(100003);
 
-        final int e = Integer.parseInt(prime);
-        final BigInteger ee = BigInteger.valueOf(e);
+        final BigInteger e = new BigInteger(prime);
 
-        assertEquals(ee.modInverse(nn).intValue(), MathUtil.invMod(e, n));
+        assertEquals(e.modInverse(n), MathUtil.invMod(e, n));
     }
 }
