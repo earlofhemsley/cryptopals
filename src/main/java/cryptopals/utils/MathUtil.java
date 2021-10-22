@@ -1,7 +1,6 @@
 package cryptopals.utils;
 
 import lombok.experimental.UtilityClass;
-import org.bouncycastle.pqc.math.linearalgebra.BigEndianConversions;
 
 import java.math.BigInteger;
 
@@ -12,6 +11,9 @@ public class MathUtil {
      * find the modular inverse of e mod n, which we call d
      * an implementation of the extended euclidean algorithm
      * sourced from <a href="https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Modular_integers" target="_blank">wikipedia</a>
+     *
+     * this is functionally equivalent to {@link BigInteger#modInverse(BigInteger)}
+     *
      * @param a the number
      * @param n the modulus
      * @return the result, which I am calling t

@@ -12,6 +12,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.math.BigInteger;
 import java.util.Random;
 
+/**
+ * an implementation of RSA
+ */
 @UtilityClass
 public class RSA {
 
