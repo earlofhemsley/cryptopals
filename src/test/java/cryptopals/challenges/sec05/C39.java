@@ -3,8 +3,12 @@ package cryptopals.challenges.sec05;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cryptopals.tool.sec05.c39.RSA;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigInteger;
 
@@ -37,14 +41,33 @@ import java.math.BigInteger;
  * Finally, to encrypt a string, do something cheesy, like convert the string to hex and put "0x" on the front of it
  * to turn it into a number. The math cares not how stupidly you feed it strings.
  */
+@Slf4j
 public class C39 {
 
-    @RepeatedTest(10)
+    @RepeatedTest(1000)
     void keyGenWorks() {
-        final var key = RSA.keyGen();
+        final var key = RSA.keyGen(8);
+        final RSA.Key publicKey = key.getLeft();
+        final RSA.Key privateKey = key.getRight();
         BigInteger fortyTwo = BigInteger.valueOf(42);
-        assertEquals(fortyTwo, fortyTwo.modPow(key.getLeft(), key.getRight()).modPow(key.getMiddle(), key.getRight()));
+        assertEquals(fortyTwo, fortyTwo.modPow(publicKey.getK(), publicKey.getN())
+                .modPow(privateKey.getK(), privateKey.getN()));
+    }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "those who have not been enclosed in the walls of prison without cause or provocation, " +
+                    "can have but little idea how sweet the voice of a friend is",
+            "Truth is truth! It is not divisible, and any part of it cannot be set aside."
+    })
+    void encryptAndDecrypt(final String message) {
+        log.info("original message: {}", message);
+        final Pair<RSA.Key, RSA.Key> keyPair = RSA.keyGen(2048);
+        final String cipherText = RSA.encrypt(message, keyPair.getLeft());
+        log.info("cipher text: {}", cipherText);
+        final String plainText = RSA.decrypt(cipherText, keyPair.getRight());
+        log.info("plain text: {}", plainText);
+        assertEquals(message, plainText);
     }
 
 }
