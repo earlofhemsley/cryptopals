@@ -8,7 +8,7 @@ import java.math.BigInteger;
 public class MathUtil {
 
     /**
-     * find the modular inverse of e mod n, which we call d
+     * find the modular inverse of a mod n, which we call t
      * an implementation of the extended euclidean algorithm
      * sourced from <a href="https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Modular_integers" target="_blank">wikipedia</a>
      *
@@ -36,7 +36,7 @@ public class MathUtil {
         }
 
         if (r.compareTo(BigInteger.ONE) > 0) {
-            throw new ArithmeticException("e is not invertible");
+            throw new ArithmeticException("a is not invertible");
         }
 
         if (t.compareTo(BigInteger.ZERO) < 0) {
