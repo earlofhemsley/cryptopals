@@ -1,8 +1,15 @@
 package cryptopals.challenges.sec05;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import cryptopals.tool.sec05.c39.RSA;
+import cryptopals.tool.sec05.c39.RSACubeRooter;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.RepeatedTest;
+
 /**
  * Implement an E=3 RSA Broadcast attack
- * Assume you're a Javascript programmer. That is, you're using a naive handrolled RSA to encrypt without padding.
+ * Assume you're a Javascript programmer. That is, you're using a naive hand-rolled RSA to encrypt without padding.
  *
  * Assume you can be coerced into encrypting the same plaintext three times, under three different public keys.
  * You can; it's happened.
@@ -33,4 +40,33 @@ package cryptopals.challenges.sec05;
  *  just take the raw accumulated result and cube-root it.
  */
 public class C40 {
+
+    @RepeatedTest(100)
+    void root() {
+        Pair<RSA.Key, RSA.Key> key1;
+        Pair<RSA.Key, RSA.Key> key2;
+        Pair<RSA.Key, RSA.Key> key3;
+
+        //build keys until we know we don't have duplicate keys
+        do {
+             key1 = RSA.keyGen(196, 3);
+             key2 = RSA.keyGen(196, 3);
+             key3 = RSA.keyGen(196, 3);
+        } while (key1.getKey().equals(key2.getKey()) ||
+                key2.getKey().equals(key3.getKey()) ||
+                key1.getKey().equals(key3.getKey())
+        );
+
+        //encrypt a plaintext with these keys
+        final String plainText = "Chancellor on brink of second bailout for banks";
+        final String c1 = RSA.encrypt(plainText, key1.getKey());
+        final String c2 = RSA.encrypt(plainText, key2.getKey());
+        final String c3 = RSA.encrypt(plainText, key3.getKey());
+
+        //send the cipher texts to the rooter to see if it can be broken
+        final String decrypted = RSACubeRooter.root(Pair.of(c1, key1.getKey()), Pair.of(c2, key2.getKey()),
+                Pair.of(c3, key3.getKey()));
+
+        assertEquals(plainText, decrypted);
+    }
 }
