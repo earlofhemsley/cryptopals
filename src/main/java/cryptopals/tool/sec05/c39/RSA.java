@@ -6,6 +6,7 @@ import static java.math.BigInteger.ZERO;
 import cryptopals.utils.MathUtil;
 import lombok.Data;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,43 +16,45 @@ import java.util.Random;
 /**
  * an implementation of RSA
  */
+@Slf4j
 @UtilityClass
 public class RSA {
+
+    public Pair<Key, Key> keyGen(final int bitLength) {
+        return keyGen(bitLength, null);
+    }
 
     /**
      * generate an RSA key pair
      * @param bitLength the bit length of the desired key parameters
      * @return a pair of RSA keys
      */
-    public Pair<Key, Key> keyGen(final int bitLength) {
-        //pick two random primes not equal to each other
+    public Pair<Key, Key> keyGen(final int bitLength, final Integer forceE) {
         final Random r = new Random(System.currentTimeMillis());
-        final BigInteger p = BigInteger.probablePrime(bitLength, r);
-        BigInteger q;
+
+        //start with e. Pick an e
+        final BigInteger e = forceE != null ? BigInteger.valueOf(forceE) :
+                BigInteger.probablePrime(Math.min(32, bitLength), r);
+
+        BigInteger n;
+        BigInteger phiN;
         do {
-            q = BigInteger.probablePrime(bitLength, r);
-        } while (p.compareTo(q) == 0);
+            //pick two random primes not equal to each other
+            final BigInteger p = BigInteger.probablePrime(bitLength, r);
+            BigInteger q;
+            do {
+                q = BigInteger.probablePrime(bitLength, r);
+            } while (p.compareTo(q) == 0);
 
-        //get their product
-        BigInteger n = p.multiply(q);
+            //get their product
+             n = p.multiply(q);
 
-        //find phi(n), which is the quantity of figures less than n that are coprime with n
-        BigInteger phiN = p.subtract(ONE).multiply(q.subtract(ONE));
+            //find phi(n), which is the quantity of figures less than n that are coprime with n
+            phiN = p.subtract(ONE).multiply(q.subtract(ONE));
+        } while (e.compareTo(phiN) > 0 || phiN.mod(e).equals(ZERO));
 
-        //find a prime e that is coprime with phi(N)
-        // phi(N) is not going to be prime since it's a product
-        // the two numbers we multiplied together to get phiN also may not be prime since they are
-        // prime numbers minus one
-        // we will find an e coprime to phi(N) if we use a prime number less than phiN that doesn't divide phiN
-        // we limit this value to 8 bits (max of 255) ...
-        // its value is less important than it being coprime with phiN and less than phiN
-        BigInteger e;
-        do {
-            e = BigInteger.probablePrime(8, r);
-        } while (e.compareTo(phiN) > 0 || e.mod(phiN).compareTo(ZERO) == 0);
-
-        //find the multiplicative inverse of this number mod phiN
-        BigInteger d = MathUtil.invMod(e, phiN);
+        //find the multiplicative inverse of e mod phiN
+        final BigInteger d = MathUtil.invMod(e, phiN);
         //the key is [e, n] and [d, n]
         return Pair.of(new Key(e, n), new Key(d, n));
     }
