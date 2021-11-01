@@ -6,6 +6,7 @@ import static java.math.BigInteger.ZERO;
 import cryptopals.utils.MathUtil;
 import lombok.Data;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,6 +16,7 @@ import java.util.Random;
 /**
  * an implementation of RSA
  */
+@Slf4j
 @UtilityClass
 public class RSA {
 
@@ -27,11 +29,11 @@ public class RSA {
      * @param bitLength the bit length of the desired key parameters
      * @return a pair of RSA keys
      */
-    public Pair<Key, Key> keyGen(final int bitLength, final BigInteger forceE) {
+    public Pair<Key, Key> keyGen(final int bitLength, final Integer forceE) {
         final Random r = new Random(System.currentTimeMillis());
 
         //start with e. Pick an e
-        final BigInteger e = forceE != null ? forceE :
+        final BigInteger e = forceE != null ? BigInteger.valueOf(forceE) :
                 BigInteger.probablePrime(Math.min(32, bitLength), r);
 
         BigInteger n;
@@ -49,10 +51,10 @@ public class RSA {
 
             //find phi(n), which is the quantity of figures less than n that are coprime with n
             phiN = p.subtract(ONE).multiply(q.subtract(ONE));
-        } while (e.compareTo(phiN) > 0 || e.mod(phiN).compareTo(ZERO) == 0);
+        } while (e.compareTo(phiN) > 0 || phiN.mod(e).equals(ZERO));
 
         //find the multiplicative inverse of e mod phiN
-        BigInteger d = MathUtil.invMod(e, phiN);
+        final BigInteger d = MathUtil.invMod(e, phiN);
         //the key is [e, n] and [d, n]
         return Pair.of(new Key(e, n), new Key(d, n));
     }
