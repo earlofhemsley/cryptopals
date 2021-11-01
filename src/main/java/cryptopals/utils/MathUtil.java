@@ -4,15 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 
-import com.google.common.base.Preconditions;
 import lombok.experimental.UtilityClass;
 
 import java.math.BigInteger;
 
 @UtilityClass
 public class MathUtil {
-    private static final BigInteger TWO = BigInteger.valueOf(2);
-    private static final BigInteger THREE = BigInteger.valueOf(3);
 
     /**
      * find the modular inverse of a mod n, which we call t
