@@ -2,6 +2,7 @@ package cryptopals.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
@@ -23,5 +24,12 @@ public class MathUtilTests {
         final BigInteger e = new BigInteger(prime);
 
         assertEquals(e.modInverse(n), MathUtil.invMod(e, n));
+    }
+
+    @Test
+    void irootTest() {
+        assertEquals(4, MathUtil.iroot(4, 624).intValue());
+        assertEquals(5, MathUtil.iroot(4, 625).intValue());
+        assertEquals(2, MathUtil.iroot(3, 8).intValue());
     }
 }
