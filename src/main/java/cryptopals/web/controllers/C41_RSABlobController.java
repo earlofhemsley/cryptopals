@@ -26,7 +26,7 @@ public class C41_RSABlobController {
 
     @GetMapping("/blobs")
     public ResponseEntity<String[]> generateBlobs() {
-        String[] lines = FileUtil.readFileAsListOfLines("src/main/resources/c41/the-jabberwocky.txt")
+        String[] lines = FileUtil.readFileAsListOfLines("src/main/resources/c41/when-tillie-ate-the-chili.txt")
                 .stream()
                 .filter(l -> !l.isBlank())
                 .map(l -> RSA.encrypt(l, keyPair.getKey()))
