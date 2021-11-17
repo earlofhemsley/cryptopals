@@ -4,12 +4,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import cryptopals.tool.sec05.c39.RSA;
+import cryptopals.web.contracts.RSADecryptRequest;
+import cryptopals.web.contracts.RSAKeyContentPair;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
@@ -68,11 +75,22 @@ public class C41 {
     private int port;
 
     @Test
-    void getBlobs() {
-        final URI uri = URI.create(String.format("http://localhost:%d/rsa/blobs", port));
-        ResponseEntity<String[]> response = restTemplate.getForEntity(uri, String[].class);
+    void completeTheChallenge() {
+        //get blobs
+        URI uri = URI.create(String.format("http://localhost:%d/rsa/blobs", port));
+        ResponseEntity<RSAKeyContentPair> response = restTemplate.getForEntity(uri, RSAKeyContentPair.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertNotEquals(0, response.getBody().length);
+        assertNotEquals(0, response.getBody().getContent().length);
+        final RSA.Key lock = response.getBody().getKey();
+
+        //ensure they're locked down
+        for (String cipherText : response.getBody().getContent()) {
+            final URI decryptURI = URI.create(String.format("http://localhost:%d/rsa/decrypt", port));
+            final RSADecryptRequest reqBody = new RSADecryptRequest(cipherText);
+            final ResponseEntity<String> expBadReq = restTemplate.postForEntity(decryptURI, reqBody, String.class);
+            assertEquals(HttpStatus.BAD_REQUEST, expBadReq.getStatusCode());
+            assertEquals("ciphertext ttl not done", expBadReq.getBody());
+        }
     }
 }

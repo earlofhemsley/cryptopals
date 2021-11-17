@@ -8,7 +8,7 @@
 
 plugins {
     //spring boot for challenge 31 since we have to have a web server
-    id 'org.springframework.boot' version '2.4.7'
+    id 'org.springframework.boot' version '2.5.6'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 
     // Apply the java plugin to add support for Java
@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     // This dependency is used by the application.
-    implementation 'com.google.guava:guava:28.0-jre'
+    implementation 'com.google.guava:guava:31.0.1-jre'
 
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
@@ -40,11 +40,11 @@ dependencies {
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.69'
 
     //lombok
-    compileOnly 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.20'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     //spring boot web
     implementation ('org.springframework.boot:spring-boot-starter-web') {
@@ -54,6 +54,10 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    //validation
+    implementation 'javax.validation:validation-api'
+    runtimeOnly 'org.hibernate.validator:hibernate-validator'
 
     // Use JUnit Jupiter API for testing.
     // the api is a transitive dependency of the params package
