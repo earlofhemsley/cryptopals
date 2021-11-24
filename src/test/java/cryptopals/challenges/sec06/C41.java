@@ -1,10 +1,13 @@
 package cryptopals.challenges.sec06;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import cryptopals.tool.sec05.c39.RSA;
+import cryptopals.tool.sec05.RSA;
+import cryptopals.tool.sec06.C41_RSAOracleAbuser;
+import cryptopals.utils.FileUtil;
 import cryptopals.web.contracts.RSADecryptRequest;
 import cryptopals.web.contracts.RSAKeyContentPair;
 import org.junit.jupiter.api.Test;
@@ -12,14 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implement unpadded message recovery oracle
@@ -76,21 +79,33 @@ public class C41 {
 
     @Test
     void completeTheChallenge() {
+        final String filePath = "src/main/resources/c41/when-tillie-ate-the-chili.txt";
         //get blobs
-        URI uri = URI.create(String.format("http://localhost:%d/rsa/blobs", port));
-        ResponseEntity<RSAKeyContentPair> response = restTemplate.getForEntity(uri, RSAKeyContentPair.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertNotEquals(0, response.getBody().getContent().length);
-        final RSA.Key lock = response.getBody().getKey();
+        URI uri = URI.create(String.format("http://localhost:%d/rsa/blobs?filePath=%s", port, URLEncoder.encode(filePath, Charset.defaultCharset())));
+        ResponseEntity<RSAKeyContentPair> blobResp = restTemplate.getForEntity(uri, RSAKeyContentPair.class);
+        assertEquals(HttpStatus.OK, blobResp.getStatusCode());
+        assertNotNull(blobResp.getBody());
+        assertNotEquals(0, blobResp.getBody().getContent().length);
 
         //ensure they're locked down
-        for (String cipherText : response.getBody().getContent()) {
-            final URI decryptURI = URI.create(String.format("http://localhost:%d/rsa/decrypt", port));
+        final URI decryptURI = URI.create(String.format("http://localhost:%d/rsa/decrypt", port));
+        for (String cipherText : blobResp.getBody().getContent()) {
             final RSADecryptRequest reqBody = new RSADecryptRequest(cipherText);
             final ResponseEntity<String> expBadReq = restTemplate.postForEntity(decryptURI, reqBody, String.class);
             assertEquals(HttpStatus.BAD_REQUEST, expBadReq.getStatusCode());
             assertEquals("ciphertext ttl not done", expBadReq.getBody());
         }
+
+        List<String> decrypted = new ArrayList<>();
+        for (String cipherText : blobResp.getBody().getContent()) {
+            final RSA.Key lock = blobResp.getBody().getKey();
+            final C41_RSAOracleAbuser abuser = new C41_RSAOracleAbuser(lock);
+            final var req = new RSADecryptRequest(abuser.spawnFakeRSACipherText(cipherText));
+            final var fresp = restTemplate.postForEntity(decryptURI, req, String.class);
+            assertNotNull(fresp.getBody());
+            final String plainText = abuser.convertFakeDecryptionToActual(fresp.getBody());
+            decrypted.add(plainText);
+        }
+        assertIterableEquals(FileUtil.readFileAsListOfLines(filePath), decrypted);
     }
 }

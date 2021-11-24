@@ -1,6 +1,6 @@
 package cryptopals.web.contracts;
 
-import cryptopals.tool.sec05.c39.RSA;
+import cryptopals.tool.sec05.RSA;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

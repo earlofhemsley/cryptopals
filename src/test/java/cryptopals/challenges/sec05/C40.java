@@ -2,8 +2,8 @@ package cryptopals.challenges.sec05;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cryptopals.tool.sec05.c39.RSA;
-import cryptopals.tool.sec05.c39.RSACubeRooter;
+import cryptopals.tool.sec05.RSA;
+import cryptopals.tool.sec05.c40.RSACubeRooter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.RepeatedTest;
 
