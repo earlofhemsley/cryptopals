@@ -1,5 +1,6 @@
-package cryptopals.tool.sec05.c39;
+package cryptopals.tool.sec05.c40;
 
+import cryptopals.tool.sec05.RSA;
 import cryptopals.utils.MathUtil;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
