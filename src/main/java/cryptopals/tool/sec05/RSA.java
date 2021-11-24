@@ -1,4 +1,4 @@
-package cryptopals.tool.sec05.c39;
+package cryptopals.tool.sec05;
 
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
@@ -77,20 +77,30 @@ public class RSA {
     }
 
     /**
-     * decrypt a message given an RSA key
+     * decrypt a message to a string given an RSA key
      * @param cipherText the cipherText
      * @param privateKey the key
      * @return the plain text
      */
     public String decrypt(String cipherText, Key privateKey) {
+        //re-interpret that as a string and return
+        return new String(decryptToBytes(cipherText, privateKey));
+    }
+
+    /**
+     * decrypt a message to a byte array given an RSA key
+     * @param cipherText the cipher text
+     * @param privateKey the key
+     * @return the decrypted byte array
+     */
+    public byte[] decryptToBytes(String cipherText, Key privateKey) {
         //turn message back into a number
         BigInteger c = new BigInteger(1, Base64.decodeBase64(cipherText));
 
         //mod pow using the private key
         BigInteger m = c.modPow(privateKey.k, privateKey.n);
 
-        //re-interpret that as a string and return
-        return new String(m.toByteArray());
+        return m.toByteArray();
     }
 
     @Data

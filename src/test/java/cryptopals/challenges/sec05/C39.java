@@ -2,7 +2,7 @@ package cryptopals.challenges.sec05;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cryptopals.tool.sec05.c39.RSA;
+import cryptopals.tool.sec05.RSA;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.RepeatedTest;
