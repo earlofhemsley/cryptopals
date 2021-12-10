@@ -3,7 +3,6 @@ package cryptopals.tool.sec06.c42;
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.sec05.RSA;
 import lombok.experimental.UtilityClass;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 
 import java.math.BigInteger;
 
@@ -19,7 +18,7 @@ public class BorkRSASigVerifier {
         final BigInteger sigAsBigInt = new BigInteger(1, signature);
         final byte[] modPowd = sigAsBigInt.modPow(lock.getK(), lock.getN()).toByteArray();
 
-        final int asnStart = PKCS1V15RsaSignatureUtil.findAsnStartingIndex(modPowd);
+        final int asnStart = PKCS1V15RsaSignatureUtil.findASN1Start(modPowd);
         if (asnStart < 0) {
             throw new BadPaddingRuntimeException("Invalid PKCS1.5 Padding");
         }
