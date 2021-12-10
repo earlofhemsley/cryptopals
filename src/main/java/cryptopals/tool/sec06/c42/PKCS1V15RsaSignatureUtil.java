@@ -45,11 +45,9 @@ public class PKCS1V15RsaSignatureUtil {
         //step one - get the md4 hash
         final var hash = md4.getMAC(message.getBytes());
 
-        //step two - encode in asn.1
+        //step two - encode in asn.1 per the RFC
         ASN1Sequence s1 = new DERSequence(new ASN1Encodable[] {
-                //double check this format ... some places have the oid inside another sequence with the null param following the oid
                 PKCSObjectIdentifiers.md4,
-                //idk where to go and find that. it might be in an RFC somewhere
                 new DEROctetString(hash)
         });
         ByteArrayOutputStream out = new ByteArrayOutputStream();
