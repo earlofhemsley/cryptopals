@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import cryptopals.tool.sec05.RSA;
-import cryptopals.tool.sec06.C41_RSAOracleAbuser;
+import cryptopals.tool.sec06.c41.RSAOracleAbuser;
 import cryptopals.utils.FileUtil;
 import cryptopals.web.contracts.RSADecryptRequest;
 import cryptopals.web.contracts.RSAKeyContentPair;
@@ -99,7 +99,7 @@ public class C41 {
         List<String> decrypted = new ArrayList<>();
         for (String cipherText : blobResp.getBody().getContent()) {
             final RSA.Key lock = blobResp.getBody().getKey();
-            final C41_RSAOracleAbuser abuser = new C41_RSAOracleAbuser(lock);
+            final RSAOracleAbuser abuser = new RSAOracleAbuser(lock);
             final var req = new RSADecryptRequest(abuser.spawnFakeRSACipherText(cipherText));
             final var fresp = restTemplate.postForEntity(decryptURI, req, String.class);
             assertNotNull(fresp.getBody());
