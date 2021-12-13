@@ -1,18 +1,19 @@
 package cryptopals.tool.sec06.c42;
 
-import cryptopals.tool.MD4;
+import cryptopals.tool.SHA1;
 import cryptopals.tool.sec05.RSA;
 import cryptopals.utils.ByteArrayUtil;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1StreamParser;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +24,7 @@ import java.util.Arrays;
 @UtilityClass
 public class PKCS1V15RsaSignatureUtil {
 
-    private final MD4 md4 = new MD4();
+    private final SHA1 sha1 = new SHA1();
 
     /**
      *
@@ -43,11 +44,11 @@ public class PKCS1V15RsaSignatureUtil {
     @SneakyThrows
     public String sign(final String message, final RSA.Key privateKey) {
         //step one - get the md4 hash
-        final var hash = md4.getMAC(message.getBytes());
+        final var hash = sha1.getMAC(message.getBytes());
 
         //step two - encode in asn.1 per the RFC
         ASN1Sequence s1 = new DERSequence(new ASN1Encodable[] {
-                PKCSObjectIdentifiers.md4,
+                new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1, DERNull.INSTANCE),
                 new DEROctetString(hash)
         });
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -107,10 +108,10 @@ public class PKCS1V15RsaSignatureUtil {
                 return false;
             }
 
-            final ASN1ObjectIdentifier oid = ASN1ObjectIdentifier.getInstance(s.getObjectAt(0));
-            if (!oid.equals(PKCSObjectIdentifiers.md4)) {
-                log.error("didn't detect md4 ({}) as the OID. Instead detected {}", PKCSObjectIdentifiers.md4.getId(),
-                        oid.getId());
+            final AlgorithmIdentifier oid = AlgorithmIdentifier.getInstance(s.getObjectAt(0));
+            if (!oid.getAlgorithm().equals(OIWObjectIdentifiers.idSHA1)) {
+                log.error("didn't detect sha1 ({}) as the OID. Instead detected {}", OIWObjectIdentifiers.idSHA1.getId(),
+                        oid.getAlgorithm().getId());
                 return false;
             }
 
@@ -121,7 +122,7 @@ public class PKCS1V15RsaSignatureUtil {
         }
 
         //step one - compare the hashes
-        return Arrays.equals(md4.getMAC(message.getBytes()), hash);
+        return Arrays.equals(sha1.getMAC(message.getBytes()), hash);
     }
 
     /**

@@ -1,6 +1,7 @@
 package cryptopals.tool.sec06.c42;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -21,6 +22,7 @@ public class PKCS1V15RsaSignatureUtilTests {
         String msg = "hello world";
         final String sig = PKCS1V15RsaSignatureUtil.sign(msg, k.getValue());
         assertTrue(PKCS1V15RsaSignatureUtil.verifySignature(msg, sig, k.getKey()));
+        assertFalse(PKCS1V15RsaSignatureUtil.verifySignature("hEllo world", sig, k.getKey()));
     }
 
     @ParameterizedTest
