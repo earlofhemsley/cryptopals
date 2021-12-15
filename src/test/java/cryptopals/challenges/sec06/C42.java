@@ -1,5 +1,13 @@
 package cryptopals.challenges.sec06;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import cryptopals.tool.sec05.RSA;
+import cryptopals.tool.sec06.c42.PKCS1V15RsaSignatureUtil;
+import cryptopals.tool.sec06.c42.PKCS1V15SignatureForger;
+import cryptopals.utils.MathUtil;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -52,10 +60,12 @@ import org.junit.jupiter.api.Test;
 public class C42 {
 
     /**
-     * the approach i want to take is hal finney's
+     * I already have a cube root algorithm. I'll try that first and see if I can get it to work
      */
-    @Test
+    @RepeatedTest(20)
     void completeTheChallenge() {
-
+        final String message = "hi mom";
+        final Pair<String, RSA.Key> forgery = PKCS1V15SignatureForger.forgeASignature(message);
+        assertTrue(PKCS1V15RsaSignatureUtil.verifySignature(message, forgery.getLeft(), forgery.getRight()));
     }
 }

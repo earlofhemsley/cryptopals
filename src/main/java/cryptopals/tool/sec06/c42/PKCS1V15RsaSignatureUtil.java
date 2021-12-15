@@ -1,8 +1,8 @@
 package cryptopals.tool.sec06.c42;
 
-import cryptopals.tool.SHA1;
 import cryptopals.tool.sec05.RSA;
 import cryptopals.utils.ByteArrayUtil;
+import cryptopals.utils.HashUtil;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +14,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.crypto.digests.SHA1Digest;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,8 +24,7 @@ import java.util.Arrays;
 @Slf4j
 @UtilityClass
 public class PKCS1V15RsaSignatureUtil {
-
-    private final SHA1 sha1 = new SHA1();
+    private final SHA1Digest sha1d = new SHA1Digest();
 
     /**
      *
@@ -44,7 +44,7 @@ public class PKCS1V15RsaSignatureUtil {
     @SneakyThrows
     public String sign(final String message, final RSA.Key privateKey) {
         //step one - get the md4 hash
-        final var hash = sha1.getMAC(message.getBytes());
+        final var hash = HashUtil.getHash(message.getBytes(), sha1d);
 
         //step two - encode in asn.1 per the RFC
         ASN1Sequence s1 = new DERSequence(new ASN1Encodable[] {
@@ -122,7 +122,7 @@ public class PKCS1V15RsaSignatureUtil {
         }
 
         //step one - compare the hashes
-        return Arrays.equals(sha1.getMAC(message.getBytes()), hash);
+        return Arrays.equals(HashUtil.getHash(message.getBytes(), sha1d), hash);
     }
 
     /**
