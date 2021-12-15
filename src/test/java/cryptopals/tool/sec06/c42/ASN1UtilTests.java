@@ -1,34 +1,20 @@
 package cryptopals.tool.sec06.c42;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import cryptopals.tool.sec05.RSA;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-public class PKCS1V15RsaSignatureUtilTests {
-
-
-    @Test
-    void encodingDecodingTest() {
-        var k = RSA.keyGen(1024);
-        String msg = "hello world";
-        final String sig = PKCS1V15RsaSignatureUtil.sign(msg, k.getValue());
-        assertTrue(PKCS1V15RsaSignatureUtil.verifySignature(msg, sig, k.getKey()));
-        assertFalse(PKCS1V15RsaSignatureUtil.verifySignature("hEllo world", sig, k.getKey()));
-    }
+public class ASN1UtilTests {
 
     @ParameterizedTest
     @MethodSource("supplyArgs")
     void ensureValidPadding(final byte[] subject, final int expectedIndex) {
-        assertEquals(expectedIndex, PKCS1V15RsaSignatureUtil.findASN1Start(subject));
+        assertEquals(expectedIndex, ASN1Util.findASN1Start(subject));
     }
 
     static Stream<Arguments> supplyArgs() {

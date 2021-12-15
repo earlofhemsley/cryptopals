@@ -1,5 +1,6 @@
 package cryptopals.challenges.sec06;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.tool.sec05.RSA;
@@ -58,6 +59,18 @@ import org.junit.jupiter.api.Test;
  * Forge a 1024-bit RSA signature for the string "hi mom". Make sure your implementation actually accepts the signature!
  */
 public class C42 {
+
+    /**
+     * verify that my signature util actually works, and that i can verify a valid signature
+     */
+    @Test
+    void encodingDecodingTest() {
+        var k = RSA.keyGen(1024);
+        String msg = "hello world";
+        final String sig = PKCS1V15RsaSignatureUtil.sign(msg, k.getValue());
+        assertTrue(PKCS1V15RsaSignatureUtil.verifySignature(msg, sig, k.getKey()));
+        assertFalse(PKCS1V15RsaSignatureUtil.verifySignature("hEllo world", sig, k.getKey()));
+    }
 
     /**
      * I already have a cube root algorithm. I'll try that first and see if I can get it to work
