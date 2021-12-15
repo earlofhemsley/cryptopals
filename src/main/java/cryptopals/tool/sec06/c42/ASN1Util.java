@@ -15,6 +15,20 @@ import java.io.ByteArrayOutputStream;
 @UtilityClass
 public class ASN1Util {
 
+    /**
+     * structure of the signature, according to RFC 2313
+     *
+     *     DigestInfo ::= SEQUENCE {
+     *      digestAlgorithm DigestAlgorithmIdentifier,
+     *      digest Digest }
+     *
+     *    DigestAlgorithmIdentifier ::= AlgorithmIdentifier
+     *    Digest ::= OCTET STRING
+     *
+     * @param hash the hash to encode
+     * @param hashAlgo the algorithm to include as the AlgorithmIdentifier
+     * @return an asn1 encoded octet string
+     */
     @SneakyThrows
     public byte[] encodeHashToAsn1SignatureFormat(final byte[] hash, final ASN1ObjectIdentifier hashAlgo) {
         ASN1Sequence s1 = new DERSequence(new ASN1Encodable[] {

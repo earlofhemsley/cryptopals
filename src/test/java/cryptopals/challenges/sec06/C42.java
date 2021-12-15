@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cryptopals.tool.sec05.RSA;
 import cryptopals.tool.sec06.c42.PKCS1V15RsaSignatureUtil;
 import cryptopals.tool.sec06.c42.PKCS1V15SignatureForger;
-import cryptopals.utils.MathUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;

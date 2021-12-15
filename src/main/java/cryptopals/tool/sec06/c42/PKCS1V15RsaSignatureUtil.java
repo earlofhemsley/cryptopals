@@ -6,10 +6,7 @@ import cryptopals.utils.HashUtil;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1StreamParser;
-import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
@@ -17,7 +14,6 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -27,15 +23,7 @@ public class PKCS1V15RsaSignatureUtil {
     private final SHA1Digest sha1d = new SHA1Digest();
 
     /**
-     *
-     * structure of the signature, according to RFC 2313
-     *
-     *     DigestInfo ::= SEQUENCE {
-     *      digestAlgorithm DigestAlgorithmIdentifier,
-     *      digest Digest }
-     *
-     *    DigestAlgorithmIdentifier ::= AlgorithmIdentifier
-     *    Digest ::= OCTET STRING
+     * cryptographically sign a message using RSA + SHA1
      *
      * @param message the message
      * @param privateKey the key
