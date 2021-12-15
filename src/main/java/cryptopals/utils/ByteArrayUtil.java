@@ -13,6 +13,19 @@ public class ByteArrayUtil {
     }
 
     /**
+     * concatenate any number of byte arrays together in the order in which they're submitted
+     * @param arrays an array of arrays
+     * @return a flattened array
+     */
+    public static byte[] concatenate(byte[]... arrays) {
+        byte[] result = arrays[0];
+        for (int i = 1; i < arrays.length; i++) {
+            result = concatenate(result, arrays[i]);
+        }
+        return result;
+    }
+
+    /**
      * concatenate two byte arrays into a new array with length of
      * the sum of the lengths of the two submitted parameters
      * @param o1 a byte array
