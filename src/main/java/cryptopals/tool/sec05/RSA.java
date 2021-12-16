@@ -66,8 +66,12 @@ public class RSA {
      * @return the cipher text
      */
     public String encrypt(String message, Key publicLock) {
+        return encrypt(message.getBytes(), publicLock);
+    }
+
+    public String encrypt(byte[] message, Key publicLock) {
         //turn message into a number
-        BigInteger m = new BigInteger(1, message.getBytes());
+        BigInteger m = new BigInteger(1, message);
 
         //mod pow that number with the public key
         BigInteger c = m.modPow(publicLock.k, publicLock.n);

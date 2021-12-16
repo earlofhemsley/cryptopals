@@ -1,4 +1,4 @@
-package cryptopals.tool.sec06;
+package cryptopals.tool.sec06.c41;
 
 import cryptopals.tool.sec05.RSA;
 import cryptopals.utils.MathUtil;
@@ -10,13 +10,13 @@ import java.util.Random;
 /**
  * a class to abuse the RSA decryption oracle
  */
-public class C41_RSAOracleAbuser {
+public class RSAOracleAbuser {
 
     private final BigInteger E; // the RSA lock exponent
     private final BigInteger N; // the RSA lock modulus
     private final BigInteger S; // a random number coprime to N ... 1 < S < N
 
-    public C41_RSAOracleAbuser(RSA.Key lock) {
+    public RSAOracleAbuser(RSA.Key lock) {
         this.E = lock.getK();
         this.N = lock.getN();
         final Random r = new Random(System.currentTimeMillis());
