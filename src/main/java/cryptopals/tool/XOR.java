@@ -6,6 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 /**
  * A tool relating to XOR operations for encryption/decryption
  */
+//TODO: make this a static util class
 public class XOR {
     /**
      * single-character encryption. this is the solution to challenge 2

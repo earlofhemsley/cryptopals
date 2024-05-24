@@ -1,7 +1,6 @@
 package cryptopals.challenges.sec01;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import cryptopals.tool.sec01.Challenge3Tool;
 import org.apache.commons.codec.DecoderException;
