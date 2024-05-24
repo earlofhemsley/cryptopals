@@ -3,42 +3,40 @@ package cryptopals.tool;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-import java.io.ByteArrayOutputStream;
-
 /**
  * A tool relating to XOR operations for encryption/decryption
  */
 public class XOR {
     /**
      * single-character encryption. this is the solution to challenge 2
-     * @param hexString1
-     * @param hexString2
-     * @return
-     * @throws DecoderException
+     * @param hexString1 first hex string
+     * @param hexString2 second hex string
+     * @return the result of a xor on both strings
+     * @throws DecoderException if the hex strings cannot be decoded as such
      */
     public String hexStringFixedXor(String hexString1, String hexString2) throws DecoderException {
         byte[] input1 = Hex.decodeHex(hexString1);
         byte[] input2 = Hex.decodeHex(hexString2);
 
-        int looplimit = Math.min(input1.length, input2.length);
+        int loopLimit = Math.min(input1.length, input2.length);
 
-        byte[] result = new byte[looplimit];
+        byte[] result = new byte[loopLimit];
 
-        for (int i = 0; i < looplimit; i++) {
+        for (int i = 0; i < loopLimit; i++) {
             int left = Byte.toUnsignedInt(input1[i]);
             int right = Byte.toUnsignedInt(input2[i]);
-            int xordResult = left ^ right;
-            result[i] = (byte) (xordResult & 0xFF);
+            int xorResult = left ^ right;
+            result[i] = (byte) (xorResult & 0xFF);
         }
 
         return String.valueOf(Hex.encodeHex(result));
     }
 
     /**
-     * xor's a byte array against a single integer key
-     * @param input
-     * @param key
-     * @return
+     * performs an XOR on a byte array against a single integer key
+     * @param input the input
+     * @param key the key for the XOR
+     * @return the result of the XOR
      */
     public byte[] singleKeyXOR(byte[] input, int key) {
         byte[] decrypted = new byte[input.length];
@@ -60,15 +58,15 @@ public class XOR {
     /**
      * xor's each successive byte of one byte array against each successive byte
      * of a key byte array.
-     * @param input
-     * @param key
-     * @return
+     * @param input the multibyte input
+     * @param key the multibyte key
+     * @return the result of the XOR
      */
     public byte[] multiByteXOR(byte[] input, byte[] key) {
-        byte[] xord = new byte[input.length];
-        for(int i = 0; i < xord.length; i++) {
-            xord[i] = (byte) (input[i] ^ key[i % key.length]);
+        byte[] xorResult = new byte[input.length];
+        for(int i = 0; i < xorResult.length; i++) {
+            xorResult[i] = (byte) (input[i] ^ key[i % key.length]);
         }
-        return xord;
+        return xorResult;
     }
 }
