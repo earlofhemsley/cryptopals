@@ -33,7 +33,6 @@ public class CBC {
 
         final ECB ecb = new ECB(cipherKeyBytes);
 
-        final XOR xor = new XOR();
         byte[] resultBytes = new byte[textBytes.length];
         byte[] previousBlock = iv;
 
@@ -45,13 +44,13 @@ public class CBC {
             try {
                 switch (cipherMode) {
                     case ENCRYPT:
-                        byte[] xorNthBlock = xor.multiByteXOR(nthBlock, previousBlock);
+                        byte[] xorNthBlock = XOR.multiByteXOR(nthBlock, previousBlock);
                         currentBlock = ecb.AES(xorNthBlock, cipherMode);
                         previousBlock = currentBlock;
                         break;
                     case DECRYPT:
                         byte[] decNthBlock = ecb.AES(nthBlock, cipherMode);
-                        currentBlock = xor.multiByteXOR(decNthBlock, previousBlock);
+                        currentBlock = XOR.multiByteXOR(decNthBlock, previousBlock);
                         previousBlock = nthBlock;
                         break;
                     default:

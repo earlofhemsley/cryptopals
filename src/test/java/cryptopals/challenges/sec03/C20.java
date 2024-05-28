@@ -33,7 +33,6 @@ public class C20 {
     private static final byte[] CIPHER_KEY = ByteArrayUtil.randomBytes(16,
             "AS ARMAS AS ARMAS SOBRE A TERRA SOBRE O MAR");
     private final CTR ctr = new CTR(CIPHER_KEY);
-    private final XOR xor = new XOR();
 
     @Test
     public void findTheKeyStream() {
@@ -42,7 +41,7 @@ public class C20 {
         final byte[] keyStream = new Challenge20Tool().findTheKeyStream(cipherTexts);
 
         for (int i = 0; i < cipherTexts.length; i++) {
-            var decrypted = new String(xor.multiByteXOR(cipherTexts[i], keyStream));
+            var decrypted = new String(XOR.multiByteXOR(cipherTexts[i], keyStream));
             System.out.println(decrypted);
             assertEquals(plainTexts[i], decrypted);
         }

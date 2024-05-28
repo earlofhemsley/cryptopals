@@ -15,7 +15,6 @@ public class PRNG_CTR {
     private static final int BLOCK_LENGTH = 4;
 
     private final short key;
-    private final XOR xor = new XOR();
 
     public PRNG_CTR(final short key) {
         this.key = key;
@@ -74,7 +73,7 @@ public class PRNG_CTR {
             final byte[] stream = ByteArrayUtil.intToByteArray(streamer.nextInt());
 
             //xor stream against the text
-            final byte[] operatedBlock = xor.multiByteXOR(block, stream);
+            final byte[] operatedBlock = XOR.multiByteXOR(block, stream);
 
             //copy
             System.arraycopy(operatedBlock, 0, temp, operatedBlock.length * b, operatedBlock.length);

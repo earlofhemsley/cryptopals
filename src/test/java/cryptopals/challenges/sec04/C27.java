@@ -109,7 +109,7 @@ public class C27 {
                 final byte[] pp3 = ByteArrayUtil.sliceByteArray(pp, BLOCK_LENGTH*2, BLOCK_LENGTH);
 
                 //xor the two to get the key
-                final byte[] derivedKey = new XOR().multiByteXOR(pp1, pp3);
+                final byte[] derivedKey = XOR.multiByteXOR(pp1, pp3);
                 assertArrayEquals(KEY, derivedKey);
             } else {
                 fail("couldn't find the byte array plaintext");

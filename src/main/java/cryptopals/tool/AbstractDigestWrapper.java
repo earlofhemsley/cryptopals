@@ -18,7 +18,6 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
      */
     private final int keyLength = new Random(System.currentTimeMillis()).nextInt(127) + 1;
     private final byte[] privateKey = ByteArrayUtil.randomBytes(keyLength);
-    private final XOR xor = new XOR();
 
     /**
      * given a key, a message and a mac, verify that the digest the comes from concatenating the key and the message
@@ -59,8 +58,8 @@ public abstract class AbstractDigestWrapper<T extends GeneralDigest> {
             System.arraycopy(privateKey, 0, localKey, 0, privateKey.length);
         }
 
-        final var oKeyPad = xor.singleKeyXOR(localKey, 0x5c);
-        final var iKeyPad = xor.singleKeyXOR(localKey, 0x36);
+        final var oKeyPad = XOR.singleKeyXOR(localKey, 0x5c);
+        final var iKeyPad = XOR.singleKeyXOR(localKey, 0x36);
 
         final var innerHash = getMAC(iKeyPad, message);
 

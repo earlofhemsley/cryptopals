@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
  */
 public class CTR {
 
-    private final XOR xor = new XOR();
     private final ECB ecb;
 
     public CTR(byte[] key) {
@@ -44,7 +43,7 @@ public class CTR {
 
         // overwrite the ciphertext
         var newTextBytes = newText.getBytes();
-        var sub = xor.multiByteXOR(newTextBytes, ktext);
+        var sub = XOR.multiByteXOR(newTextBytes, ktext);
         System.arraycopy(sub, 0, cipherText, offset, sub.length);
     }
 
@@ -68,7 +67,7 @@ public class CTR {
             var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
 
             //xor against chunkOfText
-            var operatedBlock = xor.multiByteXOR(chunkOfText, encryptedNonce);
+            var operatedBlock = XOR.multiByteXOR(chunkOfText, encryptedNonce);
 
             //copy to result
             System.arraycopy(operatedBlock, 0, tempResult, operatedBlock.length * chunkNum, operatedBlock.length);

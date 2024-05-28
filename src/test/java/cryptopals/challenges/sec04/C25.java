@@ -36,7 +36,6 @@ public class C25 {
     private static final byte[] ECB_KEY = "YELLOW SUBMARINE".getBytes();
     private final ECB ecb = new ECB(ECB_KEY);
 
-    private final XOR xor = new XOR();
 
     /**
      * test the edit function before we complete the challenge
@@ -76,7 +75,7 @@ public class C25 {
         ctr.edit(keystream, 0, breakerString);
 
         //once we have the keystream, we can simply xor it against the cipherText to recover the plaintext
-        final String broken = new String(xor.multiByteXOR(cipherText, keystream));
+        final String broken = new String(XOR.multiByteXOR(cipherText, keystream));
 
         assertEquals(plaintext, broken);
     }

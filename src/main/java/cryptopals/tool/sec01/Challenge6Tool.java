@@ -17,11 +17,8 @@ public class Challenge6Tool {
      * given a message and no key, figure out what the key is, and decrypt the message
      *
      * this is the solution to challenge six
-     * @param input
-     * @return
      */
     public static String breakTheCipher(String input) {
-        final XOR xor = new XOR();
         final Chi chi = new Chi();
         byte[] contentBytes = Base64.getDecoder().decode(input);
 
@@ -50,25 +47,25 @@ public class Challenge6Tool {
 
         String best = null;
         double lowFullScore = Double.MAX_VALUE;
-        for (int keysize : bestSizes) {
+        for (int keySize : bestSizes) {
             //break the cipher text into blocks of length k
             //matrix
-            int matrixHeight = (contentBytes.length % keysize == 0) ? contentBytes.length/keysize : contentBytes.length/keysize + 1;
-            byte[][] matrix = new byte[matrixHeight][keysize];
+            int matrixHeight = (contentBytes.length % keySize == 0) ? contentBytes.length/keySize : contentBytes.length/keySize + 1;
+            byte[][] matrix = new byte[matrixHeight][keySize];
             for (int i = 0; i<matrixHeight; i++){
-                matrix[i] = ByteArrayUtil.sliceByteArray(contentBytes,i*keysize, keysize);
+                matrix[i] = ByteArrayUtil.sliceByteArray(contentBytes,i*keySize, keySize);
             }
 
             //transpose the blocks. group 1 is the first byte of each block, group 2 is the second, etc
             final byte[][] transposed = ByteArrayUtil.transposeByteMatrix(matrix);
 
             //decrypt each block as if it was single char xor
-            byte[] keybytes = new byte[keysize];
-            for (int block = 0; block < keysize; block++) {
+            byte[] keyBytes = new byte[keySize];
+            for (int block = 0; block < keySize; block++) {
                 int bestKeyInt = -1;
                 double lowSingleScore = Double.MAX_VALUE;
                 for (int c = 0; c < 256; c++) {
-                    char[] decrypted = xor.singleKeyXORToCharArray(transposed[block], c);
+                    char[] decrypted = XOR.singleKeyXORToCharArray(transposed[block], c);
                     double chiScore = chi.score(decrypted);
                     if (chiScore < lowSingleScore) {
                         lowSingleScore = chiScore;
@@ -76,11 +73,11 @@ public class Challenge6Tool {
                     }
                 }
                 assert bestKeyInt != -1;
-                keybytes[block] = (byte) bestKeyInt;
+                keyBytes[block] = (byte) bestKeyInt;
             }
 
             //decrypt the body
-            String decryptedBody = new String(xor.multiByteXOR(contentBytes, keybytes));
+            String decryptedBody = new String(XOR.multiByteXOR(contentBytes, keyBytes));
 
             //chi square score the body
             double fullChi = chi.score(decryptedBody.toCharArray());

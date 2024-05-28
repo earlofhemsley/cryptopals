@@ -38,7 +38,6 @@ import java.util.Base64;
  * Points for automating this, but part of the reason I'm having you do this is that I think this approach is suboptimal.
  */
 public class C19 {
-    private final XOR xor = new XOR();
 
     @Test
     void challenge19() {
@@ -55,7 +54,7 @@ public class C19 {
         var keyStream = tool.findTheKeyStream(encryptedTexts);
 
         for (int i = 0; i < encryptedTexts.length; i++) {
-            var decryptedText = xor.multiByteXOR(encryptedTexts[i], keyStream);
+            var decryptedText = XOR.multiByteXOR(encryptedTexts[i], keyStream);
             var fromBase64 = Base64.getDecoder().decode(TEXTS[i]);
             assertArrayEquals(fromBase64, decryptedText);
         }

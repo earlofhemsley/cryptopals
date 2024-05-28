@@ -14,23 +14,19 @@ public class Challenge5Tool {
 
     /**
      * encrypt a message with a repeating key. this is part of the solution to challenge five
-     * @param toEncrypt
-     * @return
      */
     public String repeatingKeyEncrypt(String toEncrypt) {
-        byte[] result = new XOR().multiByteXOR(toEncrypt.getBytes(), key);
+        byte[] result = XOR.multiByteXOR(toEncrypt.getBytes(), key);
         return String.valueOf(Hex.encodeHex(result));
     }
 
     /**
      * decrypt a message with a repeating key. this is part of the solution to challenge five
-     * @param toDecrypt
-     * @return
-     * @throws DecoderException
+     * @throws DecoderException if hex decoding fails
      */
     public String repeatingKeyDecrypt(String toDecrypt) throws DecoderException {
         byte[] hexDecoded = Hex.decodeHex(toDecrypt);
-        byte[] decrypted = new XOR().multiByteXOR(hexDecoded, key);
+        byte[] decrypted = XOR.multiByteXOR(hexDecoded, key);
         StringBuilder result = new StringBuilder();
         for (byte b : decrypted) {
             result.append((char)b);

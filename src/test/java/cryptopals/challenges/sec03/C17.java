@@ -4,7 +4,6 @@ import cryptopals.exceptions.CryptopalsException;
 import cryptopals.tool.sec03.Challenge17Tool;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.tool.XOR;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -72,7 +71,6 @@ public class C17 {
     void challenge17(final int time) {
         var oracle = new Challenge17Tool();
         var set = oracle.getAllIvecsAndStrings();
-        final XOR xor = new XOR();
         for (Map.Entry<byte[], byte[]> pair : set.entrySet()) {
             byte[] ivec = pair.getKey();
             byte[] cipherText = pair.getValue();
@@ -93,7 +91,7 @@ public class C17 {
                 //at this point, we should have the whole i for the block under consideration
                 //to decrypt, take the actual block and xor it against the true i to get the true plain text
                 // don't worry about padding
-                var plainTextBlock = xor.multiByteXOR(ivec, i);
+                var plainTextBlock = XOR.multiByteXOR(ivec, i);
                 System.arraycopy(plainTextBlock,0, plainText, blockNum*blockSize, blockSize);
                 ivec = realCipherBlock;
             }

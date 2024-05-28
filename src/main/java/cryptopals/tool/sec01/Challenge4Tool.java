@@ -23,7 +23,6 @@ public class Challenge4Tool {
      */
     public String seekAndDestroy(List<String> candidates) throws DecoderException {
         final Chi chi = new Chi();
-        final XOR xor = new XOR();
 
         String reigningChampion = null;
         double lowestScore = Double.MAX_VALUE;
@@ -32,7 +31,7 @@ public class Challenge4Tool {
         for (String candidate : candidates) {
             byte[] decodedCandidate = Hex.decodeHex(candidate);
             for (int key = 0; key <= 256; key++) {
-                char[] decrypted = xor.singleKeyXORToCharArray(decodedCandidate, key);
+                char[] decrypted = XOR.singleKeyXORToCharArray(decodedCandidate, key);
                 double chiScore = chi.score(decrypted);
                 if (chiScore < lowestScore) {
                     reigningChampion = String.valueOf(decrypted);

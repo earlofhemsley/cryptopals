@@ -8,6 +8,10 @@ import org.apache.commons.codec.binary.Hex;
  */
 //TODO: make this a static util class
 public class XOR {
+    private XOR() {
+        throw new Error("do not instantiate");
+    }
+
     /**
      * single-character encryption. this is the solution to challenge 2
      * @param hexString1 first hex string
@@ -15,7 +19,7 @@ public class XOR {
      * @return the result of a xor on both strings
      * @throws DecoderException if the hex strings cannot be decoded as such
      */
-    public String hexStringFixedXor(String hexString1, String hexString2) throws DecoderException {
+    public static String hexStringFixedXOR(String hexString1, String hexString2) throws DecoderException {
         byte[] input1 = Hex.decodeHex(hexString1);
         byte[] input2 = Hex.decodeHex(hexString2);
 
@@ -39,7 +43,7 @@ public class XOR {
      * @param key the key for the XOR
      * @return the result of the XOR
      */
-    public byte[] singleKeyXOR(byte[] input, int key) {
+    public static byte[] singleKeyXOR(byte[] input, int key) {
         byte[] decrypted = new byte[input.length];
         for(int i = 0; i < decrypted.length; i++) {
             decrypted[i] = (byte) ((int) input[i] ^ key);
@@ -47,7 +51,7 @@ public class XOR {
         return decrypted;
     }
 
-    public char[] singleKeyXORToCharArray(byte[] input, int key) {
+    public static char[] singleKeyXORToCharArray(byte[] input, int key) {
         final byte[] result = singleKeyXOR(input, key);
         final char[] returnValue = new char[result.length];
         for (int i = 0; i < result.length; i++) {
@@ -63,7 +67,7 @@ public class XOR {
      * @param key the multibyte key
      * @return the result of the XOR
      */
-    public byte[] multiByteXOR(byte[] input, byte[] key) {
+    public static byte[] multiByteXOR(byte[] input, byte[] key) {
         byte[] xorResult = new byte[input.length];
         for(int i = 0; i < xorResult.length; i++) {
             xorResult[i] = (byte) (input[i] ^ key[i % key.length]);

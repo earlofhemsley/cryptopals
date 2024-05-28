@@ -61,10 +61,9 @@ public class C16 {
         assertEquals(16, knownInput.length());
         assertEquals(16, desired.length());
 
-        final XOR xor = new XOR();
-        byte[] xord = xor.multiByteXOR(knownInput.getBytes(), desired.getBytes());
-        assertArrayEquals(desired.getBytes(), xor.multiByteXOR(knownInput.getBytes(), xord));
-        assertArrayEquals(knownInput.getBytes(), xor.multiByteXOR(desired.getBytes(), xord));
+        byte[] xord = XOR.multiByteXOR(knownInput.getBytes(), desired.getBytes());
+        assertArrayEquals(desired.getBytes(), XOR.multiByteXOR(knownInput.getBytes(), xord));
+        assertArrayEquals(knownInput.getBytes(), XOR.multiByteXOR(desired.getBytes(), xord));
 
         List<Integer> positionsOf12 = Lists.newArrayList(0, 11);
         List<Integer> positionsOf4 = Lists.newArrayList(6, 13);
@@ -86,10 +85,10 @@ public class C16 {
         assertFalse(oracle.findAdminInCipherText(cipherText));
 
         var textToAlter = ByteArrayUtil.sliceByteArray(cipherText, 32, xord.length);
-        var alteredText = xor.multiByteXOR(textToAlter, xord);
+        var alteredText = XOR.multiByteXOR(textToAlter, xord);
 
-        assertArrayEquals(textToAlter, xor.multiByteXOR(alteredText, xord));
-        assertArrayEquals(xord, xor.multiByteXOR(textToAlter, alteredText));
+        assertArrayEquals(textToAlter, XOR.multiByteXOR(alteredText, xord));
+        assertArrayEquals(xord, XOR.multiByteXOR(textToAlter, alteredText));
         System.arraycopy(alteredText, 0, cipherText, 32, alteredText.length);
 
         assertTrue(oracle.findAdminInCipherText(cipherText));

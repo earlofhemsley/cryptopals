@@ -9,7 +9,6 @@ public abstract class AbstractFrequencyAnalyzingCTRKeyDeterminer {
     // legible
 
     final Chi chi = new Chi();
-    final XOR xor = new XOR();
 
     public abstract void additionalManualTweaks(final byte[][] ciphertexts, final byte[] keyStream);
 
@@ -50,7 +49,7 @@ public abstract class AbstractFrequencyAnalyzingCTRKeyDeterminer {
         double lowestChiScore = Double.MAX_VALUE;
         Integer winner = null;
         for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-            char[] xordFirstLetters = xor.singleKeyXORToCharArray(byteColumn, i);
+            char[] xordFirstLetters = XOR.singleKeyXORToCharArray(byteColumn, i);
             double localChi = chi.score(xordFirstLetters);
             if (localChi < lowestChiScore) {
                 lowestChiScore = localChi;

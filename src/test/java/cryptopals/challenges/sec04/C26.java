@@ -61,10 +61,9 @@ public class C26 {
         this works because xor math is associative
         */
 
-        final XOR xor = new XOR();
         String T = "7admin9true7A9AA";
         String D = ";admin=true;A=AA";
-        byte[] TxorD = xor.multiByteXOR(T.getBytes(StandardCharsets.UTF_8),
+        byte[] TxorD = XOR.multiByteXOR(T.getBytes(StandardCharsets.UTF_8),
                 D.getBytes(StandardCharsets.UTF_8));
 
         //we have an intermediate that we should be able to xor against a ciphertext
@@ -73,7 +72,7 @@ public class C26 {
         //start at position 48 because we know that the oracle supplies 2 16-byte blocks
         // and we provided a 3rd 16 byte block
         var e = ByteArrayUtil.sliceByteArray(fullFirstEncryption, 48, TxorD.length);
-        var o = xor.multiByteXOR(e, TxorD);
+        var o = XOR.multiByteXOR(e, TxorD);
         System.arraycopy(o, 0, fullFirstEncryption, 48, o.length);
 
         assertTrue(oracle.findAdminInCipherText(fullFirstEncryption));
