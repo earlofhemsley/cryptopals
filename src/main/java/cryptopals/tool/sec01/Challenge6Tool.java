@@ -48,8 +48,14 @@ public class Challenge6Tool {
         double lowFullScore = Double.MAX_VALUE;
         for (int keySize : bestSizes) {
             //break the cipher text into blocks of length k
-            //matrix
-            int matrixHeight = (contentBytes.length % keySize == 0) ? contentBytes.length/keySize : contentBytes.length/keySize + 1;
+
+            //find the matrix height
+            int matrixHeight = contentBytes.length/keySize;
+            if ((contentBytes.length & keySize) == 0) {
+                matrixHeight++;
+            }
+
+            //copy the contents into the matrix
             byte[][] matrix = new byte[matrixHeight][keySize];
             for (int i = 0; i<matrixHeight; i++){
                 matrix[i] = ByteArrayUtil.sliceByteArray(contentBytes,i*keySize, keySize);
@@ -87,7 +93,9 @@ public class Challenge6Tool {
             }
         }
 
-        assert best != null;
+        if (best == null) {
+            throw new RuntimeException("best is empty. could not identify the best decryption");
+        }
 
         //return it
         return best;
