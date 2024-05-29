@@ -7,8 +7,6 @@ import cryptopals.utils.FileUtil;
 import org.apache.commons.codec.DecoderException;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 /**
  * Implement repeating-key XOR
  * Here is the opening stanza of an important work of the English language:
@@ -38,13 +36,13 @@ public class C05 {
         var bloodContents = FileUtil.readFileAsWhole("src/test/resources/blood");
         var singleStringBloodContents = String.join("\n", bloodContents);
 
-        encryptAndOutputAndDecryptAndOutput(tool, singleStringBloodContents, false);
-        encryptAndOutputAndDecryptAndOutput(tool, FileUtil.readFileAsWhole("src/test/resources/enid.jok"), false);
-        encryptAndOutputAndDecryptAndOutput(tool, FileUtil.readFileAsWhole("src/test/resources/einstein"), false);
-        encryptAndOutputAndDecryptAndOutput(tool, FileUtil.readFileAsWhole("src/test/resources/spock.txt"), true);
+        processAndAssert(tool, singleStringBloodContents, false);
+        processAndAssert(tool, FileUtil.readFileAsWhole("src/test/resources/enid.jok"), false);
+        processAndAssert(tool, FileUtil.readFileAsWhole("src/test/resources/einstein"), false);
+        processAndAssert(tool, FileUtil.readFileAsWhole("src/test/resources/spock.txt"), true);
     }
 
-    private void encryptAndOutputAndDecryptAndOutput(Challenge5Tool tool, String original, boolean print) throws DecoderException {
+    private void processAndAssert(Challenge5Tool tool, String original, boolean print) throws DecoderException {
         var encrypted = tool.repeatingKeyEncrypt(original);
         var decrypted = tool.repeatingKeyDecrypt(encrypted);
 
