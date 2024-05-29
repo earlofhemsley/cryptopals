@@ -8,6 +8,10 @@ import java.util.Optional;
  * a tool to build chi-squared scores of a sample text against a histogram of the english language
  */
 public class Chi {
+    private Chi() {
+        throw new AssertionError("Cannot instantiate a util class");
+    }
+
     private static final Map<Character, Double> ENGLISH_HISTOGRAM = new HashMap<>();
     static {
         ENGLISH_HISTOGRAM.put(' ',14.00D);
@@ -40,7 +44,7 @@ public class Chi {
         ENGLISH_HISTOGRAM.put((char) 0, 0.0000001D);
     }
 
-    public double score(char[] input) {
+    public static double score(char[] input) {
         Map<Character, Double> observed = new HashMap<>();
 
         //group letters by bucket

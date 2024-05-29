@@ -13,16 +13,17 @@ import java.util.List;
  */
 public class Challenge4Tool {
 
+    private Challenge4Tool() {
+        throw new AssertionError("Utility class");
+    }
+
     /**
      * consider a series of messages encrypted with single char encryption. find the message that actually decrypts
      *
      * this is the solution to challenge four
-     * @param candidates
-     * @return
-     * @throws DecoderException
+     * @throws DecoderException when decoding fails
      */
-    public String seekAndDestroy(List<String> candidates) throws DecoderException {
-        final Chi chi = new Chi();
+    public static String seekAndDestroy(List<String> candidates) throws DecoderException {
 
         String reigningChampion = null;
         double lowestScore = Double.MAX_VALUE;
@@ -31,8 +32,8 @@ public class Challenge4Tool {
         for (String candidate : candidates) {
             byte[] decodedCandidate = Hex.decodeHex(candidate);
             for (int key = 0; key <= 256; key++) {
-                char[] decrypted = XOR.singleKeyXORToCharArray(decodedCandidate, key);
-                double chiScore = chi.score(decrypted);
+                char[] decrypted = XOR.singleKeyXORAsCharArray(decodedCandidate, key);
+                double chiScore = Chi.score(decrypted);
                 if (chiScore < lowestScore) {
                     reigningChampion = String.valueOf(decrypted);
                     lowestScore = chiScore;

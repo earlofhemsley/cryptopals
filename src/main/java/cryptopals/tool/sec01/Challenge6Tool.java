@@ -19,7 +19,6 @@ public class Challenge6Tool {
      * this is the solution to challenge six
      */
     public static String breakTheCipher(String input) {
-        final Chi chi = new Chi();
         byte[] contentBytes = Base64.getDecoder().decode(input);
 
         HashMap<Integer, Double> hammingPairs = new HashMap<>();
@@ -65,8 +64,8 @@ public class Challenge6Tool {
                 int bestKeyInt = -1;
                 double lowSingleScore = Double.MAX_VALUE;
                 for (int c = 0; c < 256; c++) {
-                    char[] decrypted = XOR.singleKeyXORToCharArray(transposed[block], c);
-                    double chiScore = chi.score(decrypted);
+                    char[] decrypted = XOR.singleKeyXORAsCharArray(transposed[block], c);
+                    double chiScore = Chi.score(decrypted);
                     if (chiScore < lowSingleScore) {
                         lowSingleScore = chiScore;
                         bestKeyInt = c;
@@ -80,7 +79,7 @@ public class Challenge6Tool {
             String decryptedBody = new String(XOR.multiByteXOR(contentBytes, keyBytes));
 
             //chi square score the body
-            double fullChi = chi.score(decryptedBody.toCharArray());
+            double fullChi = Chi.score(decryptedBody.toCharArray());
 
             //check if better
             if(fullChi < lowFullScore) {

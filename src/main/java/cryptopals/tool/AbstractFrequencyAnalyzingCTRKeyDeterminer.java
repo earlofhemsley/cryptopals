@@ -8,8 +8,6 @@ public abstract class AbstractFrequencyAnalyzingCTRKeyDeterminer {
     // since we have the cipher text block, we just have to figure out what to xor against these texts to make them
     // legible
 
-    final Chi chi = new Chi();
-
     public abstract void additionalManualTweaks(final byte[][] ciphertexts, final byte[] keyStream);
 
     public byte[] findTheKeyStream(final byte[][] ciphertexts) {
@@ -49,8 +47,8 @@ public abstract class AbstractFrequencyAnalyzingCTRKeyDeterminer {
         double lowestChiScore = Double.MAX_VALUE;
         Integer winner = null;
         for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-            char[] xordFirstLetters = XOR.singleKeyXORToCharArray(byteColumn, i);
-            double localChi = chi.score(xordFirstLetters);
+            char[] xordFirstLetters = XOR.singleKeyXORAsCharArray(byteColumn, i);
+            double localChi = Chi.score(xordFirstLetters);
             if (localChi < lowestChiScore) {
                 lowestChiScore = localChi;
                 winner = i;

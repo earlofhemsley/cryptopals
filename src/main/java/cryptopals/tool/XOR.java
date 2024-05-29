@@ -51,7 +51,7 @@ public class XOR {
         return decrypted;
     }
 
-    public static char[] singleKeyXORToCharArray(byte[] input, int key) {
+    public static char[] singleKeyXORAsCharArray(byte[] input, int key) {
         final byte[] result = singleKeyXOR(input, key);
         final char[] returnValue = new char[result.length];
         for (int i = 0; i < result.length; i++) {

@@ -22,7 +22,7 @@ public class C04 {
     public void fourTest() throws DecoderException {
         String filePath = "src/test/resources/4.txt";
         List<String> contents = FileUtil.readFileAsListOfLines(filePath);
-        String value = new Challenge4Tool().seekAndDestroy(contents);
+        String value = Challenge4Tool.seekAndDestroy(contents);
         assertEquals("Now that the party is jumping", value);
     }
 
