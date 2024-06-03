@@ -32,7 +32,7 @@ public class CTR {
         final int numOfBlocks = newLength / blockLength;
         final byte[] keystream = new byte[newLength];
         for (int block = 0; block < numOfBlocks; block++) {
-            var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
+            var encryptedNonce = ecb.AES128(nonce.get(), CipherMode.ENCRYPT);
             System.arraycopy(encryptedNonce, 0, keystream, block * encryptedNonce.length, encryptedNonce.length);
             nonce.increment();
         }
@@ -64,7 +64,7 @@ public class CTR {
             byte[] chunkOfText = ByteArrayUtil.sliceByteArray(tempText, chunkLength * chunkNum, chunkLength);
 
             //encrypt the nonce
-            var encryptedNonce = ecb.AES(nonce.get(), CipherMode.ENCRYPT);
+            var encryptedNonce = ecb.AES128(nonce.get(), CipherMode.ENCRYPT);
 
             //xor against chunkOfText
             var operatedBlock = XOR.multiByteXOR(chunkOfText, encryptedNonce);

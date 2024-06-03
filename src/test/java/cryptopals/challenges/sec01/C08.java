@@ -25,13 +25,14 @@ public class C08 {
     @Test
     public void eightTest() throws DecoderException {
         var fileContents = FileUtil.readFileAsListOfLines("src/test/resources/8.txt");
+        final var ecb = new ECB("1234567890123456".getBytes());
         Integer rowNumber = null;
         for (int i = 0; i < fileContents.size(); i++) {
             //hex decode
             byte[] decodedRow = Hex.decodeHex(fileContents.get(i));
 
             //run detection
-            if(new ECB("1234567890123456".getBytes()).detectInCipherBytes(decodedRow)) {
+            if(ecb.isEncryptedWithECB(decodedRow)) {
                 rowNumber = i;
                 break;
             }

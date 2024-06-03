@@ -1,6 +1,5 @@
 package cryptopals.tool.sec02;
 
-import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
 
@@ -34,7 +33,7 @@ public class Challenge12Tool {
         assert blockSize != null && blockSize == 16;
 
         //detect that ECB is being used
-        boolean ecbDetected = ecb.detectInCipherBytes(oracleResult);
+        boolean ecbDetected = ecb.isEncryptedWithECB(oracleResult);
         assert ecbDetected;
 
         //discover the first byte in the message

@@ -8,7 +8,6 @@ import cryptopals.tool.ECB;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Base64;
 
 /**
@@ -34,9 +33,9 @@ public class C07 {
         String cipherKey = "YELLOW SUBMARINE";
         assertEquals(16, cipherKey.length());
 
-        var fileContents = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/7.txt"));
+        String fileContents = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/7.txt"));
         byte[] cipherTextBytes = Base64.getDecoder().decode(fileContents);
-        byte[] decrypted = new ECB(cipherKey.getBytes()).AES(cipherTextBytes, CipherMode.DECRYPT);
+        byte[] decrypted = new ECB(cipherKey.getBytes()).AES128(cipherTextBytes, CipherMode.DECRYPT);
         assertTrue(new String(decrypted).contains("I'm back and I'm ringin' the bell"));
     }
 }

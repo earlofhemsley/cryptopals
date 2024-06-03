@@ -1,6 +1,5 @@
 package cryptopals.tool.sec02;
 
-import cryptopals.exceptions.ECBException;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
 import org.apache.commons.lang3.ArrayUtils;
@@ -50,7 +49,7 @@ public class Challenge14Tool {
         byte[] repeatingBytes = new byte[3*blockSize];
         Arrays.fill(repeatingBytes, (byte) 'A');
         var oracled = encryptionOracleWrapper(repeatingBytes, unknownInput);
-        boolean ecbDetected = new ECB(cipherKey).detectInCipherBytes(oracled);
+        boolean ecbDetected = new ECB(cipherKey).isEncryptedWithECB(oracled);
         assert ecbDetected;
 
         //figure out how many to add until this block no longer changes

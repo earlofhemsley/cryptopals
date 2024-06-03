@@ -45,11 +45,11 @@ public class CBC {
                 switch (cipherMode) {
                     case ENCRYPT:
                         byte[] xorNthBlock = XOR.multiByteXOR(nthBlock, previousBlock);
-                        currentBlock = ecb.AES(xorNthBlock, cipherMode);
+                        currentBlock = ecb.AES128(xorNthBlock, cipherMode);
                         previousBlock = currentBlock;
                         break;
                     case DECRYPT:
-                        byte[] decNthBlock = ecb.AES(nthBlock, cipherMode);
+                        byte[] decNthBlock = ecb.AES128(nthBlock, cipherMode);
                         currentBlock = XOR.multiByteXOR(decNthBlock, previousBlock);
                         previousBlock = nthBlock;
                         break;

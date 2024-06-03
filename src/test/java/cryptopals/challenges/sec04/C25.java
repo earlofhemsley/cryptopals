@@ -88,7 +88,7 @@ public class C25 {
     private String getPlainTextFromFile() {
         final String b64 = String.join("", FileUtil.readFileAsListOfLines("src/test/resources/25.txt"));
         var decoded = Base64.getDecoder().decode(b64);
-        return new String(ecb.AES(decoded, CipherMode.DECRYPT));
+        return new String(ecb.AES128(decoded, CipherMode.DECRYPT));
     }
 
 

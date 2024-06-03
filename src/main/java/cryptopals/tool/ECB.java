@@ -17,6 +17,8 @@ import java.util.Arrays;
  */
 public class ECB {
 
+    private static final String AES = "AES";
+
     private final byte[] cipherKeyBytes;
 
     public ECB(byte[] cipherKeyBytes) {
@@ -27,21 +29,21 @@ public class ECB {
      * given a series of messages, detect which of the messages was decrypted in ECB mode.
      *
      * this is the solution to challenge eight
-     * @param cipherBytes
+     * @param cipherBytes encrypted message bytes
      * @return true if found, false otherwise
      * @throws ECBException if a problem with ECB operation surfaces
      */
-    public boolean detectInCipherBytes(byte[] cipherBytes) {
+    public boolean isEncryptedWithECB(byte[] cipherBytes) {
         if (cipherBytes.length % cipherKeyBytes.length != 0) {
             throw new ECBException("message length must be a multiple of the cipher key length, which is " + cipherKeyBytes.length);
         }
 
         //decrypt
-        byte[] decryptedCipherBytes = this.AES(cipherBytes, CipherMode.DECRYPT);
+        byte[] decryptedCipherBytes = this.AES128(cipherBytes, CipherMode.DECRYPT);
 
         int loopIterations = decryptedCipherBytes.length/cipherKeyBytes.length;
 
-        //break the decoded text into 16-byte blocks
+        //break the decrypted text into 16-byte blocks
         byte[][] decryptedBlocks = new byte[loopIterations][16];
         for (int i = 0; i < loopIterations; i++) {
             decryptedBlocks[i] = Arrays.copyOfRange(decryptedCipherBytes, i*16, (i*16)+16);
@@ -58,18 +60,18 @@ public class ECB {
     }
 
     /**
-     * Decrypt a message in AES-ECB mode
+     * Decrypt a message in AES-ECB 128 bit mode
      *
      * this is the solution to challenge 7
      * @param cipherTextBytes bytes of the cipher text string
      * @param cipherMode one of the public static ints attached to {@link Cipher}
-     * @return a string of the decrypted bytes
+     * @return a byte array of the decrypted bytes
      * @throws ECBException if a problem with the operation surfaces
      */
-    public byte[] AES(byte[] cipherTextBytes, CipherMode cipherMode) {
+    public byte[] AES128(byte[] cipherTextBytes, CipherMode cipherMode) {
         try {
-            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
-            Key cipherKey = new SecretKeySpec(cipherKeyBytes, "AES");
+            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");;
+            Key cipherKey = new SecretKeySpec(cipherKeyBytes, AES);
             cipher.init(cipherMode.getIntValue(), cipherKey);
             return cipher.doFinal(cipherTextBytes);
         } catch (Exception e) {
@@ -83,7 +85,7 @@ public class ECB {
             cipherTextBytes = applyPadding(cipherTextBytes, cipherKeyBytes.length);
         }
 
-        var theFinal = AES(cipherTextBytes, cipherMode);
+        var theFinal = AES128(cipherTextBytes, cipherMode);
 
         if (cipherMode == CipherMode.DECRYPT) {
             theFinal = stripPadding(theFinal);
