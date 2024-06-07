@@ -48,8 +48,8 @@ public class C07 {
      *
      */
     @Test
-    public void extraCredit() {
-        byte[] key = "AAAAAAAAAAAAAAAA".getBytes();
+    public void extraCredit_encryptAnImage() {
+        byte[] key = "ABCDEFGHIJKLMNOP".getBytes();
         final var fileBytes = FileUtil.readFileAsByteArray("src/test/resources/7-XC.bmp");
 
         //find where we should start in order to match the image byte array to the key
