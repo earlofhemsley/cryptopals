@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,5 +58,27 @@ public class FileUtil {
                     .orElseThrow(() -> new CryptopalsException("could not read line " + n))
                     .trim();
         }
+    }
+
+    @SneakyThrows
+    public static byte[] readFileAsByteArray(final String filepath) {
+        final var path = Paths.get(filepath);
+        if (Files.exists(path)) {
+            return Files.readAllBytes(path);
+        }
+        return new byte[]{};
+    }
+
+    public static boolean writeFile(final String filepath, final byte[] contents) {
+        try {
+            final var path = Paths.get(filepath);
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
+            Files.write(path, contents);
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 }
