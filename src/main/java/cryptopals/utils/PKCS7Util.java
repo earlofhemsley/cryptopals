@@ -15,11 +15,12 @@ public class PKCS7Util {
 
     /**
      * given a message and a block size, implement pkcs7 padding on the message to make the message conform to the block size
-     *
+     * the algorithm by which padding should be applied can be found at <a href="https://datatracker.ietf.org/doc/html/rfc5652#section-6.3">RFC-5652</a>
      * this is the solution to challenge nine
-     * @param messageBytes
-     * @param blockSize
-     * @return
+     *
+     * @param messageBytes the message
+     * @param blockSize    the blocksize
+     * @return the padded message
      */
     public static byte[] applyPadding(byte[] messageBytes, int blockSize) {
         if (blockSize >= 256 || blockSize <= 0) {
@@ -34,7 +35,7 @@ public class PKCS7Util {
 
         byte[] paddedMessage = Arrays.copyOf(messageBytes, newLength);
 
-        for (int i = messageBytes.length; i<messageBytes.length + numOfPaddingBytes; i++) {
+        for (int i = messageBytes.length; i < newLength; i++) {
             paddedMessage[i] = (byte) numOfPaddingBytes;
         }
 
@@ -43,8 +44,9 @@ public class PKCS7Util {
 
     /**
      * Strip padding if possible
-     * @param plainText
-     * @return
+     *
+     * @param plainText the plain text with padding included
+     * @return the plaintext without padding included
      */
     public static byte[] stripPadding(byte[] plainText) {
         int last = plainText[plainText.length - 1];
