@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cryptopals.tool.BitmapCipherTool;
 import cryptopals.tool.CBC;
 import cryptopals.utils.FileUtil;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ public class C10 {
         String lorem = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s";
         String key = "YELLOW SUBMARINE";
         final CBC cbc = new CBC(key.getBytes());
-        byte[] iv = new byte[key.length()];
+        byte[] iv = new byte[key.length()]; //initialization vector of all 0s
 
         byte[] enc = cbc.encryptToByteArray(lorem.getBytes(), iv);
         String loremPost = cbc.decryptAsString(enc, iv);
@@ -55,4 +56,10 @@ public class C10 {
 
         assertTrue(new String(decryptedFileContents).contains("You're weakenin' fast, YO! and I can tell it"));
     }
+
+    @Test
+    public void extraCredit_encryptAnImage() {
+        BitmapCipherTool.EncryptBitmapImage("src/test/resources/7-XC.bmp", "YELLOW SUBMARINE", true);
+    }
+
 }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cryptopals.enums.CipherMode;
+import cryptopals.tool.BitmapCipherTool;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.FileUtil;
@@ -49,35 +50,7 @@ public class C07 {
      */
     @Test
     public void extraCredit_encryptAnImage() {
-        byte[] key = "ABCDEFGHIJKLMNOP".getBytes();
-        final var fileBytes = FileUtil.readFileAsByteArray("src/test/resources/7-XC.bmp");
-
-        //find where we should start in order to match the image byte array to the key
-        int offset = -1;
-        for (int i = fileBytes.length; i >= 0; i--) {
-            if (i % key.length == 0) {
-                offset = fileBytes.length - i;
-                break;
-            }
-        }
-        assertNotEquals(-1, offset);
-
-        //get the last n bytes from the image data, where n is the length of the image data less the offset
-        var encryptable = ByteArrayUtil.sliceEnd(fileBytes, fileBytes.length - offset);
-        //retain the first 54 bytes of the image so that we can overwrite the first 54 bytes of bmp header data
-        var header = ByteArrayUtil.sliceByteArray(fileBytes, 0, 54);
-
-        //do the encryption
-        byte[] encrypted = new ECB(key).AES128(encryptable, CipherMode.ENCRYPT);
-
-        // write the encrypted data into a new array that will be written to disk
-        var encryptedImageData = new byte[fileBytes.length];
-        for (int i = encryptedImageData.length - 1, j = encrypted.length - 1; j >= 0;) {
-            encryptedImageData[i] = encrypted[j];
-            i--; j--;
-        }
-        System.arraycopy(header, 0, encryptedImageData, 0, header.length);
-
-        assertTrue(FileUtil.writeFile("src/test/resources/7-XC-ENC.bmp", encryptedImageData));
+        String key = "ABCDEFGHIJKLMNOP";
+        BitmapCipherTool.EncryptBitmapImage("src/test/resources/7-XC.bmp", key, false);
     }
 }
