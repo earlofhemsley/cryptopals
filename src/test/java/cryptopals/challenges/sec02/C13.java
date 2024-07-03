@@ -61,15 +61,21 @@ public class C13 {
         assertEquals("email=foo@bar.comroleadmin&uid=10&role=user", naughtyProfile.profileFor());
 
         //send a profile off to be hacked into an admin profile
+        // why 11? because PCKS padding requires that the last n bytes in padding be equal to the number of bytes in padding.
+        // if we use 11 and then rearrange the blocks, we can trick the system into allowing us to assume the admin role
         String string = "AAAAAAAAAAadmin" + String.valueOf((char) 11).repeat(11) + "AAA";
         var profile = new Profile(string);
         var encryptedProfile = profile.encryptProfile();
-        assert encryptedProfile.length == 16*4;
-        var block1 = ArrayUtils.subarray(encryptedProfile, 0, 16);
-        var block2 = ArrayUtils.subarray(encryptedProfile, 16, 32);
-        var block3 = ArrayUtils.subarray(encryptedProfile, 32, 48);
-        var hackedInput = ArrayUtils.addAll(block1, ArrayUtils.addAll(block3, block2));
+
+        assertEquals(16*4, encryptedProfile.length);
+
+        var block1 = ArrayUtils.subarray(encryptedProfile, 0, 16); //email=AAAAAAAAAA
+        var block2 = ArrayUtils.subarray(encryptedProfile, 16, 32); //admin0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11
+        var block3 = ArrayUtils.subarray(encryptedProfile, 32, 48); //AAA&uid=10&role=
+        var hackedInput = ArrayUtils.addAll(block1, ArrayUtils.addAll(block3, block2)); //email=AAAAAAAAAAAAA&uid=10&role=admin0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11,0x11
         var decryptedAndParsed = new Profile(hackedInput);
         assertEquals("admin", decryptedAndParsed.get("role"));
+        assertEquals("10", decryptedAndParsed.get("uid"));
+        assertEquals("AAAAAAAAAAAAA", decryptedAndParsed.get("email"));
     }
 }

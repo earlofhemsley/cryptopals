@@ -1,28 +1,22 @@
 package cryptopals.tool;
 
 import cryptopals.enums.CipherMode;
-import cryptopals.exceptions.ECBException;
 import cryptopals.utils.ByteArrayUtil;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Profile {
-    private static final byte[] challenge13key = ByteArrayUtil.randomBytes(16);
+    private static final byte[] challenge13key = ByteArrayUtil.randomBytes(16); //the fact that this is static means the key is shared among all instances
 
     private final Map<String,Object> propertyMap = new LinkedHashMap<>();
     private final ECB ecb = new ECB(challenge13key);
 
     /**
      * this constructor assigns the role of user
-     * @param email
+     * @param email the email
      */
     public Profile(String email) {
         email = email.replace("=","");
@@ -41,7 +35,10 @@ public class Profile {
      * @param encryptedProfileArray the encrypted profile array
      */
     public Profile(byte[] encryptedProfileArray) {
-        propertyMap.putAll(keyValueParsing(new String(ecb.AESWithPadding(encryptedProfileArray, CipherMode.DECRYPT))));
+        final byte[] decryptedProfileBytes = ecb.AESWithPadding(encryptedProfileArray, CipherMode.DECRYPT);
+        final String decryptedProfileString = new String(decryptedProfileBytes);
+        final Map<String,Object> kvPairs = keyValueParsing(decryptedProfileString);
+        propertyMap.putAll(kvPairs);
     }
 
     public Object get(String key) {
