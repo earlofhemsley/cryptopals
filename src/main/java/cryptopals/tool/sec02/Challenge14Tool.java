@@ -5,6 +5,8 @@ import cryptopals.utils.ByteArrayUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class Challenge14Tool {
@@ -63,15 +65,22 @@ public class Challenge14Tool {
         // first one after the prefix and my buffer that fills it out all the blocks I have filled
         byte[] extracted = new byte[0];
 
+        Map<Integer, byte[]> targets = new HashMap<>();
         for (int k = 0; k < numMysteryBlocks; k++) {
             int o = k + numPrefixBlocks; // o is our offset to the block we control
 
             byte[] block = new byte[blockSize];
             for (int i = 1; i <= blockSize; i++) {
-                byte[] filler = new byte[blockSize - i];
-                filler = ByteArrayUtil.concatenate(prefixBuffer, filler);
 
-                var fullTarget = Challenge14Oracle.speakProphecy(filler);
+                final int len = blockSize - i;
+                final byte[] filler = ByteArrayUtil.concatenate(prefixBuffer, new byte[len]);
+
+                //we can save these targets because
+                // recomputing them on subsequent executions results in the same target
+                // because ECB is deterministic. waste not cpu cycles
+                var fullTarget = targets.computeIfAbsent(len, (l) ->
+                        Challenge14Oracle.speakProphecy(filler));
+
                 var targetSegment = ByteArrayUtil.sliceByteArray(fullTarget, o * blockSize, blockSize);
 
                 byte[] seed = ByteArrayUtil.concatenate(
