@@ -3,10 +3,12 @@ package cryptopals.tool.sec02;
 import cryptopals.enums.CipherMode;
 import cryptopals.tool.ECB;
 import cryptopals.utils.ByteArrayUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Base64;
 import java.util.Random;
 
+@Slf4j
 public class Challenge14Oracle {
     private static final byte[] RANDOM_PREFIX = ByteArrayUtil.randomBytes(new Random().nextInt(100));
     private static final ECB ECB = new ECB(ByteArrayUtil.randomBytes(16));

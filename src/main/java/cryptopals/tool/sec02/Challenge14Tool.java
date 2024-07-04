@@ -26,36 +26,42 @@ public class Challenge14Tool {
         if (breakPointIndex == null) {
             throw new RuntimeException("could not find break point");
         }
-        int numPrefixBlocks = breakPointIndex / blockSize + 1;
+        log.debug("breakPointIndex: {}", breakPointIndex);
+        int numPrefixBlocks = (breakPointIndex / blockSize) + 1;
+        log.debug("numPrefixBlocks: {}", numPrefixBlocks);
+        log.debug("num prefix bytes: {}", numPrefixBlocks * blockSize);
 
         //step three: figure out how many more bytes I need to add to this block in order to fill it
         // i do this by adding input until the block doesn't change
-        Integer bufferLength = null;
-        for (int i = 1; i < blockSize; i++) {
-            var orig = Challenge14Oracle.speakProphecy(new byte[i - 1]);
-            var origBlock = ByteArrayUtil.sliceByteArray(orig, breakPointIndex, blockSize);
-            var next = Challenge14Oracle.speakProphecy(new byte[i]);
-            var nextBlock = ByteArrayUtil.sliceByteArray(next, breakPointIndex, blockSize);
-            if (Arrays.equals(origBlock, nextBlock)) {
-                bufferLength = i - 1;
-                break;
-            }
+        int bufferLength = 0;
+        var prev = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength]), breakPointIndex, blockSize);
+        var next = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength + 1]), breakPointIndex, blockSize);
+        while (bufferLength <= 100 && !Arrays.equals(prev, next)) {
+            bufferLength++;
+            prev = next;
+            next = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength + 1]), breakPointIndex, blockSize);
         }
-        if (bufferLength == null) {
-            throw new CryptopalsException("could not determine buffer length");
+        log.debug("prefix length: {}", numPrefixBlocks * blockSize - bufferLength);
+        log.debug("buffer length: {}", bufferLength);
+        if (bufferLength == 100) {
+            throw new CryptopalsException("could not determine buffer length. got all the way to 100 without observing change");
         }
 
         //now I can safely sequester the prefix because i know how many bytes to add in order to make it
         // place my input at the head of a block
-        // at this point, I can basically do what I did in 12, except the starting block is the
-        // one after all the blocks I have filled
         final byte[] prefixBuffer = new byte[bufferLength];
         Arrays.fill(prefixBuffer, (byte) 'A');
 
+        var padded = Challenge14Oracle.speakProphecy(prefixBuffer);
+        int numTotalBlocks = padded.length / blockSize;
+        int numMysteryBlocks = numTotalBlocks - numPrefixBlocks;
+        log.debug("numMysteryBlocks: {}", numMysteryBlocks);
+        log.debug("numTotalBlocks: {}", numTotalBlocks);
+
+        // at this point, I can basically do what I did in 12, except the starting block is the
+        // one after all the blocks I have filled
         //now it's basically like the other one, except with an offset
         byte[] extracted = new byte[0];
-        int numTotalBlocks = empty.length / blockSize;
-        int numMysteryBlocks = numTotalBlocks - numPrefixBlocks;
 
         for (int k = 0; k < numMysteryBlocks; k++) {
             int o = k + numPrefixBlocks; // o is our offset
