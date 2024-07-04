@@ -16,6 +16,7 @@ public class Challenge14Tool {
         final int blockSize = Challenge12Tool.determineBlockSize(Challenge14Oracle::speakProphecy);
 
         //step two: find the "break point" ... the starting point of the first block that is different
+        // this block is where the prefix _ends_
         final var empty = Challenge14Oracle.speakProphecy(new byte[0]);
         final var polluted = Challenge14Oracle.speakProphecy(new byte[1]);
         Integer breakPointIndex = null;
@@ -33,8 +34,8 @@ public class Challenge14Tool {
         log.debug("numPrefixBlocks: {}", numPrefixBlocks);
         log.debug("num prefix bytes: {}", numPrefixBlocks * blockSize);
 
-        //step three: figure out how many more bytes I need to add to this block in order to fill it
-        // i do this by adding input until the block doesn't change
+        //step three: figure out how many more bytes I need to add to this block where the prefix ends
+        // in order to fill it. i do this by adding input until the block doesn't change anymore.
         int bufferLength = 0;
         var prev = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength]), breakPointIndex, blockSize);
         var next = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength + 1]), breakPointIndex, blockSize);
@@ -53,7 +54,7 @@ public class Challenge14Tool {
         // in order to place my input at the head of a block
         final byte[] prefixBuffer = new byte[bufferLength];
 
-        //i need to know how many blocks of mystery text there are at the end b/c that determines when I will
+        //I need to know how many blocks of mystery text there are at the end b/c that determines when I will
         // be done interrogating the oracle
         var padded = Challenge14Oracle.speakProphecy(prefixBuffer);
         int numTotalBlocks = padded.length / blockSize;
@@ -62,12 +63,12 @@ public class Challenge14Tool {
         log.debug("numTotalBlocks: {}", numTotalBlocks);
 
         // at this point, I can basically do what I did in challenge 12, except the starting block is the
-        // first one after the prefix and my buffer that fills it out all the blocks I have filled
+        // first one after the prefix ends. So, there's an offset to account for.
         byte[] extracted = new byte[0];
 
         Map<Integer, byte[]> targets = new HashMap<>();
         for (int k = 0; k < numMysteryBlocks; k++) {
-            int o = k + numPrefixBlocks; // o is our offset to the block we control
+            int o = k + numPrefixBlocks; // o is our offset to the block we are interrogating
 
             byte[] block = new byte[blockSize];
             for (int i = 1; i <= blockSize; i++) {
@@ -76,42 +77,41 @@ public class Challenge14Tool {
                 final byte[] filler = ByteArrayUtil.concatenate(prefixBuffer, new byte[len]);
 
                 //we can save these targets because
-                // recomputing them on subsequent executions results in the same target
+                // recomputing them on subsequent executions results in the same outcome
                 // because ECB is deterministic. waste not cpu cycles
                 var fullTarget = targets.computeIfAbsent(len, (l) ->
                         Challenge14Oracle.speakProphecy(filler));
 
-                var targetSegment = ByteArrayUtil.sliceByteArray(fullTarget, o * blockSize, blockSize);
+                var targetBlock = ByteArrayUtil.sliceByteArray(fullTarget, o * blockSize, blockSize);
 
-                byte[] seed = ByteArrayUtil.concatenate(
-                        filler,
-                        ByteArrayUtil.sliceByteArray(extracted, 0, k * blockSize),
-                        ByteArrayUtil.sliceByteArray(block, 0, i - 1)
+                byte[] hackerInput = ByteArrayUtil.concatenate(
+                        filler, //rounds out the prefix block, then gives us ( blockSize - i ) bytes in the next one
+                        ByteArrayUtil.sliceByteArray(extracted, 0, k * blockSize), // anything full blocks we got on previous rounds
+                        ByteArrayUtil.sliceByteArray(block, 0, i - 1), // anything we've got so far on this round
+                        new byte[1] //one more empty byte to round out the block
                 );
 
-                if ((seed.length - prefixBuffer.length) % blockSize != blockSize - 1) {
-                    throw new CryptopalsException("the seed wasn't one byte short of a round block");
+                //validate that the hacker input less the prefix buffer is a multiple of the block size
+                if ((hackerInput.length - prefixBuffer.length) % blockSize != 0) {
+                    throw new CryptopalsException("the hackerInput didn't fill out a full block");
                 }
 
-                byte[] hackerInput = new byte[seed.length + 1];
-                System.arraycopy(seed, 0, hackerInput, 0, seed.length);
                 boolean found = false;
-
                 for (int j = 0; j < 256; j++) {
                     hackerInput[hackerInput.length - 1] = (byte) j;
                     var result = Challenge14Oracle.speakProphecy(hackerInput);
-                    var subjectSegment = ByteArrayUtil.sliceByteArray(result, o * blockSize, blockSize);
-                    if (Arrays.equals(targetSegment, subjectSegment)) {
+                    var subjectBlock = ByteArrayUtil.sliceByteArray(result, o * blockSize, blockSize);
+                    if (Arrays.equals(targetBlock, subjectBlock)) {
                         block[i - 1] = (byte) j;
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    if (k == numMysteryBlocks - 1) {
+                    if (k == numMysteryBlocks - 1) { //we're done
                         block = ByteArrayUtil.sliceByteArray(block, 0, i - 2);
                         break;
-                    } else {
+                    } else { // we're in trouble
                         throw new RuntimeException(String.format("could not find the match. k=%d, numMysteryBlocks=%d, o=%d, numTotalBlocks=%d", k, numMysteryBlocks, o, numTotalBlocks));
                     }
                 }

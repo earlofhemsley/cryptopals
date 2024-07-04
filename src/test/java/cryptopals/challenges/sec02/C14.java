@@ -33,9 +33,9 @@ public class C14 {
                 "YnkK";
 
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
-        log.debug("decoded input: {}", new String(unknownInputDecoded));
+        log.debug("decoded input:\n{}", new String(unknownInputDecoded));
         byte[] extracted = Challenge14Tool.extractTheMysteryString();
-        log.debug("extracted string: {}", new String(extracted));
+        log.debug("extracted string:\n{}", new String(extracted));
         assertArrayEquals(unknownInputDecoded, extracted);
     }
 }
