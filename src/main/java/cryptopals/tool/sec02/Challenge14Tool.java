@@ -36,49 +36,48 @@ public class Challenge14Tool {
         int bufferLength = 0;
         var prev = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength]), breakPointIndex, blockSize);
         var next = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength + 1]), breakPointIndex, blockSize);
-        while (bufferLength <= 100 && !Arrays.equals(prev, next)) {
+        while (bufferLength <= (blockSize * 2) && !Arrays.equals(prev, next)) {
             bufferLength++;
             prev = next;
             next = ByteArrayUtil.sliceByteArray(Challenge14Oracle.speakProphecy(new byte[bufferLength + 1]), breakPointIndex, blockSize);
         }
         log.debug("prefix length: {}", numPrefixBlocks * blockSize - bufferLength);
         log.debug("buffer length: {}", bufferLength);
-        if (bufferLength == 100) {
-            throw new CryptopalsException("could not determine buffer length. got all the way to 100 without observing change");
+        if (bufferLength == (blockSize * 2)) {
+            throw new CryptopalsException("could not determine buffer length. filled two full blocks without observing change");
         }
 
-        //now I can safely sequester the prefix because i know how many bytes to add in order to make it
-        // place my input at the head of a block
+        //now I can safely sequester the prefix because I know how many bytes to include in my hacker text
+        // in order to place my input at the head of a block
         final byte[] prefixBuffer = new byte[bufferLength];
-        Arrays.fill(prefixBuffer, (byte) 'A');
 
+        //i need to know how many blocks of mystery text there are at the end b/c that determines when I will
+        // be done interrogating the oracle
         var padded = Challenge14Oracle.speakProphecy(prefixBuffer);
         int numTotalBlocks = padded.length / blockSize;
         int numMysteryBlocks = numTotalBlocks - numPrefixBlocks;
         log.debug("numMysteryBlocks: {}", numMysteryBlocks);
         log.debug("numTotalBlocks: {}", numTotalBlocks);
 
-        // at this point, I can basically do what I did in 12, except the starting block is the
-        // one after all the blocks I have filled
-        //now it's basically like the other one, except with an offset
+        // at this point, I can basically do what I did in challenge 12, except the starting block is the
+        // first one after the prefix and my buffer that fills it out all the blocks I have filled
         byte[] extracted = new byte[0];
 
         for (int k = 0; k < numMysteryBlocks; k++) {
-            int o = k + numPrefixBlocks; // o is our offset
+            int o = k + numPrefixBlocks; // o is our offset to the block we control
 
             byte[] block = new byte[blockSize];
             for (int i = 1; i <= blockSize; i++) {
                 byte[] filler = new byte[blockSize - i];
-                Arrays.fill(filler, (byte) 'A');
                 filler = ByteArrayUtil.concatenate(prefixBuffer, filler);
 
                 var fullTarget = Challenge14Oracle.speakProphecy(filler);
                 var targetSegment = ByteArrayUtil.sliceByteArray(fullTarget, o * blockSize, blockSize);
 
-                byte[] seed = ByteArrayUtil.concatenate( //blocksize + buffer -i + i -1 + kbs
-                        filler, // blocksize + buffer - i
-                        ByteArrayUtil.sliceByteArray(extracted, 0, k * blockSize), //what we already have - multipe of blocksize
-                        ByteArrayUtil.sliceByteArray(block, 0, i - 1) // i - 1
+                byte[] seed = ByteArrayUtil.concatenate(
+                        filler,
+                        ByteArrayUtil.sliceByteArray(extracted, 0, k * blockSize),
+                        ByteArrayUtil.sliceByteArray(block, 0, i - 1)
                 );
 
                 if ((seed.length - prefixBuffer.length) % blockSize != blockSize - 1) {
