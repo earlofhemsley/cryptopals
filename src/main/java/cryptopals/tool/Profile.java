@@ -35,7 +35,7 @@ public class Profile {
      * @param encryptedProfileArray the encrypted profile array
      */
     public Profile(byte[] encryptedProfileArray) {
-        final byte[] decryptedProfileBytes = ecb.AESWithPadding(encryptedProfileArray, CipherMode.DECRYPT);
+        final byte[] decryptedProfileBytes = ecb.AES128WPadding(encryptedProfileArray, CipherMode.DECRYPT);
         final String decryptedProfileString = new String(decryptedProfileBytes);
         final Map<String,Object> kvPairs = keyValueParsing(decryptedProfileString);
         propertyMap.putAll(kvPairs);
@@ -46,7 +46,7 @@ public class Profile {
     }
 
     public byte[] encryptProfile() {
-        return ecb.AESWithPadding(this.profileFor().getBytes(), CipherMode.ENCRYPT);
+        return ecb.AES128WPadding(this.profileFor().getBytes(), CipherMode.ENCRYPT);
     }
 
     public static Map<String, Object> keyValueParsing(String theString) {

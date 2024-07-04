@@ -2,7 +2,7 @@ package cryptopals.challenges.sec02;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cryptopals.tool.ECB;
+import cryptopals.tool.ECBDetector;
 import cryptopals.tool.sec02.Challenge11Tool;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +36,7 @@ public class C11 {
         String myHackerInput = "Acknowledgement Acknowledgement Acknowledgement Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
         for(int i = 0; i<1000; i++) {
             var result = Challenge11Tool.encryptionOracleUnknownMode(myHackerInput.getBytes());
-            boolean ecbDetected = new ECB("1234567890123456".getBytes()).isEncryptedWithECB(result.getRight());
+            boolean ecbDetected = ECBDetector.isECBEncrypted(result.getRight(), 16);
             assertEquals(result.getLeft(), ecbDetected);
         }
     }

@@ -3,6 +3,8 @@ package cryptopals.challenges.sec02;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import cryptopals.tool.sec02.Challenge14Tool;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
@@ -21,8 +23,10 @@ import java.util.Base64;
  *
  * Think "STIMULUS" and "RESPONSE".
  */
+@Slf4j
 public class C14 {
-    @Test
+
+    @RepeatedTest(100)
     public void testChallenge14() {
         String unknownInput = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg" +
                 "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq" +
@@ -30,7 +34,8 @@ public class C14 {
                 "YnkK";
 
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
-        byte[] decrypted = new Challenge14Tool().breakECBEncryptionWithPrefixUsingOracle(unknownInputDecoded);
-        assertArrayEquals(unknownInputDecoded, decrypted);
+        log.debug("decoded input: {}", new String(unknownInputDecoded));
+        byte[] extracted =  Challenge14Tool.extractTheMysteryString();
+        assertArrayEquals(unknownInputDecoded, extracted);
     }
 }

@@ -63,7 +63,7 @@ public class C12 {
                 "YnkK";
 
         byte[] unknownInputDecoded = Base64.getDecoder().decode(unknownInput.getBytes());
-        byte[] decrypted = new Challenge12Tool().breakECBEncryption(unknownInputDecoded);
-        assertArrayEquals(unknownInputDecoded, decrypted);
+        byte[] extracted = Challenge12Tool.extractTheMysteryString();
+        assertArrayEquals(unknownInputDecoded, extracted);
     }
 }

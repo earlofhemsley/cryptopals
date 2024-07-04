@@ -3,7 +3,7 @@ package cryptopals.challenges.sec01;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import cryptopals.tool.ECB;
+import cryptopals.tool.ECBDetector;
 import cryptopals.utils.FileUtil;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -25,14 +25,13 @@ public class C08 {
     @Test
     public void eightTest() throws DecoderException {
         var fileContents = FileUtil.readFileAsListOfLines("src/test/resources/8.txt");
-        final var ecb = new ECB("1234567890123456".getBytes());
         Integer rowNumber = null;
         for (int i = 0; i < fileContents.size(); i++) {
             //hex decode
             byte[] decodedRow = Hex.decodeHex(fileContents.get(i));
 
             //run detection
-            if(ecb.isEncryptedWithECB(decodedRow)) {
+            if(ECBDetector.isECBEncrypted(decodedRow, 16)) {
                 rowNumber = i;
                 break;
             }

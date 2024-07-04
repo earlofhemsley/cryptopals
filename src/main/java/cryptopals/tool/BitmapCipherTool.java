@@ -28,7 +28,7 @@ public class BitmapCipherTool {
         if (useCbcNotEbc) {
             encrypted = new CBC(key).encryptToByteArray(fileBytes, new byte[key.length]);
         } else {
-            encrypted = new ECB(key).AESWithPadding(fileBytes, CipherMode.ENCRYPT);
+            encrypted = new ECB(key).AES128WPadding(fileBytes, CipherMode.ENCRYPT);
         }
 
         // write the encrypted data into a new array that will be written to disk

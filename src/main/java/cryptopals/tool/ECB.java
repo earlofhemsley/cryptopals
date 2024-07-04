@@ -26,40 +26,6 @@ public class ECB {
     }
 
     /**
-     * given a series of messages, detect which of the messages was decrypted in ECB mode.
-     *
-     * this is the solution to challenge eight
-     * @param cipherBytes encrypted message bytes
-     * @return true if found, false otherwise
-     * @throws ECBException if a problem with ECB operation surfaces
-     */
-    public boolean isEncryptedWithECB(byte[] cipherBytes) {
-        if (cipherBytes.length % cipherKeyBytes.length != 0) {
-            throw new ECBException("message length must be a multiple of the cipher key length, which is " + cipherKeyBytes.length);
-        }
-
-        //decrypt
-        byte[] decryptedCipherBytes = this.AES128(cipherBytes, CipherMode.DECRYPT);
-
-        int loopIterations = decryptedCipherBytes.length/cipherKeyBytes.length;
-
-        //break the decrypted text into 16-byte blocks
-        byte[][] decryptedBlocks = new byte[loopIterations][16];
-        for (int i = 0; i < loopIterations; i++) {
-            decryptedBlocks[i] = Arrays.copyOfRange(decryptedCipherBytes, i*16, (i*16)+16);
-            //go back through what was already decrypted and check for equality
-            for(int j = 0; j < i; j++) {
-                if (Arrays.equals(decryptedBlocks[j], decryptedBlocks[i])) {
-                    //if we found two bytes that decrypted out the same in this row,
-                    // then this is a row that was encrypted with ECB
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Decrypt a message in AES-ECB 128 bit mode
      *
      * this is the solution to challenge 7
@@ -79,7 +45,7 @@ public class ECB {
         }
     }
 
-    public byte[] AESWithPadding(byte[] cipherTextBytes, CipherMode cipherMode) {
+    public byte[] AES128WPadding(byte[] cipherTextBytes, CipherMode cipherMode) {
         //implement padding
         if (cipherMode == CipherMode.ENCRYPT) {
             cipherTextBytes = applyPadding(cipherTextBytes, cipherKeyBytes.length);
@@ -92,10 +58,5 @@ public class ECB {
         }
 
         return theFinal;
-    }
-
-    public byte[] AESWithConcatenation(byte[] myInput, byte[] unknownInput) {
-        byte[] concatenatedInput = ArrayUtils.addAll(myInput, unknownInput);
-        return AESWithPadding(concatenatedInput, CipherMode.ENCRYPT);
     }
 }

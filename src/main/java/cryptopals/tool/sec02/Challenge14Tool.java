@@ -1,95 +1,110 @@
 package cryptopals.tool.sec02;
 
-import cryptopals.tool.ECB;
+import cryptopals.exceptions.CryptopalsException;
 import cryptopals.utils.ByteArrayUtil;
-import org.apache.commons.lang3.ArrayUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 
+@Slf4j
 public class Challenge14Tool {
-    private final ECB ecb = new ECB(ByteArrayUtil.randomBytes(16));
-    private final byte[] randomPrefix = ByteArrayUtil.randomBytes(new Random().nextInt(100));
 
-    private byte[] encryptionOracleWrapper(byte[] hackerInput, byte[] unknownInput) {
-        byte[] prefixPlusInput = ArrayUtils.addAll(randomPrefix, hackerInput);
-        return ecb.AESWithConcatenation(prefixPlusInput, unknownInput);
-    }
+    public static byte[] extractTheMysteryString() {
+        //step one: use the previous method thing to find the block size
+        final int blockSize = Challenge12Tool.determineBlockSize(Challenge14Oracle::speakProphecy);
 
-    public byte[] breakECBEncryptionWithPrefixUsingOracle(byte[] unknownInput) {
-        byte[] cipherKey = ByteArrayUtil.randomBytes(16);
-
-        // look for the first byte that changes between no hacker input and a single character of hacker input
-        byte[] withouthacking = encryptionOracleWrapper(new byte[0], unknownInput);
-        byte[] withHackerInput = encryptionOracleWrapper(new byte[] {(byte) 'A'}, unknownInput);
-
-        //find index of modified cipher block
-        Integer indexOfFirstModifiedBlock = null;
-        for(int index = 0; index < withouthacking.length; index++) {
-            if (withouthacking[index] != withHackerInput[index]) {
-                indexOfFirstModifiedBlock = index;
+        //step two: find the "break point" ... the starting point of the first block that is different
+        final var empty = Challenge14Oracle.speakProphecy(new byte[0]);
+        final var polluted = Challenge14Oracle.speakProphecy(new byte[1]);
+        Integer breakPointIndex = null;
+        for (int i = 0; i < empty.length; i++) {
+            if (empty[i] != polluted[i]) {
+                breakPointIndex = i;
                 break;
             }
         }
-        assert indexOfFirstModifiedBlock != null;
-
-        //find block size by continuing to add input until the size of the message changes.
-        // Then subtract the two lengths. that's the block size
-        for (int n = 1; withHackerInput.length == withouthacking.length; n++) {
-            byte[] hackerInput = new byte[n];
-            Arrays.fill(hackerInput, (byte) 'A');
-            withHackerInput = encryptionOracleWrapper(hackerInput, unknownInput);
+        if (breakPointIndex == null) {
+            throw new RuntimeException("could not find break point");
         }
-        final int blockSize = withHackerInput.length - withouthacking.length;
-        assert indexOfFirstModifiedBlock % blockSize == 0;
+        int numPrefixBlocks = breakPointIndex / blockSize + 1;
 
-        //detect ECB by submitting 3 blocks worth of repeating bytes
-        byte[] repeatingBytes = new byte[3*blockSize];
-        Arrays.fill(repeatingBytes, (byte) 'A');
-        var oracled = encryptionOracleWrapper(repeatingBytes, unknownInput);
-        boolean ecbDetected = new ECB(cipherKey).isEncryptedWithECB(oracled);
-        assert ecbDetected;
-
-        //figure out how many to add until this block no longer changes
-        var hackerInput = new byte[0];
-        byte[] previous;
-        byte[] current = ByteArrayUtil.sliceByteArray(encryptionOracleWrapper(hackerInput, unknownInput), indexOfFirstModifiedBlock, blockSize);
-        int bufferSize = -1;
-        do {
-            bufferSize++;
-            previous = current;
-            hackerInput = new byte[bufferSize + 1];
-            Arrays.fill(hackerInput, (byte) 'A');
-            current = ByteArrayUtil.sliceByteArray(encryptionOracleWrapper(hackerInput, unknownInput), indexOfFirstModifiedBlock, blockSize);
-        } while (!Arrays.equals(previous, current));
-        assert (randomPrefix.length + bufferSize) % blockSize == 0;
-
-        //now that we know what block changes, how many bytes to add to fill that block, and the block size,
-        // we can decrypt the message
-
-        //build a dictionary
-        byte[] targetedBytes = new byte[bufferSize];
-        Arrays.fill(targetedBytes, (byte) 'A');
-        var dictionary = new HashMap<Integer, byte[]>();
-        for (int i = 0; i < 255; i++) {
-            byte b = (byte) i;
-            targetedBytes[targetedBytes.length - 1] = b;
-            var result = encryptionOracleWrapper(targetedBytes, unknownInput);
-            dictionary.put(i, ByteArrayUtil.sliceByteArray(result, indexOfFirstModifiedBlock, blockSize));
+        //step three: figure out how many more bytes I need to add to this block in order to fill it
+        // i do this by adding input until the block doesn't change
+        Integer bufferLength = null;
+        for (int i = 1; i < blockSize; i++) {
+            var orig = Challenge14Oracle.speakProphecy(new byte[i - 1]);
+            var origBlock = ByteArrayUtil.sliceByteArray(orig, breakPointIndex, blockSize);
+            var next = Challenge14Oracle.speakProphecy(new byte[i]);
+            var nextBlock = ByteArrayUtil.sliceByteArray(next, breakPointIndex, blockSize);
+            if (Arrays.equals(origBlock, nextBlock)) {
+                bufferLength = i - 1;
+                break;
+            }
+        }
+        if (bufferLength == null) {
+            throw new CryptopalsException("could not determine buffer length");
         }
 
-        byte [] decryptedMessage = new byte[unknownInput.length];
-        for (int j = 0; j < unknownInput.length; j++) {
-            var messageByte = unknownInput[j];
-            targetedBytes[bufferSize - 1] = messageByte;
-            var result = encryptionOracleWrapper(targetedBytes, unknownInput);
-            var encryptedBlock = ByteArrayUtil.sliceByteArray(result, indexOfFirstModifiedBlock, blockSize);
-            int decryptedChar = dictionary.entrySet().stream().filter(e -> Arrays.equals(e.getValue(), encryptedBlock)).map(Map.Entry::getKey).findFirst().orElseThrow(() -> new AssertionError("Could not find the encrypted block"));
-            decryptedMessage[j] = (byte) decryptedChar;
+        //now I can safely sequester the prefix because i know how many bytes to add in order to make it
+        // place my input at the head of a block
+        // at this point, I can basically do what I did in 12, except the starting block is the
+        // one after all the blocks I have filled
+        final byte[] prefixBuffer = new byte[bufferLength];
+        Arrays.fill(prefixBuffer, (byte) 'A');
+
+        //now it's basically like the other one, except with an offset
+        byte[] extracted = new byte[0];
+        int numTotalBlocks = empty.length / blockSize;
+        int numMysteryBlocks = numTotalBlocks - numPrefixBlocks;
+
+        for (int k = 0; k < numMysteryBlocks; k++) {
+            int o = k + numPrefixBlocks; // o is our offset
+
+            byte[] block = new byte[blockSize];
+            for (int i = 1; i <= blockSize; i++) {
+                byte[] filler = new byte[blockSize - i];
+                Arrays.fill(filler, (byte) 'A');
+                filler = ByteArrayUtil.concatenate(prefixBuffer, filler);
+
+                var fullTarget = Challenge14Oracle.speakProphecy(filler);
+                var targetSegment = ByteArrayUtil.sliceByteArray(fullTarget, o * blockSize, blockSize);
+
+                byte[] seed = ByteArrayUtil.concatenate( //blocksize + buffer -i + i -1 + kbs
+                        filler, // blocksize + buffer - i
+                        ByteArrayUtil.sliceByteArray(extracted, 0, k * blockSize), //what we already have - multipe of blocksize
+                        ByteArrayUtil.sliceByteArray(block, 0, i - 1) // i - 1
+                );
+
+                if ((seed.length - prefixBuffer.length) % blockSize != blockSize - 1) {
+                    throw new CryptopalsException("the seed wasn't one byte short of a round block");
+                }
+
+                byte[] hackerInput = new byte[seed.length + 1];
+                System.arraycopy(seed, 0, hackerInput, 0, seed.length);
+                boolean found = false;
+
+                for (int j = 0; j < 256; j++) {
+                    hackerInput[hackerInput.length - 1] = (byte) j;
+                    var result = Challenge14Oracle.speakProphecy(hackerInput);
+                    var subjectSegment = ByteArrayUtil.sliceByteArray(result, o * blockSize, blockSize);
+                    if (Arrays.equals(targetSegment, subjectSegment)) {
+                        block[i - 1] = (byte) j;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    if (k == numMysteryBlocks - 1) {
+                        block = ByteArrayUtil.sliceByteArray(block, 0, i - 2);
+                        break;
+                    } else {
+                        throw new RuntimeException(String.format("could not find the match. k=%d, numMysteryBlocks=%d, o=%d, numTotalBlocks=%d", k, numMysteryBlocks, o, numTotalBlocks));
+                    }
+                }
+            }
+            extracted = ByteArrayUtil.concatenate(extracted, block);
         }
 
-        return decryptedMessage;
+        return extracted;
     }
 }
