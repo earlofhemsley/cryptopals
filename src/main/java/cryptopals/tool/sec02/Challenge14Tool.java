@@ -64,6 +64,8 @@ public class Challenge14Tool {
 
         // at this point, I can basically do what I did in challenge 12, except the starting block is the
         // first one after the prefix ends. So, there's an offset to account for.
+        // TODO: take this part and put it in a function that can be referenced from both challenge 12 and 14
+        //  probably put it in the challenge 12 tool and reference it here like I did with the determine block size function
         byte[] extracted = new byte[0];
 
         Map<Integer, byte[]> targets = new HashMap<>();
@@ -71,9 +73,9 @@ public class Challenge14Tool {
             int o = k + numPrefixBlocks; // o is our offset to the block we are interrogating
 
             byte[] block = new byte[blockSize];
-            for (int i = 1; i <= blockSize; i++) {
+            for (int i = 0; i < blockSize; i++) {
 
-                final int len = blockSize - i;
+                final int len = blockSize - i - 1;
                 final byte[] filler = ByteArrayUtil.concatenate(prefixBuffer, new byte[len]);
 
                 //we can save these targets because
@@ -86,8 +88,8 @@ public class Challenge14Tool {
 
                 byte[] hackerInput = ByteArrayUtil.concatenate(
                         filler, //rounds out the prefix block, then gives us ( blockSize - i ) bytes in the next one
-                        ByteArrayUtil.sliceByteArray(extracted, 0, k * blockSize), // anything full blocks we got on previous rounds
-                        ByteArrayUtil.sliceByteArray(block, 0, i - 1), // anything we've got so far on this round
+                        ByteArrayUtil.sliceByteArray(extracted, 0, extracted.length), // anything we got from previous rounds
+                        ByteArrayUtil.sliceByteArray(block, 0, i), // anything we got so far on this round
                         new byte[1] //one more empty byte to round out the block
                 );
 
@@ -102,14 +104,14 @@ public class Challenge14Tool {
                     var result = Challenge14Oracle.speakProphecy(hackerInput);
                     var subjectBlock = ByteArrayUtil.sliceByteArray(result, o * blockSize, blockSize);
                     if (Arrays.equals(targetBlock, subjectBlock)) {
-                        block[i - 1] = (byte) j;
+                        block[i] = (byte) j;
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
                     if (k == numMysteryBlocks - 1) { //we're done
-                        block = ByteArrayUtil.sliceByteArray(block, 0, i - 2);
+                        block = ByteArrayUtil.sliceByteArray(block, 0, i - 1);
                         break;
                     } else { // we're in trouble
                         throw new RuntimeException(String.format("could not find the match. k=%d, numMysteryBlocks=%d, o=%d, numTotalBlocks=%d", k, numMysteryBlocks, o, numTotalBlocks));
