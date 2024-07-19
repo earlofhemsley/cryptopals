@@ -1,17 +1,16 @@
 package cryptopals.challenges.sec02;
 
+import static cryptopals.tool.sec02.Challenge16Oracle.firstFunction;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.collect.Lists;
 import cryptopals.tool.XOR;
-import cryptopals.tool.sec02.Challenge16Tool;
+import cryptopals.tool.sec02.Challenge16Oracle;
 import cryptopals.utils.ByteArrayUtil;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * CBC bitflipping attacks
@@ -51,46 +50,56 @@ import java.util.List;
  */
 public class C16 {
     @Test
+    public void simpleInjectionDoesNotWork() {
+        //the direct injection attack should not work.
+        // "if you've written the first function properly it should be possible to provide user input
+        // to it that will generate the string the second function is looking for"
+
+        final var hackerInput = "yey;admin=true"; //this would be a typical injection attack
+        final var enc = firstFunction(hackerInput);
+        assertFalse(Challenge16Oracle.secondFunction(enc));
+    }
+
+    @Test
     public void testChallenge16() throws Exception {
-        var key = ByteArrayUtil.randomBytes(16);
-        var iv = ByteArrayUtil.randomBytes(16);
-        var oracle = new Challenge16Tool(key, iv);
-        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|;admin=true;A=AA|;comment2=...
-        String knownInput = "7admin9true7A9AA";
-        String desired = ";admin=true;A=AA";
+        //0123456789012345|0123456789012345|0123456789012345|0123456789012345|0123456789...
+        //comment1=cooking|%20MCs;userdata=|AAAAAAAAAAAAAAAA|SadminEtrueSAEAA|;comment2=...
+
+        //                                  ^^^^^^^^^^^^^^^^
+        // if we edit this block, or apply an edit to it, the edits will roll into the following block
+        // and allow us to edit input we know won't be sanitized
+
+        //TODO: split this off into a tool?
+        String knownInput = "SadminEtrueSaEaa"; // S for semicolon, E for equals
+        String desired = ";admin=true;a=aa";
         assertEquals(16, knownInput.length());
         assertEquals(16, desired.length());
 
-        byte[] xord = XOR.multiByteXOR(knownInput.getBytes(), desired.getBytes());
-        assertArrayEquals(desired.getBytes(), XOR.multiByteXOR(knownInput.getBytes(), xord));
-        assertArrayEquals(knownInput.getBytes(), XOR.multiByteXOR(desired.getBytes(), xord));
-
-        List<Integer> positionsOf12 = Lists.newArrayList(0, 11);
-        List<Integer> positionsOf4 = Lists.newArrayList(6, 13);
-        for (int i =0; i<xord.length; i++) {
-            if (positionsOf4.contains(i)) {
-                assertEquals(4, xord[i]);
-            } else if (positionsOf12.contains(i)) {
-                assertEquals(12, xord[i]);
-            } else {
-                assertEquals(0, xord[i]);
-            }
-        }
+        byte[] xorResult = XOR.multiByteXOR(knownInput.getBytes(), desired.getBytes());
+        assertArrayEquals(desired.getBytes(), XOR.multiByteXOR(knownInput.getBytes(), xorResult));
+        assertArrayEquals(knownInput.getBytes(), XOR.multiByteXOR(desired.getBytes(), xorResult));
 
         //prepend with a block that we don't care if it gets scrambled
-        knownInput = "AAAAAAAAAAAAAAAA" + knownInput;
+        final var hackerInput = "AAAAAAAAAAAAAAAA" + knownInput;
+        final var encrypted = Challenge16Oracle.firstFunction(hackerInput);
 
-        var cipherText = oracle.padAndEncrypt(knownInput);
+        // apply the bitflipping attack by finding the first block that is changed when we modify the input
+        // this is the start of the block that we will want to edit
+        final var secondHackerInput = "BAAAAAAAAAAAAAAA" + knownInput;
+        final var encrypted2 = Challenge16Oracle.firstFunction(secondHackerInput);
+        assertEquals(encrypted.length, encrypted2.length);
 
-        assertFalse(oracle.findAdminInCipherText(cipherText));
+        int idx = 0;
+        while (encrypted2[idx] == encrypted[idx]) {
+            idx++;
+        }
+        assertNotEquals(0, idx);
+        assertNotEquals(encrypted.length, idx);
 
-        var textToAlter = ByteArrayUtil.sliceByteArray(cipherText, 32, xord.length);
-        var alteredText = XOR.multiByteXOR(textToAlter, xord);
+        var abusableBlock = ByteArrayUtil.sliceByteArray(encrypted, idx, xorResult.length);
+        var withEditApplied = XOR.multiByteXOR(abusableBlock, xorResult);
+        System.arraycopy(withEditApplied, 0, encrypted, idx, withEditApplied.length);
 
-        assertArrayEquals(textToAlter, XOR.multiByteXOR(alteredText, xord));
-        assertArrayEquals(xord, XOR.multiByteXOR(textToAlter, alteredText));
-        System.arraycopy(alteredText, 0, cipherText, 32, alteredText.length);
-
-        assertTrue(oracle.findAdminInCipherText(cipherText));
+        assertTrue(Challenge16Oracle.secondFunction(encrypted));
     }
 }

@@ -32,12 +32,12 @@ import javax.crypto.BadPaddingException;
 public class C15 {
     @Test
     public void testChallenge15() throws BadPaddingException {
-        assertArrayEquals("ICE ICE BABY".getBytes(), stripPadding(generatePaddingSample(new byte[] {4,4,4,4})));
-        assertThrows(BadPaddingRuntimeException.class, () -> stripPadding(generatePaddingSample(new byte[] {5,5,5,5})));
-        assertThrows(BadPaddingRuntimeException.class, () -> stripPadding(generatePaddingSample(new byte[] {1,2,3,4})));
+        assertArrayEquals("ICE ICE BABY".getBytes(), stripPadding(padIt(new byte[]{4, 4, 4, 4})));
+        assertThrows(BadPaddingRuntimeException.class, () -> stripPadding(padIt(new byte[]{5, 5, 5, 5})));
+        assertThrows(BadPaddingRuntimeException.class, () -> stripPadding(padIt(new byte[]{1, 2, 3, 4})));
     }
 
-    private static byte[] generatePaddingSample(byte[] paddingBytes) {
+    private static byte[] padIt(byte[] paddingBytes) {
         String sb = "ICE ICE BABY" +
                 new String(paddingBytes);
         return sb.getBytes();
