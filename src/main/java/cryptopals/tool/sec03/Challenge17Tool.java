@@ -1,6 +1,7 @@
 package cryptopals.tool.sec03;
 
-import cryptopals.enums.CipherMode;
+import static cryptopals.utils.PKCS7Util.stripPadding;
+
 import cryptopals.exceptions.BadPaddingRuntimeException;
 import cryptopals.tool.CBC;
 import cryptopals.utils.ByteArrayUtil;
@@ -13,15 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static cryptopals.utils.PKCS7Util.applyPadding;
-import static cryptopals.utils.PKCS7Util.stripPadding;
-
 /**
  * A tool for challenge 17, formerly known as the CBC Padding Oracle
  */
 public class Challenge17Tool {
 
     private static final List<String> stringList = new ArrayList<>();
+
     static {
         stringList.add("MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=");
         stringList.add("MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=");
@@ -34,6 +33,7 @@ public class Challenge17Tool {
         stringList.add("MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=");
         stringList.add("MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93");
     }
+
     private final CBC cbc;
 
     public Challenge17Tool() {
@@ -45,6 +45,7 @@ public class Challenge17Tool {
      * generate a random AES key (which it should save for all future encryptions),
      * pad the string out to the 16-byte AES block size
      * and CBC-encrypt it under that key, providing the caller the ciphertext and IV.
+     *
      * @return pair of cipher text and iv
      */
     public Pair<byte[], byte[]> selectRandomStringAndEncrypt() {
@@ -58,6 +59,7 @@ public class Challenge17Tool {
     /**
      * This function does the same as {@link Challenge17Tool#selectRandomStringAndEncrypt()}
      * except that it will return a map of _all_ strings and _all_ ivecs for comprehensive testing
+     *
      * @return map of ciphertext - iv pairs
      */
     public Map<byte[], byte[]> getAllIvecsAndStrings() {
@@ -67,6 +69,7 @@ public class Challenge17Tool {
             var encryptedString = cbc.encryptToByteArray(s.getBytes(), ivec);
             map.put(ivec, encryptedString);
         }
+
         return map;
     }
 

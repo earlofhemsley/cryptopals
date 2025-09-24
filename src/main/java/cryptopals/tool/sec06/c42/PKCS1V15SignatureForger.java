@@ -2,7 +2,6 @@ package cryptopals.tool.sec06.c42;
 
 import static java.math.BigInteger.ONE;
 
-import cryptopals.tool.SHA1;
 import cryptopals.tool.sec05.RSA;
 import cryptopals.utils.ByteArrayUtil;
 import cryptopals.utils.HashUtil;
@@ -11,16 +10,9 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 
 /**
@@ -46,12 +38,12 @@ public class PKCS1V15SignatureForger {
         final var hash = HashUtil.getHash(message.getBytes(), digest);
 
         //step two - encode in asn.1 per the RFC
-        byte[] asn1PlusHash = ASN1Util.encodeHashToAsn1SignatureFormat(hash, OIWObjectIdentifiers.idSHA1);
+        byte[] asn1PlusHash = ASN1Util.encodeHashToAsn1SignatureFormat(hash, X509ObjectIdentifiers.id_SHA1);
 
         //start building a forgery
         //do the bare minimum as far as leading padding goes ... eight bytes only
         byte[] forgery = ByteArrayUtil.concatenate(
-                new byte[] {0, 1, -1, -1, -1, -1, -1, -1, -1, -1, 0},
+                new byte[]{0, 1, -1, -1, -1, -1, -1, -1, -1, -1, 0},
                 asn1PlusHash
         );
 
